@@ -45,7 +45,7 @@ put things that aren't scalars in the object store.
 package Bot::BasicBot::Pluggable::Module;
 use strict;
 use warnings;
-
+use Bot::BasicBot::Pluggable::Store::Storable;
 use Storable;
 
 =head2 new()
@@ -68,7 +68,6 @@ sub new {
     my $self = \%param;
     bless $self, $class;
 
-    $self->load();
     $self->init();
 
     return $self;
@@ -85,6 +84,18 @@ sub bot {
     return $self->{Bot};
 }
 
+=head2 store()
+
+returns the Bot::BasicBot::Pluggable::Store subclass that the bot is
+using to store it's variables.
+
+=cut
+
+sub store {
+  my $self = shift;
+  return $self->bot->store;
+}
+
 =head2 var( name, [ value ] )
 
 get or set a local variable from the module store
@@ -94,10 +105,8 @@ get or set a local variable from the module store
 sub var {
     my $self = shift;
     my $name = shift;
-    my $set = shift;
-    if (defined($set)) {
-        $self->set($name, $set);
-        return $self;
+    if (@_) {
+        return $self->set($name, shift);
     } else {
         return $self->get($name);
     }
@@ -110,10 +119,8 @@ set a local variable into the object store.
 =cut
 
 sub set {
-    my ($self, $name, $val) = @_;
-    $self->{store}{$name} = $val;
-    $self->save();
-    return $self->{store}{$name};
+    my $self = shift;
+    $self->store->set($self->{Name}, @_);
 }
 
 =head2 get( name )
@@ -123,8 +130,8 @@ returns the value of a local variable from the object store.
 =cut
 
 sub get {
-    my ($self, $name) = @_;
-    return $self->{store}{$name};
+    my $self = shift;
+    $self->store->get($self->{Name}, @_);
 }
 
 =head2 unset(var)
@@ -134,9 +141,8 @@ unsets a local variable - removes it from the store, not just undefs it.
 =cut
 
 sub unset {
-    my ($self, $name) = @_;
-    delete $self->{store}{$name};
-    $self->save();
+    my $self = shift;
+    $self->store->unset($self->{Name}, @_);
 }
 
 =head2 store_keys()
@@ -146,37 +152,8 @@ returns a list of all keys in the object store
 =cut
 
 sub store_keys {
-  my $self = shift;
-  return keys(%{$self->{store}});
-}
-
-=head2 save
-
-Saves the local data store. This should just happen automatically.
-
-=cut
-
-sub save {
-    my ($self, $hash, $filename) = @_;
-    $filename ||= $self->{Name}.".storable";
-    my $save = $hash || $self->{store};
-    return unless $save;
-    store($save, $filename) or die "cannot save to $filename";
-}
-
-=head2 load
-
-loads the local store from the Storable file. Should happpen on starup,
-you don't need to call this.
-
-=cut
-
-sub load {
-    my ($self) = @_;
-    my $filename = $self->{Name}.".storable";
-    return unless (-e $filename);
-    $self->{store} = retrieve $filename;
-    return $self->{store};
+    my $self = shift;
+    $self->store->keys($self->{Name}, @_);
 }
 
 =head2 say(message)

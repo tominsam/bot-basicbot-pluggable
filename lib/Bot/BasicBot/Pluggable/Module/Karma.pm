@@ -87,7 +87,7 @@ sub get_karma {
     $object = lc($object);
     $object =~ s/-/ /g;
 
-    my @changes = @{ $self->get("karma_$object") };
+    my @changes = @{ $self->get("karma_$object") || [] };
 
     my @good;
     my @bad;

@@ -7,6 +7,8 @@ use POE;
 use Bot::BasicBot;
 use base qw( Bot::BasicBot );
 
+use Bot::BasicBot::Pluggable::Module;
+
 our $VERSION = '0.40';
 
 =head1 NAME
@@ -126,6 +128,17 @@ the bot sees things happen, and can respond to the events.
 
 perldoc Bot::BasicBot::Pluggable::Module::Base for the details of the module API.
 
+=cut
+
+sub init {
+  my $self = shift;
+  warn "Creating store object\n";
+
+  $self->{store_object} = Bot::BasicBot::Pluggable::Store::Storable->new();
+
+  return 1;
+}
+
 =head2 Main Methods
 
 =over 4
@@ -145,28 +158,26 @@ Bot::BasicBot::Pluggable::Module::$module if not.
 sub load {
     my $self = shift;
     my $module = shift;
-    return "Need name" unless $module;
-    return "Already loaded" if $self->handler($module);
+    die "Need name" unless $module;
+    die "Already loaded" if $self->handler($module);
     warn "Loading module '$module'..\n";
 
     # This is possible a leeeetle bit evil.
     my $file = "Bot/BasicBot/Pluggable/Module/$module.pm";
     $file = "./modules/$module.pm" if (-e "./modules/$module.pm");
-    eval "
-        no warnings 'redefine';
-        delete \$INC{\$file};
-        require \$file;
-    ";
+
+    warn "..from file $file\n";
+    
+    # force a reload of the file (in the event that we've already loaded it)
+    no warnings 'redefine';
+    delete $INC{$file};
+    require $file;
     # Ok, it's very evil. Don't bother me, I'm working.
 
-    die "Can't eval module from $file: $@" if $@;
-
-    my $m;
-    eval "\$m = Bot::BasicBot::Pluggable::Module::$module->new(Bot=>\$self, Param=>\\\@_);";
+    my $m = "Bot::BasicBot::Pluggable::Module::$module"->new(Bot=>$self, Param=>\@_);
     
-    die "Can't call $module->new(): $@" if $@;
-
     die "->new didn't return an object" unless ($m and ref($m));
+    die ref($m)." isn't a $module" unless ref($m) =~ /\Q$module/;
 
     $self->add_handler($m, $module);
 
@@ -226,8 +237,7 @@ sub module {
 
 =item modules
 
-returns a list of loaded modules, as an array or an arrayref depending on
-what context it's called in.
+returns a list of the names of all loaded modules, as an array.
 
 =cut
 
@@ -236,22 +246,10 @@ sub modules {
     return $self->handlers(@_);
 }
 
-=head2 handler(name)
-
-return the handler with the passed name. Names are unique, for some reason.
-
-=cut
-
 sub handler {
     my ($self, $name) = @_;
     return $self->{handlers}{lc($name)};
 }
-
-=head2 handlers()
-
-returns a list of handler names, not the handlers themselves.
-
-=cut
 
 sub handlers {
     my $self = shift;
@@ -287,6 +285,17 @@ sub remove_handler {
     die "Hander $name not defined" unless $self->{handlers}{lc($name)};
     delete $self->{handlers}{lc($name)};
     return "Done.";
+}
+
+=head2 store
+
+returns the object store associated with the bot. See L<Bot::BasicBot::Pluggable::Store>.
+
+=cut
+
+sub store {
+  my $self = shift;
+  return $self->{store_object};
 }
 
 ####################################################

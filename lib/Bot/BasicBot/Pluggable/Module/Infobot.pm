@@ -120,7 +120,6 @@ sub said {
 
             $factoid =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
 
-#            print STDERR "factoid is '$factoid'\n";
             if ($factoid =~ s/^<action>\s*//i) {
                 $self->bot->emote({who=>$infobot_data->{who}, channel=>$infobot_data->{channel}, body=>"$factoid (via $mess->{who})"});
                 return 1;
@@ -203,8 +202,8 @@ sub said {
     my $is_are = $1 or return;
 
     my ($object, $description) = split(/\s+${is_are}\s+/i, $body, 2);
-#    $description =~ s/\.\s.*$//;
 
+    # long factoid keys are almost _always_ wrong.
     return if length($object) > 25;
 
     my $replace = 1 if ($object =~ s/no,?\s*//i);
