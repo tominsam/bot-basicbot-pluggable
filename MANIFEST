@@ -8,7 +8,6 @@ examples/simple.pl
 lib/Bot/BasicBot/Pluggable.pm
 lib/Bot/BasicBot/Pluggable/Module/Auth.pm
 lib/Bot/BasicBot/Pluggable/Module/Base.pm
-lib/Bot/BasicBot/Pluggable/Module/Blog.pm
 lib/Bot/BasicBot/Pluggable/Module/DNS.pm
 lib/Bot/BasicBot/Pluggable/Module/Google.pm
 lib/Bot/BasicBot/Pluggable/Module/Infobot.pm
@@ -16,7 +15,6 @@ lib/Bot/BasicBot/Pluggable/Module/Join.pm
 lib/Bot/BasicBot/Pluggable/Module/Karma.pm
 lib/Bot/BasicBot/Pluggable/Module/Loader.pm
 lib/Bot/BasicBot/Pluggable/Module/Seen.pm
-lib/Bot/BasicBot/Pluggable/Module/Shout.pm
 lib/Bot/BasicBot/Pluggable/Module/Title.pm
 lib/Bot/BasicBot/Pluggable/Module/Vars.pm
 t/00bootstrap.t

@@ -85,6 +85,11 @@ sub init {
     $self->{infobot} = {};
 }
 
+# TODO
+sub help {
+  return "ooooooh, infobots. They're hard.";
+}
+
 sub said {
     my ($self, $mess, $pri) = @_;
 
