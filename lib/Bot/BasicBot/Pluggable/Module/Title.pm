@@ -26,8 +26,8 @@ sub said {
     my ($self, $mess, $pri) = @_;
 
     return unless ($pri == 0); # respond to everything mentioned.
-
-    return unless ($mess->{body} =~ m!(http://\S+)!i);
+    return unless ($mess->{channel} eq '#2lmc');
+    return unless ($mess->{body} =~ m!(http://[^\|\s\]]+)!i);
 
     my $title = title($1) or return; # "Can't get $url";
     $self->reply($mess, "[ $title ]");
