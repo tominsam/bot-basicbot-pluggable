@@ -122,11 +122,12 @@ is( direct("literal foo?"),
 
 # run through a few times, and see what we get out
 foreach my $i (0..9) {
-ok( my $reply = direct("foo?"), "got one of the foos" );
-ok( $reply eq 'foo is foo or bar or baz or quux'
- or $reply eq 'foo is a silly thing', 
- or $reply eq 'this is a very silly thing', 
-              "it's one of the three");
+  ok( my $reply = direct("foo?"), "got one of the foos" );
+  ok( $reply eq 'foo is foo or bar or baz or quux'
+   or $reply eq 'foo is a silly thing' 
+   or $reply eq 'this is a very silly thing', 
+                "it's '$reply'" # this never gets printed, dunno why
+  );
 }
 
 
