@@ -283,9 +283,8 @@ sub get_raw_factoids {
     # old-style tab seperated thing
     my @strings;
     ($is_are, @strings) = split(/\t/, $raw);
-    for (@strings) {
-      my $alt = s/^\|// ? 1 : 0;
-      my $text = $_;
+    for my $text (@strings) {
+      my $alt = ($text =~ s/^\|// ? 1 : 0);
       push @factoids, { alternate => $alt, text => $text };
     }
   }
