@@ -81,12 +81,15 @@ ok( !direct("dkjsdlfkdsjfglkdsfjglfkdjgldksfjglkdfjglds is mumu"),
 # literal syntax
 is( direct("literal rsstest?"), "rsstest =is= <rss=\"file://$Bin/test.rss\">",
   "literal of rsstest" );
-
 ok( direct("bar is also fum"), "bar also fum" );
 is( direct("literal bar?"), "bar =is= yellow =or= fum", "bar" );
 
 
-# TODO - test alternate factoids ('|')
+# alternate factoids ('|')
+is( direct("foo is one"), "foo is one");
+is( direct("foo is also two"), "foo is also two");
+is( direct("foo is also |maybe"), "foo is also maybe");
+is( direct("foo?"), "" );
 
 
 
