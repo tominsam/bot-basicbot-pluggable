@@ -19,6 +19,12 @@ the help text for the module.
 You MAY override the 'chanjoin', 'chanpart', and 'tick' methods. the said()
 method MAY return a response to the event.
 
+The bot has a local hash, $self->{store}, that is saved and loaded when the bot
+quits and starts. The variables are accessed through the get() and set() methods
+(or the var() method), and the store is automatically saved after every set
+call, but if you change the store in any other way, I suggest you explicitly
+save it with the save() method.
+
 =head1 BUGS
 
 The {store} isn't any good for /big/ data sets, like the infobot sets. We
