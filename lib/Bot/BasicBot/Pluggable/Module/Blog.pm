@@ -128,7 +128,7 @@ sub said {
         $self->{blog_id} = $self->{DB}->{mysql_insertid};
         return "chump $self->{blog_id}";
 
-    } elsif ($command eq "bc") {
+    } elsif ($command eq "bc" or $command eq "bc:") {
         if ($self->{blog_id}) {
             do {} while ($param =~ s/^\s*bc\s+//i);
             $self->comment($self->{blog_id}, $mess->{who}, $param);
