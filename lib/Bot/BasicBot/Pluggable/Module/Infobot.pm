@@ -212,11 +212,13 @@ sub fallback {
   }
 
   # get any current factoid there might be.
-  my (undef, $current) = $self->get_factoid($object);
+  my ($type, $current) = $self->get_factoid($object);
   
-  # we cna't add without explicit instruction.
-  if ($current and !$also) {
-    return "But I already know something about $object";
+  # we can't add without explicit instruction, but shouldn't warn if this is passive.
+  if ($current and !$also and $mess->{address}) {
+    return "... but $object $type $current ...";
+  } elsif ($current and !$also and !$mess->{address}) {
+    return undef;
   }
 
   $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description) );

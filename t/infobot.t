@@ -62,7 +62,9 @@ is( direct("forget foo"), "I forgot about foo", "forgotten foo");
 is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
 
 # factoids can be replaced
-is( direct("bar is yellow"), "But I already know something about bar",
+is( direct("bar is yellow"), "... but bar is green ...",
+  "Can't just redefine factoids" );
+is( indirect("bar is yellow"), 1,
   "Can't just redefine factoids" );
 is( indirect("bar?"), "bar is green", "not changed" );
 is( direct("no, bar is yellow"), "okay.", "Can explicitly redefine factoids" );
@@ -112,7 +114,8 @@ is( direct("who is foo?"), "foo is foo", "Yet another English get" );
 is( direct("foo are things"), "okay.", "simple 'are' set"); # fails
 is( direct("what are foo?"), "foo are things", "English-language 'are' get" );
 
-is( direct("foo is a silly thing"), "", "shouldn't get a reply" ); # fails
+is( direct("foo is a silly thing"), "... but foo is foo ...", "warning about overwriting" );
+is( indirect("foo is a silly thing"), undef, "shouldn't get a reply" );
 
 is( direct("foo is also bar"), "okay.", "simple append");
 is( direct("foo?"), "foo is foo or bar", "appended ok");
