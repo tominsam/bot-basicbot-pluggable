@@ -135,22 +135,24 @@ use Bot::BasicBot::Pluggable::Store::DBI;
 sub init {
   my $self = shift;
 
+  # the default store is a SQLite store
   $self->{store} ||= {
-    type => "Storable",
+    type => "DBI",
+    dsn => "dbi:SQLite:bot-basicbot.sqlite",
   };
 
-  my $type = delete $self->{store}{type} || "Storable";
+  # calculate the class we're going to use. If you pass a full
+  # classname as the type, use that class, otherwise assume it's
+  # a B::B::Store:: subclass.
+  my $store_class = delete $self->{store}{type} || "DBI";
+  my $store_class = "Bot::BasicBot::Pluggable::Store::$type"
+    unless $store_class =~ /::/;
 
-  my $store_class = "Bot::BasicBot::Pluggable::Store::$type";
+  # load the store class
   eval "require $store_class";
   die "Couldn't load $store_class - $@" if $@;
-  $self->{store_object} ||= $store_class->new(%{$self->{store}});
 
-#  $self->{store_object} ||= Bot::BasicBot::Pluggable::Store::DBI->new(
-#    dsn => "dbi:mysql:test",
-#    user => 'root',
-#    table => "basicbot",
-#  );
+  $self->{store_object} ||= $store_class->new(%{$self->{store}});
 
   return 1;
 }
@@ -172,32 +174,33 @@ Bot::BasicBot::Pluggable::Module::$module if not.
 =cut
 
 sub load {
-    my $self = shift;
-    my $module = shift;
-    die "Need name" unless $module;
-    die "Already loaded" if $self->handler($module);
-    warn "Loading module '$module'..\n";
+  my $self = shift;
+  my $module = shift;
 
-    # This is possible a leeeetle bit evil.
-    my $file = "Bot/BasicBot/Pluggable/Module/$module.pm";
-    $file = "./modules/$module.pm" if (-e "./modules/$module.pm");
+  # it's safe to die here, mostly this call is evaled
+  die "Need name" unless $module;
+  die "Already loaded" if $self->handler($module);
 
-    warn "..from file $file\n";
-    
-    # force a reload of the file (in the event that we've already loaded it)
-    no warnings 'redefine';
-    delete $INC{$file};
-    require $file;
-    # Ok, it's very evil. Don't bother me, I'm working.
+  # This is possible a leeeetle bit evil.
+  print STDERR "Loading module '$module'.. ";
+  my $file = "Bot/BasicBot/Pluggable/Module/$module.pm";
+  $file = "./modules/$module.pm" if (-e "./modules/$module.pm");
+  print STDERR "from file $file\n";
+  
+  # force a reload of the file (in the event that we've already loaded it)
+  no warnings 'redefine';
+  delete $INC{$file};
+  require $file;
+  # Ok, it's very evil. Don't bother me, I'm working.
 
-    my $m = "Bot::BasicBot::Pluggable::Module::$module"->new(Bot=>$self, Param=>\@_);
-    
-    die "->new didn't return an object" unless ($m and ref($m));
-    die ref($m)." isn't a $module" unless ref($m) =~ /\Q$module/;
+  my $m = "Bot::BasicBot::Pluggable::Module::$module"->new(Bot=>$self, Param=>\@_);
 
-    $self->add_handler($m, $module);
+  die "->new didn't return an object" unless ($m and ref($m));
+  die ref($m)." isn't a $module" unless ref($m) =~ /\Q$module/;
 
-    return $m;
+  $self->add_handler($m, $module);
+
+  return $m;
 }
 
 =item reload($module)
@@ -212,14 +215,11 @@ possible. Works for minor bug fixes, etc.
 =cut
 
 sub reload {
-    my $self = shift;
-    my $module = shift;
-    return "Need name" unless $module;
-    return "Not loaded" unless $self->handler($module);
-    warn "Reloading module '$module'..\n";
-
-    $self->remove_handler($module) if $self->handler($module);
-    return $self->load($module);
+  my $self = shift;
+  my $module = shift;
+  return "Need name" unless $module;
+  $self->remove_handler($module) if $self->handler($module);
+  return $self->load($module);
 }
 
 =item unload
@@ -229,14 +229,14 @@ Removes a module from the bot. It won't get events any more.
 =cut
 
 sub unload {
-    my $self = shift;
-    my $module = shift;
-    return "Need name" unless $module;
-    return "Not loaded" unless $self->handler($module);
-    warn "Unloading module '$module'..\n";
+  my $self = shift;
+  my $module = shift;
+  return "Need name" unless $module;
+  return "Not loaded" unless $self->handler($module);
+  warn "Unloading module '$module'..\n";
 
-    $self->remove_handler($module);
-    return "Removed";
+  $self->remove_handler($module);
+  return "Removed";
 }
 
 =item module($module)
@@ -247,8 +247,8 @@ the 'Auth' hander to check if a given user is authenticated.
 =cut
 
 sub module {
-    my $self = shift;
-    return $self->handler(@_);
+  my $self = shift;
+  return $self->handler(@_);
 }    
 
 =item modules
@@ -258,20 +258,21 @@ returns a list of the names of all loaded modules, as an array.
 =cut
 
 sub modules {
-    my $self = shift;
-    return $self->handlers(@_);
+  my $self = shift;
+  return $self->handlers(@_);
 }
 
+# deprecated methods
 sub handler {
-    my ($self, $name) = @_;
-    return $self->{handlers}{lc($name)};
+  my ($self, $name) = @_;
+  return $self->{handlers}{lc($name)};
 }
 
 sub handlers {
-    my $self = shift;
-    my @keys = keys(%{$self->{handlers}});
-    return @keys if wantarray;
-    return \@keys;
+  my $self = shift;
+  my @keys = keys(%{$self->{handlers}});
+  return @keys if wantarray;
+  return \@keys;
 }
 
 =head2 add_handler(handler object, name of handler)
@@ -283,10 +284,10 @@ guarantee it gets called first. Names must be unique.
 =cut
 
 sub add_handler {
-    my ($self, $handler, $name) = @_;
-    die "Need a name for adding a handler" unless $name;
-    die "Can't load a handler with a duplicate name $name" if $self->{handlers}{lc($name)};
-    $self->{handlers}{lc($name)} = $handler;    
+  my ($self, $handler, $name) = @_;
+  die "Need a name for adding a handler" unless $name;
+  die "Can't load a handler with a duplicate name $name" if $self->{handlers}{lc($name)};
+  $self->{handlers}{lc($name)} = $handler;    
 }
 
 =head2 remove_handler
@@ -296,11 +297,11 @@ remove a handler with the given name.
 =cut
 
 sub remove_handler {
-    my ($self, $name) = @_;
-    die "Need a name for removing a handler" unless $name;
-    die "Hander $name not defined" unless $self->{handlers}{lc($name)};
-    delete $self->{handlers}{lc($name)};
-    return "Done.";
+  my ($self, $name) = @_;
+  die "Need a name for removing a handler" unless $name;
+  die "Hander $name not defined" unless $self->{handlers}{lc($name)};
+  delete $self->{handlers}{lc($name)};
+  return "Done.";
 }
 
 =head2 store
@@ -329,21 +330,21 @@ with that name.
 =cut
 
 sub dispatch {
-    my $self = shift;
-    my $method = shift;
+  my $self = shift;
+  my $method = shift;
 
-    for my $who ($self->handlers) {
-        next unless $self->handler($who)->can($method);
-        eval "\$self->handler(\$who)->$method(\@_);";
-        warn $@ if $@;
-    }
-    return undef;
+  for my $who ($self->handlers) {
+    next unless $self->handler($who)->can($method);
+    eval "\$self->handler(\$who)->$method(\@_);";
+    warn $@ if $@;
+  }
+  return undef;
 }
 
 sub tick {
-    my $self = shift;
-    $self->dispatch('tick');
-    return 5;
+  my $self = shift;
+  $self->dispatch('tick');
+  return 5;
 }
 
 =head2 said
@@ -353,78 +354,78 @@ called as a subclass of Bot::BasicBot,
 =cut
 
 sub said {
-    my $self = shift;
-    my ($mess) = @_;
-    my $response;
-    my $who;
-    
-    for my $priority (0..3) {
-        for ($self->handlers) {
-            $who = $_;
-            eval "\$response = \$self->handler(\$who)->said(\$mess, \$priority); ";
-            $self->reply($mess, "Error calling said() for $who: $@") if $@;
-            if ($response and $priority) {
-                return if ($response eq "1");
-                $self->reply($mess, $response);
-                return;
-            }
-        }
+  my $self = shift;
+  my ($mess) = @_;
+  my $response;
+  my $who;
+  
+  for my $priority (0..3) {
+    for ($self->handlers) {
+      $who = $_;
+      eval "\$response = \$self->handler(\$who)->said(\$mess, \$priority); ";
+      $self->reply($mess, "Error calling said() for $who: $@") if $@;
+      if ($response and $priority) {
+        return if ($response eq "1");
+        $self->reply($mess, $response);
+        return;
+      }
     }
-    return undef;
+  }
+  return undef;
 }
 
 sub emoted {
-    my $self = shift;
-    my $mess = shift;
-    my $response;
-    my $who;
-    
-    for my $priority (0..3) {
-        for ($self->handlers) {
-            $who = $_;
-            eval "\$response = \$self->handler(\$who)->emoted(\$mess, \$priority); ";
-            $self->reply($mess, "Error calling emoted() for $who: $@") if $@;
-            if ($response and $priority) {
-                return if ($response eq "1");
-                $self->reply($mess, $response);
-                return;
-            }
-        }
+  my $self = shift;
+  my $mess = shift;
+  my $response;
+  my $who;
+  
+  for my $priority (0..3) {
+    for ($self->handlers) {
+      $who = $_;
+      eval "\$response = \$self->handler(\$who)->emoted(\$mess, \$priority); ";
+      $self->reply($mess, "Error calling emoted() for $who: $@") if $@;
+      if ($response and $priority) {
+        return if ($response eq "1");
+        $self->reply($mess, $response);
+        return;
+      }
     }
-    return undef;
+  }
+  return undef;
 }
 
 sub help {
-    my $self = shift;
-    my $mess = shift;
-    $mess->{body} =~ s/^help\s*//i;
-    
-    unless ($mess->{body}) {
-        return "Ask me for help about: " . join(", ", $self->handlers())." (say 'help <modulename>')";
+  my $self = shift;
+  my $mess = shift;
+  $mess->{body} =~ s/^help\s*//i;
+  
+  unless ($mess->{body}) {
+    return "Ask me for help about: " . join(", ", $self->handlers())." (say 'help <modulename>')";
+  } else {
+    if (my $handler = $self->handler($mess->{body})) {
+      my $help;
+      eval "\$help = \$handler->help(\$mess); ";
+      return "Error calling help for handler $mess->{body}: $@" if $@;
+      return $help;
     } else {
-        if (my $handler = $self->handler($mess->{body})) {
-            my $help;
-            eval "\$help = \$handler->help(\$mess); ";
-            return "Error calling help for handler $mess->{body}: $@" if $@;
-            return $help;
-        } else {
-            return "I don't know anything about '$mess->{body}'.";
-        }
+      return "I don't know anything about '$mess->{body}'.";
     }
+  }
 }
 
 sub connected {
-    my $self = shift;
-    warn "Bot::BasicBot::Pluggable connected\n";
-    $self->dispatch('connected');
+  my $self = shift;
+  warn "Bot::BasicBot::Pluggable connected\n";
+  $self->dispatch('connected');
 }
 
 sub chanjoin {
-    shift->dispatch("chanjoin", @_);
+  shift->dispatch("chanjoin", @_);
 }
 
 sub chanpart {
-    shift->dispatch("chanpart", @_);
+  shift->dispatch("chanpart", @_);
 }
 
 =item run
