@@ -212,7 +212,7 @@ sub fallback {
     return "But I already know something about $object";
   }
 
-  $self->add_factoid($object, $is_are, $description);
+  $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description);
 
   # return an ack if we were addressed only
   return $mess->{address} ? "ok" : 1;
@@ -272,14 +272,14 @@ sub search_factoid {
 }
 
 sub add_factoid {
-  my ($self, $object, $is_are, $factoid) = @_;
+  my ($self, $object, $is_are, @factoids) = @_;
   
   # we're splitting on tabs, so we can't store them. Last-ditch
   # safety measure.
-  $factoid =~ s/\t+//g;
+  s/\t+//g for @factoids;
   
   my $raw = $self->get( "infobot_".lc($object) ) || "$is_are";
-  $raw .= "\t$factoid";
+  $raw .= "\t$_" for @factoids;
 
   $self->set( "infobot_".lc($object) , $raw );  return 1;
 }
