@@ -306,9 +306,9 @@ sub add_factoid {
   $is_are = $current_is_are if ($current_is_are);
   $is_are ||= "is"; # defaults
 
-  # add these factoids to the list
+  # add these factoids to the list, trimming trailing space after |
   for (@factoids) {
-    my $alt = s/^\|// ? 1 : 0;
+    my $alt = s/^\| *// ? 1 : 0;
     push @current, {
       alternate => $alt,
       text => $_,
