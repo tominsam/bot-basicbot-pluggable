@@ -1,0 +1,13 @@
+\.DS_Store
+_build
+Build$
+\.svn
+CVS
+~$
+MANIFEST\.
+blib
+\.tar\.gz$
+^search_map
+^t/search_map
+t/wiki.db
+^wiki\.cgi

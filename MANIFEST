@@ -1,11 +1,11 @@
 Build.PL
-MANIFEST			This list of files
-README
+Changes
 examples/chump.cgi
 examples/chump.tem
 examples/mind.pl
 examples/simple.pl
 lib/Bot/BasicBot/Pluggable.pm
+lib/Bot/BasicBot/Pluggable/Module.pm
 lib/Bot/BasicBot/Pluggable/Module/Auth.pm
 lib/Bot/BasicBot/Pluggable/Module/Base.pm
 lib/Bot/BasicBot/Pluggable/Module/DNS.pm
@@ -17,5 +17,10 @@ lib/Bot/BasicBot/Pluggable/Module/Loader.pm
 lib/Bot/BasicBot/Pluggable/Module/Seen.pm
 lib/Bot/BasicBot/Pluggable/Module/Title.pm
 lib/Bot/BasicBot/Pluggable/Module/Vars.pm
+MANIFEST			This list of files
+NINJA
+README
 t/00bootstrap.t
-t/99coverage.t
+t/01module_base.t
+t/02module_auth.t
+META.yml

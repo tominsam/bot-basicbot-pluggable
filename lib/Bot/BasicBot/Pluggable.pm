@@ -8,7 +8,7 @@ use POE;
 use Bot::BasicBot;
 use base qw( Bot::BasicBot );
 
-our $VERSION = '0.30';
+our $VERSION = '0.40';
 
 =head1 NAME
 
