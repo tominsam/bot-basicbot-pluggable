@@ -476,10 +476,6 @@ stomped. Not a lot you can do about that.
 All modules need to be in the Bot::Pluggable::Module:: namespace. Well,
 that's not really a bug.                                                                                       
 
-The chump example code in examples/ is EVIL. Very. I'll tidy it, muttley has
-promised me a Text::Chump or something soon. It's there more as a
-placeholder for something /good/, really.
-
 More other things than I can shake a stick at.
 
 =head1 SEE ALSO
