@@ -19,6 +19,8 @@ allowing for pluggable modules
 
 =head1 SYNOPSIS
 
+=head2 Creating the bot module
+
   # with all defaults
   my $bot = Bot::BasicBot->new();
 
@@ -38,6 +40,10 @@ allowing for pluggable modules
                 );
 
   (You can pass any option that's valid for Bot::BasicBot)
+
+=head2 Running the bot
+
+There are two useful ways you can use a Pluggable bot. 
 
   # Load some useful modules
   my $infobot_module = $bot->load("Infobot");
@@ -88,9 +94,9 @@ Create a new Bot. Identical to the new method in Bot::BasicBot.
 
 =item load($module)
 
-Load a module for the bot by name, from, by preference './Modules/$module.pm',
-but will fall back to Bot::BasicBot::Pluggable::Module::$module if this
-isn't available.
+Load a module for the bot by name, from ./modules/Modulename.pm if that file
+exists, and falling back to the system package
+Bot::BasicBot::Pluggable::Module::$module if not.
 
 =cut
 
@@ -102,16 +108,17 @@ sub load {
 
     # This is possible a leeeetle bit evil.
     my $file = "Bot/BasicBot/Pluggable/Module/$module.pm";
+    $file = "./modules/$module.pm" if (-e "./modules/$module.pm");
     eval "
         delete \$INC{\$file};
         require \$file;
     ";
     # Ok, it's very evil. Don't bother me, I'm working.
-
-    croak "Can't eval module: $@" if $@;
+    
+    croak "Can't eval module from $file: $@" if $@;
 
     my $m;
-    eval "\$m = Bot::BasicBot::Pluggable::Module::$module->new(Name=>\$module, Bot=>\$self, Param=>\\\@_);";
+    eval "\$m = Bot::BasicBot::Pluggable::Module::$module->new(Bot=>\$self, Param=>\\\@_);";
     
     croak "Can't call $module->new(): $@" if $@;
 
@@ -194,7 +201,7 @@ sub module {
 
 =item modules
 
-returns a list of loaded moudues, as an array or an arrayref depending on
+returns a list of loaded modules, as an array or an arrayref depending on
 what context it's called in.
 
 =cut
@@ -204,11 +211,22 @@ sub modules {
     return $self->handlers(@_);
 }
 
+=head2 handler(name)
+
+return the handler with the passed name. Names are unique, for some reason.
+
+=cut
 
 sub handler {
     my ($self, $name) = @_;
-    return $self->{handlers}{$name};
+    return $self->{handlers}{lc($name)};
 }
+
+=head2 handlers()
+
+returns a list of handler names, not the handlers themselves.
+
+=cut
 
 sub handlers {
     my $self = shift;
@@ -217,23 +235,44 @@ sub handlers {
     return \@keys;
 }
 
+=head2 add_handler(handler object, name of handler)
+
+adds a handler object with the given name to the queue of modules. There
+is no order specified internally, adding a module earlier does not
+guarantee it gets called first. Names must be unique.
+
+=cut
+
 sub add_handler {
     my ($self, $handler, $name) = @_;
     croak "Need a name for adding a handler" unless $name;
-    croak "Can't load a handler with a duplicate name $name" if $self->{handlers}{$name};
-    $self->{handlers}{$name} = $handler;    
+    croak "Can't load a handler with a duplicate name $name" if $self->{handlers}{lc($name)};
+    $self->{handlers}{lc($name)} = $handler;    
 }
+
+=head2 remove_handler
+
+remove a handler with the given name.
+
+=cut
 
 sub remove_handler {
     my ($self, $name) = @_;
     croak "Need a name for removing a handler" unless $name;
-    croak "Hander $name not defined" unless $self->{handlers}{$name};
-    delete $self->{handlers}{$name};
+    croak "Hander $name not defined" unless $self->{handlers}{lc($name)};
+    delete $self->{handlers}{lc($name)};
     return "Done.";
 }
 
 ####################################################
 # ..from Bot::BasicBot:
+
+=head2 dispatch(method name, params)
+
+call the named method on every loaded module, if the module has a method
+with that name.
+
+=cut
 
 sub dispatch {
     my $self = shift;
@@ -247,10 +286,9 @@ sub dispatch {
     return undef;
 }
 
-sub tick {
-    shift->dispatch("tick");
-}
+=head2 said
 
+called as a subclass of Bot::BasicBot, 
 sub said {
     my $self = shift;
     my ($mess) = @_;
