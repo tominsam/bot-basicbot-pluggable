@@ -11,3 +11,6 @@ blib
 ^t/search_map
 t/wiki.db
 ^wiki\.cgi
+infobot\.conf
+\.db$
+\.storable
