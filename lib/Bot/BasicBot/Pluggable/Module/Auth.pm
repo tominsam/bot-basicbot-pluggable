@@ -92,6 +92,7 @@ sub said {
     my ($self, $mess, $pri) = @_;
     my $body = $mess->{body};
 
+    return "What am I, a RiscOS machine?" if ($pri == 3 and $body and $body =~ /^!boot$/i);
     return "Unknown admin command" if ($pri == 3 and $body and $body =~ /^!\w{3,}/);
 
     return unless ($pri == 1);
