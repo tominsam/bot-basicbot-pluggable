@@ -99,6 +99,7 @@ ok( ( $reply eq 'foo is maybe' or $reply eq 'foo is one or two' ), "it's one of 
 # * literal doesn't highlight =or= like it does =is=
 # * infobots attempt to parse english
 # * there's a difference between 'is' and 'are'
+# * doesn't respond to a passive attempt to reset an item
 
 is( direct("forget foo"), "I forgot about foo", "forgotten foo");
 
@@ -110,6 +111,8 @@ is( direct("who is foo?"), "foo is foo", "Yet another English get" );
 
 is( direct("foo are things"), "okay.", "simple 'are' set"); # fails
 is( direct("what are foo?"), "foo are things", "English-language 'are' get" );
+
+is( direct("foo is a silly thing"), "", "shouldn't get a reply" ); # fails
 
 is( direct("foo is also bar"), "okay.", "simple append");
 is( direct("foo?"), "foo is foo or bar", "appended ok");
