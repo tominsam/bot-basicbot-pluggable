@@ -91,6 +91,7 @@ using to store it's variables.
 
 sub store {
   my $self = shift;
+  die "module has no bot" unless $self->bot;
   return $self->bot->store;
 }
 
