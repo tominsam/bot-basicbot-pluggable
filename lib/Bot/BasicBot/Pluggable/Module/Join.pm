@@ -64,14 +64,13 @@ sub said {
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
     $command =~ s/\?$//;
-    
+
     if ($command eq "join") {
         $self->add_channel($param);
         return "Ok.";
 
     } elsif ($command eq "leave" or $command eq "part") {
-
-        $self->remove_channel($param);
+        $self->remove_channel($param || $mess->{channel} );
         return "Ok.";
 
     } elsif ($command eq "channels") {
@@ -86,7 +85,7 @@ sub add_channel {
     my %channels = map { $_ => 1 } split(/\s+/, $self->get("channels"));
     $channels{$channel} = 1;
     $self->set( channels => join(" ", keys %channels) );
-    $self->{Bot}->join($channel);
+    $self->bot->join($channel);
 }
 
 sub remove_channel {
@@ -94,7 +93,7 @@ sub remove_channel {
     my %channels = map { $_ => 1 } split(/\s+/, $self->get("channels"));
     delete $channels{$channel};
     $self->set( channels => join(" ", keys %channels) );
-    $self->{Bot}->part($channel);
+    $self->bot->part($channel);
 }
 
 1;
