@@ -79,7 +79,8 @@ package Bot::BasicBot::Pluggable::Module::Infobot;
 use Bot::BasicBot::Pluggable::Module;
 use base qw(Bot::BasicBot::Pluggable::Module);
 
-use XML::RSS;
+use XML::Feed;
+use URI;
 use LWP::Simple ();
 use strict;
 use warnings;
@@ -260,7 +261,7 @@ sub get_factoid {
   # TODO - this could be done in a more general way, with plugins
   # TODO - this blocks. Bad. you can knock the bot off channel by
   # giving it an RSS feed that'll take a very long time to return.
-  $factoid =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
+  $factoid =~ s/<(?:rss|atom|feed|xml)\s*=\s*\"?([^>\"]+)\"?>/$self->parseFeed($1)/ieg;
 
   return ($is_are, $factoid);
 }
@@ -357,25 +358,23 @@ sub search_factoid {
 }
 
 
-sub parseRSS {
+sub parseFeed {
     my ($self, $url) = @_;
 
-    my $items;
+    my @items;
     eval {
-        my $rss = new XML::RSS;
-        $rss->parse(LWP::Simple::get($url));
-        $items = $rss->{items};
+        my $feed = XML::Feed->parse( URI->new( $url ) );
+        @items = map { $_->title } $feed->entries;
     };
 
     return "<< Error parsing RSS from $url: $@ >>" if $@;
     my $ret;
-    foreach my $item (@$items) {
-        my $title = $item->{title};
+    foreach my $title (@items) {
         $title =~ s/\s+/ /;
         $title =~ s/\n//g;
         $title =~ s/\s+$//;
         $title =~ s/^\s+//;
-        $ret .= "$item->{'title'}; ";
+        $ret .= "${title}; ";
     }
     $ret =~ s/\s*$//;
     return $ret;
