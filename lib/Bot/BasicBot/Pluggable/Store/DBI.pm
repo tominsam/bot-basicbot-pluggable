@@ -42,7 +42,7 @@ sub init {
 sub dbh {
   my $self = shift;
   my $dsn = $self->{dsn} or die "I need a DSN";
-  my $user = $self->{user} or die "I need a user";
+  my $user = $self->{user};
   my $password = $self->{password};
   $self->{dbh} ||= DBI->connect($dsn, $user, $password);
 }
@@ -51,7 +51,7 @@ sub create_table {
   my $self = shift;
   my $table = $self->{table} or die "Need DB table";
   $self->dbh->do("CREATE TABLE $table (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT PRIMARY KEY,
     namespace TEXT,
     store_key TEXT,
     store_value LONGBLOB
@@ -76,14 +76,22 @@ sub set {
     $sth->finish;
   } else {
     my $sth = $self->dbh->prepare_cached(
-      "INSERT INTO $table (store_value, namespace, store_key) VALUES (?, ?, ?)"
+      "INSERT INTO $table (id, store_value, namespace, store_key) VALUES (?, ?, ?, ?)"
     );
-    $sth->execute($value, $namespace, $key);
+    $sth->execute($self->new_id($table), $value, $namespace, $key);
     $sth->finish;
   }
   return $self;
 }
 
+sub new_id {
+  my $self = shift;
+  my $table = shift;
+  my $sth = $self->dbh->prepare_cached("SELECT MAX(id) FROM $table");
+  $sth->execute();
+  return $sth->fetchrow_arrayref->[0] || "1";
+}
+  
 sub get {
   my ($self, $namespace, $key) = @_;
   my $table = $self->{table} or die "Need DB table";
