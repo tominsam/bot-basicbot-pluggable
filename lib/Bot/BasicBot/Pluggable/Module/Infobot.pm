@@ -196,6 +196,7 @@ sub said {
     if ($pri==2 and $mess->{address} and $body =~ /^search\s+for\s+(.*)$/i) {
         return "privmsg only, please" unless $mess->{channel} eq "msg";
         my @results = $self->search_factoid(split(/\s+/, $1)) or return;
+        $#results = 20 if $#results > 20;
         return "Keys: ".join(", ", map { "'$_'" } @results);
     }
 
