@@ -62,7 +62,9 @@ sub load {
         chomp;
         next unless ($_);
         next if ($_ eq "Loader");
-        $reply .= "Loading $_: " . $self->{Bot}->load($_) . "  ";
+        $status = $self->{Bot}->load($_);
+        $reply .= "Loading $_: $status  ";
+        print STDERR "Loading $_: $status\n";
     }
     close LOAD;
     return $reply;

@@ -1,30 +1,10 @@
-=head1 NAME
-
-Bot::BasicBot::Pluggable::Module::Title
-
-=head1 DESCRIPTION
-
-Module that will announce the title of any url that's mentioned in channel,
-assuming none of the other modules has picked it up.
-
-=head1 METHODS
-
-=cut
-
 package Bot::BasicBot::Pluggable::Module::Title;
 use Bot::BasicBot::Pluggable::Module::Base;
 use base qw(Bot::BasicBot::Pluggable::Module::Base);
 
 use LWP::Simple;
 
-=head2 said
-
-checks all messages that haven't been picked up by any 'serious' modules
-(priority 3) and check them for urls. Get the content of the url, and
-reply to the message in channel. There's special case code to change the
-title for certain sites that have lousy title tags in their html.
-
-=cut
+our $VERSION = '0.3';
 
 sub said {
     my ($self, $mess, $pri) = @_;
@@ -54,6 +34,7 @@ sub said {
     } elsif ($url =~ /paste\.husk\.org/i) {
         $match = 'Summary: ';
         $title = "paste - ";
+        return if $mess->{who} eq 'pasty';
     } else {
         $match = '<title>';
     }

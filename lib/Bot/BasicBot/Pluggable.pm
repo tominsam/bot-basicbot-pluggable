@@ -1,14 +1,12 @@
 package Bot::BasicBot::Pluggable;
 
 use strict;
-use warnings;
+use warnings::register;
 no warnings 'redefine';
 
 use POE;
 use Bot::BasicBot;
-use Carp qw(croak);
-
-our @ISA = qw(Bot::BasicBot);
+use base qw(Bot::BasicBot);
 
 our $VERSION = '0.2';
 
@@ -104,7 +102,7 @@ sub load {
     my $self = shift;
     my $module = shift;
     
-    croak "Already have a handler with that name" if $self->handler($module);
+    die "Already have a handler with that name" if $self->handler($module);
 
     # This is possible a leeeetle bit evil.
     my $file = "Bot/BasicBot/Pluggable/Module/$module.pm";
@@ -115,14 +113,14 @@ sub load {
     ";
     # Ok, it's very evil. Don't bother me, I'm working.
     
-    croak "Can't eval module from $file: $@" if $@;
+    die "Can't eval module from $file: $@" if $@;
 
     my $m;
     eval "\$m = Bot::BasicBot::Pluggable::Module::$module->new(Bot=>\$self, Param=>\\\@_);";
     
-    croak "Can't call $module->new(): $@" if $@;
+    die "Can't call $module->new(): $@" if $@;
 
-    croak "->new didn't return an object" unless $m;
+    die "->new didn't return an object" unless $m;
 
     $self->add_handler($m, $module);
 
@@ -245,8 +243,8 @@ guarantee it gets called first. Names must be unique.
 
 sub add_handler {
     my ($self, $handler, $name) = @_;
-    croak "Need a name for adding a handler" unless $name;
-    croak "Can't load a handler with a duplicate name $name" if $self->{handlers}{lc($name)};
+    die "Need a name for adding a handler" unless $name;
+    die "Can't load a handler with a duplicate name $name" if $self->{handlers}{lc($name)};
     $self->{handlers}{lc($name)} = $handler;    
 }
 
@@ -258,8 +256,8 @@ remove a handler with the given name.
 
 sub remove_handler {
     my ($self, $name) = @_;
-    croak "Need a name for removing a handler" unless $name;
-    croak "Hander $name not defined" unless $self->{handlers}{lc($name)};
+    die "Need a name for removing a handler" unless $name;
+    die "Hander $name not defined" unless $self->{handlers}{lc($name)};
     delete $self->{handlers}{lc($name)};
     return "Done.";
 }
@@ -289,6 +287,9 @@ sub dispatch {
 =head2 said
 
 called as a subclass of Bot::BasicBot, 
+
+=cut
+
 sub said {
     my $self = shift;
     my ($mess) = @_;
@@ -359,8 +360,9 @@ sub help {
 }
 
 sub connected {
-    print STDERR "Bot::BasicBot::connected()\n";
-    shift->dispatch('connected');
+    my $self = shift;
+    print STDERR "Bot::BasicBot::Pluggable connected\n";
+    $self->dispatch('connected');
 }
 
 sub chanjoin {
