@@ -92,13 +92,15 @@ sub said {
     my ($self, $mess, $pri) = @_;
     my $body = $mess->{body};
 
-    return "What am I, a RiscOS machine?" if ($pri == 3 and $body and $body =~ /^!boot$/i);
-    return "Unknown admin command" if ($pri == 3 and $body and $body =~ /^!\w{3,}/);
-
     return unless ($pri == 1);
+    return unless ($body and length($body) > 4);
 
     # we don't care about commands that don't start with '!'
     return 0 unless $body =~ /^!/;
+
+    return "What am I, a RiscOS machine?" if ($pri == 3 and $body and $body =~ /^!boot$/i);
+    return "Unknown admin command" if ($pri == 3);
+
 
     # system commands have to be directly addressed.
     return "System commands must be directly addressed" unless $mess->{address};
