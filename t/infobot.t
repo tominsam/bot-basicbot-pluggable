@@ -97,11 +97,20 @@ ok( ( $reply eq 'foo is maybe' or $reply eq 'foo is one or two' ), "it's one of 
 # notes on dipsy differences:
 # * 'ok' is 'okay.' in a true infobot
 # * literal doesn't highlight =or= like it does =is=
+# * infobots attempt to parse english
+# * there's a difference between 'is' and 'are'
 
 is( direct("forget foo"), "I forgot about foo", "forgotten foo");
 
 is( direct("foo is foo"), "okay.", "simple set" );
 is( direct("foo?"), "foo is foo", "simple get" );
+is( direct("what is foo?"), "foo is foo", "English-language get" ); # fails
+is( direct("where is foo?"), "foo is foo", "Another English get" );
+is( direct("who is foo?"), "foo is foo", "Yet another English get" );
+
+is( direct("foo are things"), "okay.", "simple 'are' set"); # fails
+is( direct("what are foo?"), "foo are things", "English-language 'are' get" );
+
 is( direct("foo is also bar"), "okay.", "simple append");
 is( direct("foo?"), "foo is foo or bar", "appended ok");
 is( direct("foo is also baz or quux"), "okay.", "complex append");
