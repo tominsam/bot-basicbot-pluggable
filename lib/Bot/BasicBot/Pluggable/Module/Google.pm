@@ -22,7 +22,7 @@ Returns google hits for the terms given
 
 =item spell <term>
 
-Returns a google spelling suggestion for the wors given
+Returns a google spelling suggestion for the words given
 
 =back
 

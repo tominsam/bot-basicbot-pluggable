@@ -2,7 +2,6 @@ package Bot::BasicBot::Pluggable::Module::Auth;
 use Bot::BasicBot::Pluggable::Module::Base;
 use base qw(Bot::BasicBot::Pluggable::Module::Base);
 
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Module::Auth

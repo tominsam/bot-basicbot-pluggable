@@ -71,8 +71,13 @@ that we don't know about, and forward them on (with attribution).
 
 =back
 
-=cut
+=head2 TODO
 
+If we need to request an RSS feed that takes a long time to come back, we'll
+time out and drop off the server. oops.
+
+
+=cut
 
 use XML::RSS;
 use LWP::Simple;

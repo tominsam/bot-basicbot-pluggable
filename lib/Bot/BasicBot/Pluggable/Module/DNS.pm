@@ -18,7 +18,11 @@ Commands:
 
 =item nslookup <name>
 
+returns the IP address of the named host
+
 =item dns <ip address>
+
+reuturns the name of the host with that IP
 
 =back
 

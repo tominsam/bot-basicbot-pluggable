@@ -2,15 +2,35 @@ package Bot::BasicBot::Pluggable::Module::Title;
 use Bot::BasicBot::Pluggable::Module::Base;
 use base qw(Bot::BasicBot::Pluggable::Module::Base);
 
+=head1 NAME
+
+Bot::BasicBot::Pluggable::Module::Title
+
+=head1 SYNOPSIS
+
+Speak the title of urls mentioned in channel
+
+=head1 IRC USAGE
+
+None. If the module is loaded, the bot will speak the titles of all web pages mentioned.
+
+=head1 TODO
+
+If you speak the URL of something big, the bot will download it all. It'll probably
+then time out and drop off the server. Oops.
+
+=cut
+
 use LWP::Simple;
 
-our $VERSION = '0.3';
+sub help {
+    return "will speak the title of any wab page mentioned in channel";
+}
 
 sub said {
     my ($self, $mess, $pri) = @_;
 
-    return unless ($pri == 3);
-    #return unless ($mess->{channel} eq "#2lmc" or $mess->{address});
+    return unless ($pri == 0); # respond to everything mentioned.
 
     return unless ($mess->{body} =~ m!(http://\S+)!i);
     my $url = $1;
@@ -44,7 +64,8 @@ sub said {
     $title .= $1;
     $title =~ s/\s+$//;
     $title =~ s/^\s+//;
-    return "[ $title ]";
+    $self->reply($mess, "[ $title ]");
+    return 0;
 }
 
 1;

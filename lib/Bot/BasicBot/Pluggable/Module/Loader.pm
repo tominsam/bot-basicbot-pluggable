@@ -83,8 +83,6 @@ sub said {
     my ($self, $mess, $pri) = @_;
     my $body = $mess->{body};
 
-#    $self->save() if ($pri == 0); # urgh
-
     return undef unless ($pri == 2);
 
     # we don't care about commands that don't start with '!'

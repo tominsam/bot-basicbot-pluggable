@@ -31,7 +31,6 @@ need a better solution, probably involving Tie.
 package Bot::BasicBot::Pluggable::Module::Base;
 
 use Storable;
-use Data::Dumper;
 
 =head2 new()
 
@@ -144,13 +143,21 @@ sub load {
 
 =head2 said(message, priority)
 
-This is I<the> method to override. It's called when the bot sees something said. The first parameter is a Bot::BasicBot 'message' object, as passed to it's 'said' function - see the Bot::BasicBot docs for details. The second parameter is the priority of the message - all modules will have the 'said' function called up to 4 times, with a priority of 0, then 1, then 2, then 3. The first module to return a non-null value 'claims' the message, and the bot will reply to it with the value returned.
+This is I<the> method to override. It's called when the bot sees
+something said. The first parameter is a Bot::BasicBot 'message' object,
+as passed to it's 'said' function - see the Bot::BasicBot docs for
+details. The second parameter is the priority of the message - all
+modules will have the 'said' function called up to 4 times, with a
+priority of 0, then 1, then 2, then 3. The first module to return a
+non-null value 'claims' the message, and the bot will reply to it with
+the value returned.
 
-The exception to this is the '0' priority, which a module MUST NOT respond to. This is so that all modules will at least see all messages.
+The exception to this is the '0' priority, which a module MUST NOT
+respond to. This is so that all modules will at least see all messages.
 
-=cut
+I suggest a method like:
 
-sub said {
+  sub said {
     my ($self, $mess, $pri) = @_;
     my $body = $mess->{body};
 
@@ -159,8 +166,14 @@ sub said {
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
 
+    # do something here
+
     return;
-}
+  }
+
+=cut
+
+sub said { undef }
 
 =head2 connected
 
@@ -168,8 +181,7 @@ called when the bot connects to the server
 
 =cut
 
-sub connected {
-}
+sub connected { undef }
 
 =head2 init
 
@@ -179,8 +191,7 @@ no assumptions.
 
 =cut
 
-sub init {
-}
+sub init { 1 }
 
 =head2 help
 
@@ -205,12 +216,7 @@ well.
 
 =cut
 
-sub emoted {
-    my $self = shift;
-    my $mess = shift;
-    my $priority = shift;
-}
-
+sub emoted { undef }
 
 =head2 tick()
 
@@ -223,9 +229,7 @@ assuming you want to respond to it at all.
 
 =cut
 
-sub tick {
-    undef;
-}
+sub tick { undef }
 
 =head2 schedule_tick(time)
 
@@ -264,10 +268,7 @@ the channel they joined
 
 =cut
 
-sub chanjoin {
-    my $self = shift;
-    my $mess = shift;
-}
+sub chanjoin { undef }
 
 =head2 chanpart($mess)
 
@@ -276,12 +277,6 @@ chanjoin method is.
 
 =cut
 
-sub chanpart {
-    my $self = shift;
-    my $mess = shift;
-
-}
-
-
+sub chanpart { undef }
 
 1;
