@@ -12,9 +12,10 @@ Module::Build->new(
         'Bot::BasicBot' => '0.30',
         'Test::More' => '0.01',
         'URI::Title' => '0.1',
+        'URI::Find::Simple' => 0,
         'DBI'        => 0,
         'DBD::SQLite' => 0,
-        'GetOpt::Long' => 0,
+        'Getopt::Long' => 0,
     },
     script_files => [
       'bin/bot-basicbot-pluggable.pl',
