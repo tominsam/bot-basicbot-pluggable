@@ -117,24 +117,21 @@ sub said {
     $command =~ s/:+$//;
 
     if ($command eq "blog" or $command eq "spool") {
-        unless ($self->zlmc($mess->{who})) {
-          return $self->policy;
-        }
+        return $self->policy unless ($self->zlmc($mess->{who}));
         my $query = $self->{DB}->prepare("INSERT INTO mindblog (timestamp, entry_type, channel, who, data) VALUES (?, ?, ?, ?, ?)");
         $query->execute(time, 1, $mess->{channel}, $mess->{who}, $param);
         $self->{blog_id} = $self->{DB}->{mysql_insertid};
         return 1;
 
     } elsif ($command eq "chump") {
-        unless ($self->zlmc($mess->{who})) {
-          return $self->policy;
-        }
+        return $self->policy unless ($self->zlmc($mess->{who}));
         my $query = $self->{DB}->prepare("INSERT INTO mindblog (timestamp, entry_type, channel, who, data) VALUES (?, ?, ?, ?, ?)");
         $query->execute(time, 1, $mess->{channel}, $mess->{who}, $param);
         $self->{blog_id} = $self->{DB}->{mysql_insertid};
         return "chump $self->{blog_id}";
 
     } elsif ($command eq "bc") {
+        return $self->policy unless ($self->zlmc($mess->{who}));
         if ($self->{blog_id}) {
             do {} while ($param =~ s/^\s*bc\s+//i);
             $self->comment($self->{blog_id}, $mess->{who}, $param);
@@ -144,6 +141,7 @@ sub said {
         }
 
     } elsif ($command eq "blogcomment") {
+        return $self->policy unless ($self->zlmc($mess->{who}));
         my ($blog_id, $param) = split(/\s/, $param, 2);
         if ($blog_id) {
             $self->comment($blog_id, $mess->{who}, $param);
@@ -153,6 +151,7 @@ sub said {
         }
 
     } elsif ($command eq "unblog" and $mess->{address}) {
+        return $self->policy unless ($self->zlmc($mess->{who}));
         if ($param =~ /(\d{8,})/) {
             # timestamp
             my $query = $self->{DB}->prepare("DELETE FROM mindblog WHERE timestamp=?");
