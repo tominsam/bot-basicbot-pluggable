@@ -19,8 +19,8 @@ Module::Build->new(
         'DBM::Deep'    => 0,
     },
     script_files => [
-      'bin/bot-basicbot-pluggable.pl',
-      'bin/bot-basicbot-pluggable-infobot-upgrade.pl',
+      'bin/bot-basicbot-pluggable',
+      'bin/bot-basicbot-pluggable-infobot-upgrade',
     ],
     create_makefile_pl => 'traditional',
 )->create_build_script;

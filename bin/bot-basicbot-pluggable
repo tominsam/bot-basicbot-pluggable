@@ -13,6 +13,7 @@ See perldoc L<Bot::BasicBot::Pluggable::Auth> for details of this.
 =head1 USAGE
 
   bot-basicbot-pluggable.pl --nick MyBot --server irc.perl.org
+
 =head2 SEE ALSO
 
 Bot::BasicBot::Pluggable
@@ -41,11 +42,10 @@ my $bot = Bot::BasicBot::Pluggable->new(
   channels => [ ],
   server => $server,
   nick => $nick,
-
+  charset => "utf8",
   store => {
     type => "DBI",
-    dsn => "dbi:mysql:test",
-    user => 'root',
+    dsn => "dbi:SQLite:bot-basicbot.sqlite",
     table => "basicbot",
   },
 );
