@@ -81,6 +81,7 @@ use base qw(Bot::BasicBot::Pluggable::Module);
 
 use XML::RSS;
 use LWP::Simple ();
+use Data::Dumper;
 use strict;
 use warnings;
 
@@ -166,15 +167,16 @@ sub fallback {
         body => $factoid
       });
       return 1;
-    }
 
-    # a straight reply
-    if ($factoid =~ s/^<reply>\s*//i) {
+    } elsif ($factoid =~ s/^<reply>\s*//i) {
+      # a straight reply
       return $factoid;
-    }
 
-    # normal factoid
-    return "$body $is_are $factoid";
+    } else {
+      # normal factoid
+      return "$body $is_are $factoid";
+
+    }
 
   }
 
@@ -218,6 +220,52 @@ sub fallback {
   return $mess->{address} ? "ok" : 1;
 }
 
+sub get_factoid {
+  my ($self, $object, $literal) = @_;
+  
+  # get a list of factoid hashes
+  my ($is_are, @factoids) = $self->get_raw_factoids($object, $literal);
+
+  # simple is a list of the 'simple' factoids, a is b, etc. These are just
+  # joined together. Alternates are factoids that are an alternative to
+  # the simple factoids, they will randomly be displayed _instead_.
+  my (@simple, @alternatives);
+
+  for (@factoids) {
+    if ($_->{alternate}) {
+      push @alternatives, $_->{text};
+    } else {
+      push @simple, $_->{text};
+    }
+  }
+
+  if ($literal) {
+    # we want a literal string describing the factoids entirely, with
+    # explicit joins between the seperate atoms. We indicate alternatives
+    # with a '|', similarly to the 'real' infobot.
+    return ("=${is_are}=", join (" =or= ",
+                                 @simple, map { "|$_" } @alternatives
+                                )
+           );
+  }
+  
+  # the simple list is one of the alternatives
+  unshift @alternatives, join(" or ", @simple);
+
+  # pick an option at random
+  my $factoid = $alternatives[ rand(@alternatives) ];
+
+  # if there are any RSS directives, get the feed.
+  # TODO - this could be done in a more general way, with plugins
+  # TODO - this blocks. Bad. you can knock the bot off channel by
+  # giving it an RSS feed that'll take a very long time to return.
+  $factoid =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
+
+  return ($is_are, $factoid);
+}
+
+# for a given key, return the raw hashes that are in the store for this
+# factoid.
 sub get_raw_factoids {
   my ($self, $object) = @_;
   my $raw = $self->get( "infobot_".lc($object) )
@@ -225,8 +273,7 @@ sub get_raw_factoids {
 
   my ($is_are, @factoids);
 
-  use Data::Dumper;
-  warn Dumper({ got => $raw });
+  #warn Dumper({ got => $raw });
 
   if (ref($raw)) {
     # it's a deep structure
@@ -245,30 +292,6 @@ sub get_raw_factoids {
   }
   
   return ($is_are, @factoids);
-}
-
-sub get_factoid {
-  my ($self, $object, $literal) = @_;
-  
-  my ($is_are, @factoids) = $self->get_raw_factoids($object, $literal);
-
-  my (@simple, @alternatives);
-
-  for (@factoids) {
-    if ($_->{alternate}) {
-      push @alternatives, $_;
-    } else {
-      push @simple, $_;
-    }
-  }
-  unshift @alternatives, join(" or ", @simple);
-
-  return ("=${is_are}=", join (" =or= ", @alternatives)) if $literal;
-
-  my $factoid = $alternatives[ rand(@alternatives) ];
-  $factoid =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
-
-  return ($is_are, $factoid);
 }
 
 sub add_factoid {

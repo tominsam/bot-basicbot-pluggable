@@ -26,12 +26,30 @@ ok( my $ib = Bot::BasicBot::Pluggable::Module::Infobot->new );
 
 ok( $ib->help, "module has help text" );
 
-# TODO - test infobot interactions
-# TOOD - test active learning
-# TOOD - test passive learning
-# TODO - test active question answering
-# TODO - test passive question answering
-# TODO - test factoid searching
+# by default, the infobot doesn't learn things that it merely overhears
+ok( ! indirect("foo is red"), "passive learning off by default" );
+ok( ! indirect("foo?"), "no answer to passive learn" );
+
+# ..but it will learn things it's told directly.
+is( direct("foo is red"), "ok", "active learning works" );
+is( direct("foo?"), "foo is red", "correct answer to active learn" );
+ok( !indirect("foo?"), "passive questioning off by default" );
+
+# you can turn on the ability to ask questions without addressing the bot
+ok( $ib->set("user_passive_ask", 1), "activate passive ask" );
+is( indirect("foo?"), "foo is red", "passive questioning now on" );
+
+# and the ability to add factoids without addressing the bot
+ok( $ib->set("user_passive_learn", 1), "activate passive learn" );
+is( direct("bar is green"), "ok", "passive learning now works" );
+is( indirect("bar?"), "bar is green", "passive questioning works" );
+
+# you can search factoids, but not in public
+is( direct("search for foo"), "privmsg only, please", "not searched in public");
+is( private("search for foo"), "Keys: 'foo'", "searched for 'foo'");
+
+# you can append strings to factoids
+
 # TODO - test factoid appending
 # TODO - test factoid deletion
 # TODO - test factoid replacement
@@ -40,3 +58,40 @@ ok( $ib->help, "module has help text" );
 # TODO - test stopwords
 # TODO - test very long factoid keys
 # TODO - test literal syntaax
+
+
+
+
+# utility functions
+
+# tell the module something privately
+sub private {
+  my $message = {
+    body => $_[0],
+    who => "test_user",
+    channel => "msg",
+    address => 1,
+  };
+  return $ib->told($message) || $ib->fallback($message);
+}
+
+sub direct {
+  my $message = {
+    body => $_[0],
+    who => "test_user",
+    channel => "#test",
+    address => 1,
+  };
+  return $ib->told($message) || $ib->fallback($message);
+}
+
+# the module has seen something
+sub indirect {
+  my $message = {
+    body => $_[0],
+    who => "test_user",
+    channel => "#test",
+    address => 0,
+  };
+  return $ib->told($message) || $ib->fallback($message);
+}
