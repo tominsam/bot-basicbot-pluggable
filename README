@@ -1,0 +1,115 @@
+Bot/BasicBot/Pluggable version 0.01
+===================================
+
+OVERVIEW
+
+Bot::BasicBot::Pluggable is a modular IRC bot framework that lets you
+write your own modules very simply, or to just use the stock modules for
+a decent out-the-box infobot.
+
+Several modules are installed by default. These are:
+
+Core Modules
+(not really user-visible, these modules are used to manage the bot)
+
+Base    - Not really a module, this is the base class all modules
+          inherit from.
+Auth    - Restricts certain commands to authenticaed users only, so
+          non-admins can't add/remove modules, etc, etc.
+Loader  - Load and unload modules with IRC commands.
+Vars    - Set and unset module vars with IRC commands.
+
+Feature Modules
+
+Seen    - Keeps track of when and where people last spoke, ask the bot
+          'seen <nick>' and it'll tell you when it last saw the
+          person.
+Karma   - Tracks 'karma' for objects - manipulate an object's karma
+          with 'object++' to increase it and 'object--' to decrease it,
+          ask 'karma object' to get the karma of the object.
+Infobot - Tracks infobot-style factiods. Tell the bot 'bob is green',
+          and in the future, asking, 'bot, bob?', the bot will respond
+          with 'bob is green.'.
+Blog    - Implements a chumpbot. When combined with the code in the
+          examples folder, lets you blog to a website from IRC. See
+          http://2lmc.org/spool for an example of it's use. Alas, right
+          now it's not what I'd call usable unless you're prepared to
+          mess with SQL. Read the code.
+DNS     - Do DNS queries from IRC.
+Google  - Do Google searches and spelling checks from IRC.
+Join    - Join and leave channels at the behest of admins.
+Title   - When people mention URLs, it'll get the url and say the title
+          of the page. Very annoying, but I like it.
+
+BBP should work mostly out the box. Install the modules, and copy
+the mind.pl script out of examples/ somewhere. Edit the script, and
+set little details, such as the server, bot name, etc.
+
+There are two ways you can run the bot. The powerful, and default, way
+is to load the 'Loader' module. This does two things. First, it lets you
+load, unload, and reload modules by talking to the bot in an IRC
+channel. Secondly, it keeps track of what modules are loaded, and
+reloads them on bot startup. The simple way of using BBP is to just load
+the modules you want in the script, and not use the dynamic loading
+capability at all. simple.pl in the examples folder is an example of
+this.
+
+Assuming you go for the first method, start the bot, open an IRC query
+window with it, and type the following to set it up:
+
+!load Auth             # loads the Auth module, to stop other people
+                       # stealing your bot.
+!auth admin julia      # log in as 'admin', with the default password.
+!adduser <username> <password>
+                       # create a new user
+!auth <usernmae> <password>
+                       # log in as that user
+!deluser admin         # remove the old admin user.
+
+Now the bot is secure against other people stealing it. Because the
+'Loader' module is always installed, the 'Auth' module will now
+always be loaded, so there will always be protection on it. now let's
+load some simple modules. Notice that things starting with a '!' are
+admin commands, and can only be sued by people with are logged into
+the bot.
+
+!load Seen             # load the 'Seen' module.
+!load Join             # Load the 'Join' module
+join #mychannel        # Join a channel.
+seen dave?             # have we seen dave?
+
+etc,etc.
+
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install (as root)
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+  POE
+  Bot::BasicBot
+  
+The Infobot module needs the following:
+  XML::RSS
+  LWP::Simple
+  
+The Google module needs:
+  Net::Google
+
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2003 Tom Insam <tom@jerakeen.org>
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. 
+
