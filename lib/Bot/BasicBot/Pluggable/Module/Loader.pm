@@ -59,15 +59,16 @@ sub load {
         warn "Can't open settings file: $!\n";
         return;
     }
-    my $reply;
-    while (<LOAD>) {
-        chomp;
-        next unless ($_);
-        next if (lc($_) eq "loader");
-        $status = $self->{Bot}->load($_);
-        $reply .= "Loading $_: $status  ";
-        print STDERR "Loading $_: $status\n";
-        $self->{modules}{lc($_)} = $_;
+    my $reply = "";
+    while (my $mod = <LOAD>) {
+        chomp($mod);
+        next unless ($mod);
+        next if $mod =~ /^\s*$/;
+        next if (lc($mod) eq "loader");
+        my $status = ($self->{Bot}->load($mod)) ? "OK" : "NOT OK";
+        $reply .= "Loading $mod: $status  ";
+        print STDERR "Loading $mod: $status\n";
+        $self->{modules}{lc($mod)} = $mod;
     }
     close LOAD;
     return $reply;
