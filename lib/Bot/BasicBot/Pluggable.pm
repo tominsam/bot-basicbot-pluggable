@@ -6,7 +6,7 @@ no warnings 'redefine';
 
 use POE;
 use Bot::BasicBot;
-use base qw(Bot::BasicBot);
+use base qw( Bot::BasicBot );
 
 our $VERSION = '0.30';
 
@@ -321,6 +321,7 @@ sub dispatch {
 }
 
 sub tick {
+    my $self = shift;
     $self->dispatch('tick');
     return 5;
 }
