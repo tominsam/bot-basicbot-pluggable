@@ -12,7 +12,11 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     seperately.
   - The storage system is decently abstracted out, and has a default that
     does the same thing as the last one.
-  
+  - Gave the bot a default charset of utf8, because I'm a fan of utf8
+  - utterly changed the infobot back-end store system. Updating it will be
+    a pain, I'm sorry, but the last one really sucked. Re-wrote the infobot
+    module to be _readable_, or at least slightly less nasty than before.
+    
 0.30
   - Improved docs
   - Synced version number with Bot::BasicBot again
