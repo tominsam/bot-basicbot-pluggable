@@ -94,7 +94,40 @@ ok( my $reply = direct("foo?"), "got one of the foos" );
 ok( $reply eq 'foo is maybe'
  or $reply eq 'foo is one or two', "it's one of the two");
 
+# blech's torture test, all three in one
+# notes on dipsy differences:
+# * 'ok' is 'okay.' in a true infobot
+# * a true infobot strips spaces between '|' and the factoid 
+#   (see commented test)
+# * literal doesn't highlight =or= like it does =is=
 
+is( direct("forget foo"), "I forgot about foo", "forgotten foo");
+is( direct("foo is foo"), "ok", "simple set" );
+ok( direct("foo?", "foo is foo", "simple get" );
+is( direct("foo is also bar", "ok", "simple append");
+is( direct("foo?", "foo is foo or bar", "appended ok");
+is( direct("foo is also baz or quux", "ok", "complex append");
+is( direct("foo?", "foo is foo or bar or baz or quux", "also ok");
+is( direct("foo is also |a silly thing", "ok", "alternate appended");
+#is( direct("foo is also | a silly thing", "ok", ""); # should be identical in
+# result to test above, but isn't
+# could test from now on like Tom tests replies above, but ho hum
+is( direct("literal foo?", 
+           "foo is foo =or= bar =or= baz =or= quux =or= |a silly thing", 
+           "entire factoid looks right");
+is( direct("foo is also |<reply>this a very silly thing", "ok", "and a reply");
+is( direct("literal foo?", 
+           "foo is foo =or= bar =or= baz =or= quux =or= |a silly thing =or= |<reply>this a very silly thing", 
+           "entire entry looks fine to me");
+
+# run through a few times, and see what we get out
+foreach my $i (0..9) {
+ok( my $reply = direct("foo?"), "got one of the foos" );
+ok( $reply eq 'foo is foo or bar or baz or quux'
+ or $reply eq 'foo is a silly thing', 
+ or $reply eq 'this is a very silly thing', 
+              "it's one of the three");
+}
 
 
 # utility functions
