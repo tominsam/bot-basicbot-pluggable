@@ -17,6 +17,7 @@ None. If the module is loaded, the bot will speak the titles of all web pages me
 =cut
 
 use URI::Title qw(title);
+use URI::Find::Simple qw(list_uris);
 
 sub help {
     return "will speak the title of any wab page mentioned in channel";
@@ -29,8 +30,12 @@ sub said {
     return unless ($mess->{channel} eq '#2lmc');
     return unless ($mess->{body} =~ m!(http://[^\|\s\]]+)!i);
 
-    my $title = title($1) or return; # "Can't get $url";
-    $self->reply($mess, "[ $title ]");
+    my $reply = "";
+    for (list_uris($mess->{body})) {
+      my $title = title($_);
+      $reply .= "[ $title ] " if $title;
+    }
+    $self->reply($mess, $reply);
 
     return 0;
 }
