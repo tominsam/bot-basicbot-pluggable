@@ -86,10 +86,13 @@ is( direct("literal bar?"), "bar =is= yellow =or= fum", "bar" );
 
 
 # alternate factoids ('|')
-is( direct("foo is one"), "foo is one");
-is( direct("foo is also two"), "foo is also two");
-is( direct("foo is also |maybe"), "foo is also maybe");
-is( direct("foo?"), "" );
+is( direct("foo is one"), "ok", "foo is one");
+is( direct("foo is also two"), "ok", "foo is also two");
+is( direct("foo is also |maybe"), "ok", "foo is also maybe");
+
+ok( my $reply = direct("foo?"), "got one of the foos" );
+ok( $reply eq 'foo is maybe'
+ or $reply eq 'foo is one or two', "it's one of the two");
 
 
 
