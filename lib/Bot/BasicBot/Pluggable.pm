@@ -134,14 +134,20 @@ use Bot::BasicBot::Pluggable::Store::DBI;
 
 sub init {
   my $self = shift;
-  warn "Creating store object\n";
 
-#  $self->{store_object} = Bot::BasicBot::Pluggable::Store::Storable->new();
-  $self->{store_object} = Bot::BasicBot::Pluggable::Store::DBI->new(
-    dsn => "dbi:mysql:test",
-    user => 'root',
-    table => "basicbot",
-  );
+  $self->{store} ||= {
+    type => "Storable",
+  };
+
+  my $type = delete $self->{store}{type};
+
+  $self->{store_object} ||= "Bot::BasicBot::Pluggable::Store::$type"->new(%{$self->{store}});
+
+#  $self->{store_object} ||= Bot::BasicBot::Pluggable::Store::DBI->new(
+#    dsn => "dbi:mysql:test",
+#    user => 'root',
+#    table => "basicbot",
+#  );
 
   return 1;
 }
@@ -302,6 +308,10 @@ returns the object store associated with the bot. See L<Bot::BasicBot::Pluggable
 
 sub store {
   my $self = shift;
+  if (@_) {
+    $self->{store} = shift;
+    return $self;
+  }
   return $self->{store_object};
 }
 

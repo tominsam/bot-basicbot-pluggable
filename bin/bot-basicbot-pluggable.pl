@@ -24,11 +24,12 @@ use strict;
 use Bot::BasicBot::Pluggable;
 use Getopt::Long;
 
-my ($nick, $server);
+my $nick = "mindtest";
+my $server = "london.irc.perl.org";
 
 my $result = GetOptions(
-    "nick=s" => \$nick,
-    "server=s" => \$server,
+  "nick=s" => \$nick,
+  "server=s" => \$server,
 );
 
 unless ($result and $nick and $server) {
@@ -37,9 +38,16 @@ unless ($result and $nick and $server) {
 }
 
 my $bot = Bot::BasicBot::Pluggable->new(
-    channels => [ ],
-    server => $server,
-    nick => $nick,
+  channels => [ ],
+  server => $server,
+  nick => $nick,
+
+  store => {
+    type => "DBI",
+    dsn => "dbi:mysql:test",
+    user => 'root',
+    table => "basicbot",
+  },
 );
 
 # nice to load this one explicitly
