@@ -81,7 +81,6 @@ use base qw(Bot::BasicBot::Pluggable::Module);
 
 use XML::RSS;
 use LWP::Simple ();
-use Data::Dumper;
 use strict;
 use warnings;
 
@@ -275,8 +274,6 @@ sub get_raw_factoids {
 
   my ($is_are, @factoids);
 
-  #warn Dumper({ got => $raw });
-
   if (ref($raw)) {
     # it's a deep structure
     $is_are = $raw->{is_are};
@@ -292,7 +289,7 @@ sub get_raw_factoids {
       push @factoids, { alternate => $alt, text => $text };
     }
   }
-  
+
   return ($is_are, @factoids);
 }
 
@@ -320,8 +317,6 @@ sub add_factoid {
     factoids => \@current,
   };
 
-  #warn Dumper({ setting => $set });
-  
   # put the list back into the store.
   $self->set( "infobot_".lc($object), $set);
   
