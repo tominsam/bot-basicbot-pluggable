@@ -12,6 +12,7 @@ Module::Build->new(
         'Bot::BasicBot' => '0.30',
         'Test::More' => '0.01',
         'Pod::Coverage' => '0.01',
+        'URI::Title' => '0.1',
     },
     create_makefile_pl => 'traditional',
 )->create_build_script;
