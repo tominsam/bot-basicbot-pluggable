@@ -20,7 +20,6 @@ Module::Build->new(
     },
     script_files => [
       'bin/bot-basicbot-pluggable',
-      'bin/bot-basicbot-pluggable-infobot-upgrade',
     ],
     create_makefile_pl => 'traditional',
 )->create_build_script;
