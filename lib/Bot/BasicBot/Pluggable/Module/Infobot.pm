@@ -105,7 +105,6 @@ sub said {
     $body =~ s/^\s+//;
     
     if ($body =~ s/^:INFOBOT:REPLY (\S+) (.*)$// and $pri == 0) {
-        warn 1;
         my $return = $2;
         my $infobot_data = $self->{remote_infobot}{$1};
         my ($object, $db, $factoid) = ($return =~ /^(.*) =(\w+)=> (.*)$/);
