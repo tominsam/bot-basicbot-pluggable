@@ -5,15 +5,20 @@ use lib qw(./lib);
 
 use Test::More no_plan => 1;
 
-use_ok('Bot::BasicBot::Pluggable');
-use_ok('Bot::BasicBot::Pluggable::Module::Base');
+use Bot::BasicBot::Pluggable;
+use Bot::BasicBot::Pluggable::Module;
 
-ok(my $base = Bot::BasicBot::Pluggable::Module::Base->new(), "created base module");
+our $store;
+no warnings 'redefine';
+sub Bot::BasicBot::Pluggable::Module::store {
+  $store ||= Bot::BasicBot::Pluggable::Store->new;
+}
+
+ok(my $base = Bot::BasicBot::Pluggable::Module->new(), "created base module");
 ok($base->var('test', 'value'), "set variable");
 ok($base->var('test') eq 'value', 'got variable');
-ok($base->save(), "saved settings");
 
-ok($base = Bot::BasicBot::Pluggable::Module::Base->new(), "created new base module");
+ok($base = Bot::BasicBot::Pluggable::Module->new(), "created new base module");
 ok($base->var('test') eq 'value', 'got old variable');
 
 ok($base->unset('test'), 'unset variable');
@@ -24,5 +29,3 @@ ok($base->can($_), "'$_' exists")
   for (qw(said connected tick emoted init));
 
 ok($base->help, "help returns something");
-
-ok(unlink("Base.storable"), "Settings file deleted");

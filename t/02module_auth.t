@@ -5,8 +5,14 @@ use lib qw(./lib);
 
 use Test::More no_plan => 1;
 
-use_ok('Bot::BasicBot::Pluggable');
-use_ok('Bot::BasicBot::Pluggable::Module::Auth');
+use Bot::BasicBot::Pluggable;
+use Bot::BasicBot::Pluggable::Module::Auth;
+
+our $store;
+no warnings 'redefine';
+sub Bot::BasicBot::Pluggable::Module::store {
+  $store ||= Bot::BasicBot::Pluggable::Store->new;
+}
 
 ok(my $auth = Bot::BasicBot::Pluggable::Module::Auth->new(), "created auth module");
 
@@ -30,8 +36,6 @@ ok(command("!auth bob bob"), "logged in as bob");
 ok(command("!passwd bob dave"), "changed password");
 ok(command("!auth bob dave"), "tried login");
 ok($auth->authed('bob'), "authed");
-
-ok(unlink("Auth.storable"), "removed settings file");
 
 sub command {
   my $body = shift;
