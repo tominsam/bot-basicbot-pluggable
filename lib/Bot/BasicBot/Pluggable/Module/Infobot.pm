@@ -82,6 +82,7 @@ time out and drop off the server. oops.
 use XML::RSS;
 use LWP::Simple;
 use strict;
+use warnings;
 
 sub init {
     my $self = shift;
@@ -191,14 +192,14 @@ sub said {
     return unless ($pri==3);
     return unless ($mess->{address} or $self->{store}{vars}{passive});
     return unless ($body =~ /\s+(is)\s+/i or $body =~ /\s+(are)\s+/i);
-    my $is_are = $1;
+    my $is_are = $1 or return;
 
-    my ($object, $description) = split(/\s+$is_are\s+/i, $body, 2);
+    my ($object, $description) = split(/\s+${is_are}\s+/i, $body, 2);
 #    $description =~ s/\.\s.*$//;
 
     my $replace = 1 if ($object =~ s/no,?\s*//i);
 
-    my @stopwords = split(/\s*,?\s*/, $self->{store}{vars}{stopwords});
+    my @stopwords = split(/\s*,?\s*/, $self->{store}{vars}{stopwords} || "");
     return if grep(/^\Q$object$/i, @stopwords);
                 
     if (my $old_factoid = $self->get_factoid($object)) {
