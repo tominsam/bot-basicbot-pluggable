@@ -147,6 +147,52 @@ sub load {
     return $self->{store};
 }
 
+=head2 say(message)
+
+passing through to the underlying Bot::BasicBot object, this method lets
+you send messages without replying to a said() call, eg:
+
+  $self->say({ who => 'tom', body => 'boo', channel => 'msg' });
+
+=cut
+
+sub say {
+  my $self = shift;
+  return $self->{Bot}->say(@_);
+}
+
+=head2 reply(message, body)
+
+replies to the given message with the given text. Another passthrough to the
+Bot::BasicBot object.
+
+=cut
+
+sub reply {
+  my $self = shift;
+  return $self->{Bot}->reply(@_);
+}
+
+=head2 tell(nick / channel, message)
+
+convenience method to send a message to the given nick or channel, will send
+a privmsg if a nick is given, or a public for a channel.
+
+  $self->tell('tom', "hello there, fool");
+
+=cut
+
+sub tell {
+  my $self = shift;
+  my $target = shift;
+  my $body = shift;
+  if ($target =~ /^#/) {
+    $self->say({ channel => $target, body => $body });
+  } else {
+    $self->say({ channel => 'msg', body => $body, who => $target });
+  }
+}
+
 =head2 said(message, priority)
 
 This is I<the> method to override. It's called when the bot sees

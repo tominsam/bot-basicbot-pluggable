@@ -9,17 +9,18 @@ use strict;
 use Bot::BasicBot::Pluggable;
 
 my $bot = Bot::BasicBot::Pluggable->new( channels => [ ],
-                                         server => "london.rhizomatic.net",
+                                         server => "london.irc.perl.org",
                                          nick => "jerabot",
                                          );
                                          
 
 $bot->load("Seen");
 
-my $google = $bot->load("Google");
-$google->set("google_key", "xxxxxxxxxxxxxxx");
+#my $google = $bot->load("Google");
+#$google->set("google_key", "xxxxxxxxxxxxxxx");
 
 $bot->load("Infobot");
+$bot->load("Title");
 
 $bot->run();
 

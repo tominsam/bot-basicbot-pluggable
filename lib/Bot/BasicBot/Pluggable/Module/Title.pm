@@ -14,14 +14,23 @@ Speak the title of urls mentioned in channel
 
 None. If the module is loaded, the bot will speak the titles of all web pages mentioned.
 
-=head1 TODO
-
-If you speak the URL of something big, the bot will download it all. It'll probably
-then time out and drop off the server. Oops.
-
 =cut
 
-use LWP::Simple;
+use LWP::UserAgent;
+use HTTP::Request;
+use HTTP::Response;
+
+sub get {
+    my $url = shift;
+    my $ua = LWP::UserAgent->new;
+    $ua->timeout(20);
+    $ua->max_size(16384);
+    my $req = HTTP::Request->new(GET => $url);
+    $req->header( Range => 'bytes=0-16384' );
+    my $res = $ua->request($req);
+    return unless $res->is_success;
+    return $res->content;
+}
 
 sub help {
     return "will speak the title of any wab page mentioned in channel";
@@ -36,7 +45,7 @@ sub said {
     my $url = $1;
 
     my $data = get($url) or return; # "Can't get $url";
-
+    
     my $title;
     my $match;
 
