@@ -105,6 +105,7 @@ sub said {
     $body =~ s/^\s+//;
     
     if ($body =~ s/^:INFOBOT:REPLY (\S+) (.*)$// and $pri == 0) {
+        warn 1;
         my $return = $2;
         my $infobot_data = $self->{remote_infobot}{$1};
         my ($object, $db, $factoid) = ($return =~ /^(.*) =(\w+)=> (.*)$/);
@@ -146,7 +147,7 @@ sub said {
         return 1;
     }
 
-    if ( $body =~ s/\?$// and $mess->{address} and $pri == 3) {
+    if ( $body =~ s/\?+$// and $mess->{address} and $pri == 3) {
         my $literal = 1 if ($body =~ s/^literal\s+//i);
 
         my $factoid;
@@ -206,7 +207,7 @@ sub said {
 #    $description =~ s/\.\s.*$//;
 
     return if length($object) > 25;
-    
+
     my $replace = 1 if ($object =~ s/no,?\s*//i);
 
     my @stopwords = split(/\s*,?\s*/, $self->get("user_stopwords") || "");
@@ -236,13 +237,15 @@ sub get_factoid {
         return $factoid;
     }
 
-    if ($self->get("user_ask") and $mess) {
+    my $to_ask = $from || $self->get("user_ask");
+    if ($to_ask and $mess) {
         my $id = "<" . int(rand(10000)) . ">";
         $self->{remote_infobot}{$id} = $mess;
-        $self->bot->say(who=>$from || $self->get("user_ask"),
-                          channel=>'msg',
-                          body=>":INFOBOT:QUERY $id $object"
-                         );
+        $self->bot->say(
+            who => $to_ask,
+            channel=>'msg',
+            body=>":INFOBOT:QUERY $id $object"
+        );
     }
     return undef;
 }

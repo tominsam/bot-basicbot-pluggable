@@ -68,7 +68,7 @@ sub said {
         my $module = $self->bot->module($mod);
         return "No such module" unless $module;
         my @vars = map { s/^user_// ? $_ : () } $module->store_keys();
-        return "$param has no vars" unless @vars;
+        return "$mod has no vars" unless @vars;
         return "Variables for $mod: " .
           join ", ", map { "'$_' => '".$module->get("user_$_")."'" } @vars;
     }
