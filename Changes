@@ -1,0 +1,59 @@
+Revision history for Perl extension Bot::BasicBot::Pluggable.
+
+0.01  Mon Feb 24 17:08:02 2003
+  - original version; created by h2xs 1.22
+
+0.011 Mon Feb 24 18:00:00 2003
+  - oops.
+
+0.04
+  - release to coincide with Simon's release of Bot::Basicbot,
+    version number bumped to match.
+  - therefore the first release that actually Worked out the box.
+
+0.05
+  - Better documentation
+  - Vars changable through better interface.
+
+0.30
+  - Improved docs
+  - Synced version number with Bot::BasicBot again
+  - Added NINJA support
+  - Moved to Module::Build-based module layout
+  - Huge docs improvement, based on feedback from people who clearly had no
+    idea what I waas smoking at the time.
+  - Decent examples in examples/, and copies on the web page for people
+    who use CPAN
+  - Removed the Blog and Shout modules - blog is to be spun off into a
+    seperate module, Shout was just stupid.
+  - Support for loading modules from a 'modules' folder in cwd as well
+    as from the main perl lib path.
+  - The bot is a lot less case-sensitive. Still sensitive for loading modules,
+    but all the help, etc commands are more friendly.
+  - Removed 'reply' method (now in Bot::BasicBot)
+  - Slight module API changes, nothing significant, and I don't know of any
+    3rd party modules anyway:
+    - Added a 'tick' callback that happens every 5 seconds.
+    - Added a 'reply' local method that mirrors the Bot::BasicBot reply.
+    - Added a 'say' method that calls the Bot::BasicBot say.
+    - Added a very simple 'tell' method for simple statements
+    - Added an 'emoted' callback that works identically to the 'said'
+      callback
+    - Added a 'chanjoin' callback, called when someone joins a channel
+    - Added a 'chanpart' callback, called when someone leaves a channel
+  - Module changes (other than doc improvements):
+    - Auth
+      - Fixed silly bug that meant you didn't actually need to auth
+      - Now requires direct addressing
+      - Smarter about ignoring things that aren't admin commands
+    - Blog
+      - Removed. Look for Bot::BasicBot::Pluggable::Module::Blog, coming
+        soon!
+    - Spell
+      - Fixed a spelling mistake
+    - Infobot
+      - Fixed a bunck of annoying parser bugs. I need to re-write the whole
+        thing soon, though.
+    - Karma
+      - Removed case-sensitivity in karma objects.
+ 
