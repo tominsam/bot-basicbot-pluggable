@@ -7,16 +7,20 @@ Bot::BasicBot::Pluggable::Module::Infobot
 Does infobot things - basically remmebers and returns factoids. Will ask
 another infobot about factoids that it doesn't know about, if you want.
 
+Due to persistent heckling from the peanut gallery, does things pretty much 
+exactly like the classic infobot, even when they're not necessarily that 
+useful (for example, saying "okay." rather than "OK, water is wet.").
+
 =head1 IRC USAGE
 
 Assume the bot is called 'eric'. Then you'd use the infobot as follows.
 
   me: eric, water is wet.
-  eric: Ok, water is wet.
+  eric: okay.
   me: water?
   eric: water is wet.
   me: eric, water is also blue.
-  eric: ok, water is also blue.
+  eric: okay.
   me: eric, water?
   eric: water is wet or blue.
   
@@ -25,7 +29,7 @@ etc, etc.
 a response that begins <reply> will have the '<noun> is' stripped, so
 
   me: eric, what happen is <reply>somebody set us up the bomb
-  eric: ok, what happen is <reply>somebody set us up the bomb.
+  eric: okay.
   me: what happen?
   eric: somebody set us up the bomb
 
@@ -36,7 +40,7 @@ instead of said. Putting '|' characters in the reply indicates different
 possible answers, and the bot will pick one at random.
 
   me: eric, dice is one|two|three|four|five|six
-  eric: ok, dice is one|two|three|four|five|six
+  eric: okay.
   me: eric, dice?
   eric: two.
   me: eric, dice?
@@ -45,7 +49,7 @@ possible answers, and the bot will pick one at random.
 Finally, you can read RSS feeds:
 
   me: eric, jerakeen.org is <rss="http://jerakeen.org/index.rdf">
-  eric: ok, jerakeen.org is...
+  eric: okay.
   
 ok, you get the idea.
 
@@ -71,7 +75,6 @@ that we don't know about, and forward them on (with attribution).
 
 If we need to request an RSS feed that takes a long time to come back, we'll
 time out and drop off the server. oops.
-
 
 =cut
 
@@ -219,7 +222,7 @@ sub fallback {
   $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description) );
 
   # return an ack if we were addressed only
-  return $mess->{address} ? "ok" : 1;
+  return $mess->{address} ? "okay." : 1;
 }
 
 sub get_factoid {
