@@ -8,7 +8,7 @@ use POE;
 use Bot::BasicBot;
 use base qw(Bot::BasicBot);
 
-our $VERSION = '0.2';
+our $VERSION = '0.30';
 
 =head1 NAME
 
@@ -41,7 +41,8 @@ allowing for pluggable modules
 
 =head2 Running the bot
 
-There are two useful ways you can use a Pluggable bot. 
+There are two useful ways you can use a Pluggable bot. The simple way and the
+flexible way. The simple way is:
 
   # Load some useful modules
   my $infobot_module = $bot->load("Infobot");
@@ -52,6 +53,41 @@ There are two useful ways you can use a Pluggable bot.
   $google_module->set("google_key", "some google key");
   
   $bot->run();
+
+This lets you run a bot with a few modules, but not change those modules
+during the run of the bot. The complex way is as follows:
+
+  # Load the loader module
+  $bot->load('Loader');
+  
+  # run the bot
+  $bot->run();
+
+This is simpler but needs setup once the bot is joined to a server. the Loader
+module lets you talk to the bot in-channel and tell it to load and unload other
+modules. The first one you'll want to load is the 'Auth' module, so that other
+people can't load and unload modules without permission. Then you need to log in
+as an admin and change your password.
+
+  (in a query)
+  !load Auth
+  !auth admin julia
+  !password julia new_password
+  !auth admin new_password
+  
+Once you've done this, your bot is safe against other IRC users. Now you can tell
+it to load and unload other modules any time:
+
+  !load Seen
+  !load Google
+  !load Join
+
+The join module lets you tell the bot to join and leave channels:
+
+  !join #mychannel
+  !leave #someotherchannel
+  
+The perldoc pages for the various modules will list other commands.
 
 
 =head1 DESCRIPTION

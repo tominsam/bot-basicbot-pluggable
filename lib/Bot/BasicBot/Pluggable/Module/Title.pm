@@ -10,16 +10,16 @@ sub said {
     my ($self, $mess, $pri) = @_;
 
     return unless ($pri == 3);
-    return unless ($mess->{channel} eq "#2lmc" or $mess->{address});
+    #return unless ($mess->{channel} eq "#2lmc" or $mess->{address});
 
     return unless ($mess->{body} =~ m!(http://\S+)!i);
     my $url = $1;
-    
+
     my $data = get($url) or return; # "Can't get $url";
 
     my $title;
     my $match;
-    
+
     if ($url =~ /theregister\.co\.uk/i) {
         $match = '<div class="storyhead">';
     } elsif ($url =~ /timesonline\.co\.uk/i) {
@@ -38,7 +38,7 @@ sub said {
     } else {
         $match = '<title>';
     }
-    
+
     $data =~ /$match([^<]+)/im or return; # "Can't find title";
 
     $title .= $1;

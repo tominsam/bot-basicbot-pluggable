@@ -78,6 +78,7 @@ architecture bug.
 
 sub init {
     my $self = shift;
+    
     unless ($self->{store}{admin}) {
         $self->{store}{admin}{password} = "julia"; # mmmm, defaults.
     }
@@ -97,11 +98,11 @@ sub said {
 
     return unless ($pri == 1);
 
-    # system commands have to be directly addressed.
-    return 0 unless $mess->{address};
-
     # we don't care about commands that don't start with '!'
     return 0 unless $body =~ /^!/;
+
+    # system commands have to be directly addressed.
+    return "System commands must be directly addressed" unless $mess->{address};
 
     if ($body =~ /^!auth\s+(\w+)\s+(\w+)/) {
         my $user = $1;

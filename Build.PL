@@ -9,9 +9,9 @@ Module::Build->new(
     license => 'perl',
     requires => {
         'perl'        => '5.6.0',
-        'Bot::BasicBot' => '0.07',
-        'Test::More' => 0,
-        'Pod::Coverage' => 0,
+        'Bot::BasicBot' => '0.30',
+        'Test::More' => '0.01',
+        'Pod::Coverage' => '0.01',
     },
     create_makefile_pl => 'traditional',
 )->create_build_script;
