@@ -190,6 +190,7 @@ sub said {
     }
 
     if ($pri==2 and $mess->{address} and $body =~ /^search\s+for\s+(.*)$/i) {
+        return "privmsg only, please" unless $mess->{channel} eq "msg";
         my @results = $self->search_factoid(split(/\s+/, $1)) or return;
         return "Keys: ".join(", ", map { "'$_'" } @results);
     }
@@ -248,7 +249,7 @@ sub get_factoid {
 sub search_factoid {
     my ($self, @terms) = @_;
 
-    my $factoids;
+    my $factoids = [];
     FACTOID: for my $key (keys(%{ $self->{store}{infobot} })) {
       my $factoid = $self->{store}{infobot}{$key}->[-1];
       next unless $factoid->{description};
