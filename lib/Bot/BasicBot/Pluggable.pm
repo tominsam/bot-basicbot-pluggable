@@ -205,22 +205,6 @@ sub unload {
     return "Removed";
 }
 
-=item reply($mess, $body)
-
-Reply to a Bot::BasicBot message $mess. Will reply to an incoming message
-with the text '$body', in a privmsg if $mess was a privmsg, in channel if
-not, and prefixes if $mess was prefixed. Mostly a shortcut method.
-
-=cut
-
-sub reply {
-    my $self = shift;
-    my ($mess, $body) = @_;
-    my %hash = %$mess;
-    $hash{body} = $body;
-    return $self->say(%hash);
-}
-
 =item module($module)
 
 returns the handler object for the loaded module '$module'. used, eg, to get
@@ -345,11 +329,7 @@ sub said {
             $self->reply($mess, "Error calling said() for $who: $@") if $@;
             if ($response and $priority) {
                 return if ($response eq "1");
-                my $shorter;
-                while ($response) {
-                    $shorter .= substr($response, 0, 300, "");
-                }
-                $self->reply($mess, $_) for split(/\n/, $shorter);
+                $self->reply($mess, $response);
                 return;
             }
         }
