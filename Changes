@@ -7,6 +7,11 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
   - changed all the core modules to use the proget get/set store methods
   - Loader now uses the standard store system.
   - Installed shell script to run B::B::P.
+  - The Infobot module can now passsively learn and passively answer questions
+    (ie without requiring direct addressing) and you can set these options
+    seperately.
+  - The storage system is decently abstracted out, and has a default that
+    does the same thing as the last one.
   
 0.30
   - Improved docs

@@ -45,8 +45,6 @@ put things that aren't scalars in the object store.
 package Bot::BasicBot::Pluggable::Module;
 use strict;
 use warnings;
-use Bot::BasicBot::Pluggable::Store::Storable;
-use Storable;
 
 =head2 new()
 

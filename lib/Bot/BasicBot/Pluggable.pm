@@ -1,16 +1,3 @@
-package Bot::BasicBot::Pluggable;
-use strict;
-use warnings;
-no warnings 'redefine';
-
-use POE;
-use Bot::BasicBot;
-use base qw( Bot::BasicBot );
-
-use Bot::BasicBot::Pluggable::Module;
-
-our $VERSION = '0.40';
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable - extension to the simple irc bot base class
@@ -130,11 +117,31 @@ perldoc Bot::BasicBot::Pluggable::Module::Base for the details of the module API
 
 =cut
 
+package Bot::BasicBot::Pluggable;
+use strict;
+use warnings;
+
+our $VERSION = '0.40';
+
+use POE;
+use Bot::BasicBot;
+use base qw( Bot::BasicBot );
+
+use Bot::BasicBot::Pluggable::Module;
+use Bot::BasicBot::Pluggable::Store::Storable;
+use Bot::BasicBot::Pluggable::Store::DBI;
+
+
 sub init {
   my $self = shift;
   warn "Creating store object\n";
 
-  $self->{store_object} = Bot::BasicBot::Pluggable::Store::Storable->new();
+#  $self->{store_object} = Bot::BasicBot::Pluggable::Store::Storable->new();
+  $self->{store_object} = Bot::BasicBot::Pluggable::Store::DBI->new(
+    dsn => "dbi:mysql:test",
+    user => 'root',
+    table => "basicbot",
+  );
 
   return 1;
 }
