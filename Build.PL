@@ -16,6 +16,7 @@ Module::Build->new(
         'DBI'        => 0,
         'DBD::SQLite' => 0,
         'Getopt::Long' => 0,
+        'DBM::Deep'    => 0,
     },
     script_files => [
       'bin/bot-basicbot-pluggable.pl',

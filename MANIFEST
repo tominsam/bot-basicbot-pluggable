@@ -1,10 +1,17 @@
 Build.PL
 Changes
+bin/bot-basicbot-pluggable-infobot-upgrade.pl
+bin/bot-basicbot-pluggable.pl
+bin/storable2dbi.pl
 examples/chump.cgi
 examples/chump.tem
 examples/mind.pl
 examples/simple.pl
 lib/Bot/BasicBot/Pluggable.pm
+lib/Bot/BasicBot/Pluggable/Store.pm
+lib/Bot/BasicBot/Pluggable/Store/DBI.pm
+lib/Bot/BasicBot/Pluggable/Store/Deep.pm
+lib/Bot/BasicBot/Pluggable/Store/Storable.pm
 lib/Bot/BasicBot/Pluggable/Module.pm
 lib/Bot/BasicBot/Pluggable/Module/Auth.pm
 lib/Bot/BasicBot/Pluggable/Module/Base.pm
@@ -23,4 +30,6 @@ README
 t/00bootstrap.t
 t/01module_base.t
 t/02module_auth.t
+t/03store.t
+t/03store_deep.t
 META.yml
