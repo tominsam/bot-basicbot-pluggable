@@ -26,21 +26,21 @@ sub save {
 
   for my $name ( @modules ) {
     my $filename = $name.".storable";
-    warn "Saving to $filename\n";
+    #warn "Saving to $filename\n";
     nstore($self->{store}{$name}, $filename)
       or die "cannot save to $filename";
   }
-  warn "Done\n";
+  #warn "Done\n";
 }
 
 sub load {
   my $self = shift;
   for my $file (<*.storable>) {
-    warn "Loading storable file $file..\n";
+    #warn "Loading storable file $file..\n";
     my ($name) = $file =~ /^(.*?)\.storable$/;
     $self->{store}{$name} = retrieve($file);
   }
-  warn "Done.\n";
+  #warn "Done.\n";
 }
 
 1;

@@ -104,7 +104,7 @@ sub said {
 
     # ..and in privmsg
     return "Admin commands in privmsg only, please"
-      unless $mess->{channel} eq 'msg';
+      unless !defined $mess->{channel} || $mess->{channel} eq 'msg';
 
     if ($body =~ /^!auth\s+(\w+)\s+(\w+)/) {
         my $user = $1;

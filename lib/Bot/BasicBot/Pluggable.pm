@@ -139,9 +139,12 @@ sub init {
     type => "Storable",
   };
 
-  my $type = delete $self->{store}{type};
+  my $type = delete $self->{store}{type} || "Storable";
 
-  $self->{store_object} ||= "Bot::BasicBot::Pluggable::Store::$type"->new(%{$self->{store}});
+  my $store_class = "Bot::BasicBot::Pluggable::Store::$type";
+  eval "require $store_class";
+  die "Couldn't load $store_class - $@" if $@;
+  $self->{store_object} ||= $store_class->new(%{$self->{store}});
 
 #  $self->{store_object} ||= Bot::BasicBot::Pluggable::Store::DBI->new(
 #    dsn => "dbi:mysql:test",

@@ -56,8 +56,11 @@ sub create_table {
     store_key TEXT,
     store_value LONGBLOB
   )");
-  $self->dbh->do("CREATE INDEX lookup ON $table ( namespace(10), store_key(10) )");
-
+  return unless $self->{create_index};
+  eval {
+      $self->dbh->do("CREATE INDEX lookup ON $table ( namespace(10), store_key(10) )");
+  };
+  
 }
 
 sub set {

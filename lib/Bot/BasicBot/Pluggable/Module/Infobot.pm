@@ -234,11 +234,15 @@ sub said {
 sub get_factoid {
     my ($self, $object, $mess, $from) = @_;
 
-    my $factoid;
-    if ($factoid = ( $self->get( "infobot_".lc($object) ) || [] )->[-1]
-       and $factoid->{description} ) {
-        return $factoid;
+    my $factoids = $self->get( "infobot_".lc($object) );
+
+    if ($factoids) {
+      while (my $chosen = $factoids->[rand(@$factoids)]) { 
+          return $chosen if $chosen->{description};
+       }
     }
+
+
 
     my $to_ask = $from || $self->get("user_ask");
     if ($to_ask and $mess) {
