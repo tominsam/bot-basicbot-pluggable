@@ -27,15 +27,13 @@ sub said {
     my ($self, $mess, $pri) = @_;
 
     return unless ($pri == 0); # respond to everything mentioned.
-    return unless ($mess->{channel} eq '#2lmc');
-    return unless ($mess->{body} =~ m!(http://[^\|\s\]]+)!i);
 
     my $reply = "";
     for (list_uris($mess->{body})) {
       my $title = title($_);
       $reply .= "[ $title ] " if $title;
     }
-    $self->reply($mess, $reply);
+    $self->reply($mess, $reply) if $reply;
 
     return 0;
 }
