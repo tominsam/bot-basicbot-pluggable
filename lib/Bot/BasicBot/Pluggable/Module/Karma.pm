@@ -1,7 +1,3 @@
-package Bot::BasicBot::Pluggable::Module::Karma;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Module::Karma
@@ -35,6 +31,11 @@ Lists the good and bad things said about <thing>
 =back
 
 =cut
+
+package Bot::BasicBot::Pluggable::Module::Karma;
+use warnings;
+use strict;
+use base qw(Bot::BasicBot::Pluggable::Module);
 
 sub said {
     my ($self, $mess, $pri) = @_;
@@ -85,7 +86,7 @@ sub get_karma {
     $object = lc($object);
     $object =~ s/-/ /g;
 
-    my @changes = @{$self->{store}{karma}{$object}};
+    my @changes = @{ $self->get("karma_$object") };
 
     my @good;
     my @bad;
@@ -113,8 +114,10 @@ sub add_karma {
     $object = lc($object);
     $object =~ s/-/ /g;
     my $row = { reason=>$reason, who=>$who, timestamp=>time, positive=>$good };
-    push @{$self->{store}{karma}{$object}}, $row;
-    $self->save();
+
+    my @changes = @{ $self->get("karma_$object") };
+    push @changes, $row;
+    $self->set( "karma_$object" => \@changes );
     return;
 }
     

@@ -1,7 +1,3 @@
-package Bot::BasicBot::Pluggable::Module::Infobot;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Module::Infobot
@@ -78,6 +74,10 @@ time out and drop off the server. oops.
 
 
 =cut
+
+package Bot::BasicBot::Pluggable::Module::Infobot;
+use Bot::BasicBot::Pluggable::Module;
+use base qw(Bot::BasicBot::Pluggable::Module);
 
 use XML::RSS;
 use LWP::Simple;

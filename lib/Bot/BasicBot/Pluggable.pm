@@ -1,7 +1,6 @@
 package Bot::BasicBot::Pluggable;
-
 use strict;
-use warnings::register;
+use warnings;
 no warnings 'redefine';
 
 use POE;
@@ -39,7 +38,16 @@ allowing for pluggable modules
 
   (You can pass any option that's valid for Bot::BasicBot)
 
-=head2 Running the bot
+=head2 Running the bot (simple)
+
+There's a shell script installed to run the bot.
+
+  $ bot-basicbot-pluggable.pl --nick MyBot --server irc.perl.org
+
+Then connect to the IRC server, /query the bot, and set a password. See
+L<Bot::BasicBot::Pluggable::Module::Auth> for details.
+
+=head2 Running the bot (advanced)
 
 There are two useful ways you can use a Pluggable bot. The simple way and the
 flexible way. The simple way is:
@@ -137,18 +145,20 @@ Bot::BasicBot::Pluggable::Module::$module if not.
 sub load {
     my $self = shift;
     my $module = shift;
-    
-    die "Already have a handler with that name" if $self->handler($module);
+    return "Need name" unless $module;
+    return "Already loaded" if $self->handler($module);
+    warn "Loading module '$module'..\n";
 
     # This is possible a leeeetle bit evil.
     my $file = "Bot/BasicBot/Pluggable/Module/$module.pm";
     $file = "./modules/$module.pm" if (-e "./modules/$module.pm");
     eval "
+        no warnings 'redefine';
         delete \$INC{\$file};
         require \$file;
     ";
     # Ok, it's very evil. Don't bother me, I'm working.
-    
+
     die "Can't eval module from $file: $@" if $@;
 
     my $m;
@@ -177,10 +187,9 @@ possible. Works for minor bug fixes, etc.
 sub reload {
     my $self = shift;
     my $module = shift;
-
-    warn "Reloading module $module\n";
-
     return "Need name" unless $module;
+    return "Not loaded" unless $self->handler($module);
+    warn "Reloading module '$module'..\n";
 
     $self->remove_handler($module) if $self->handler($module);
     return $self->load($module);
@@ -195,11 +204,9 @@ Removes a module from the bot. It won't get events any more.
 sub unload {
     my $self = shift;
     my $module = shift;
-
-    warn "Unloading module $module\n";
-
     return "Need name" unless $module;
     return "Not loaded" unless $self->handler($module);
+    warn "Unloading module '$module'..\n";
 
     $self->remove_handler($module);
     return "Removed";

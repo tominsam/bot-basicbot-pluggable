@@ -1,7 +1,3 @@
-package Bot::BasicBot::Pluggable::Module::Join;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Module::Join
@@ -34,13 +30,18 @@ List the channels the bot is in
 
 =cut
 
+package Bot::BasicBot::Pluggable::Module::Join;
+use warnings;
+use strict;
+
+use Bot::BasicBot::Pluggable::Module;
+use base qw(Bot::BasicBot::Pluggable::Module);
 
 sub connected {
-    my ($self) = @_;
-    print STDERR "Got connected() - joining channels\n";
-    $self->load();
+    my $self = shift;
 
-    for (keys(%{$self->{store}{channels}})) {
+    my @channels = split(/\s+/, $self->get("channels") || "");
+    for (@channels) {
         print "Joining $_\n";
         $self->{Bot}->join($_);
     }
@@ -48,7 +49,9 @@ sub connected {
 
 sub help {
     my ($self, $mess) = @_;
-    return "Handles joining and leaving channels. usage: join <channel>, leave <channel>, channels. Requires direct addressing.";
+    return "Handles joining and leaving channels. ".
+    "usage: join <channel>, leave <channel>, channels. ".
+    "Requires direct addressing.";
 }
 
 sub said {
@@ -63,24 +66,35 @@ sub said {
     $command =~ s/\?$//;
     
     if ($command eq "join") {
-        $self->{store}{channels}{lc($param)}++;
-        $self->{Bot}->join($param);
-        $self->save();
-        return "Joining $param...";
+        $self->add_channel($param);
+        return "Ok.";
+
     } elsif ($command eq "leave" or $command eq "part") {
-        if ($self->{store}{channels}{lc($param)}) {
-            delete $self->{store}{channels}{lc($param)};
-            $self->{Bot}->part($param);
-            $self->save();
-            return "Leaving $param...";
-        } else {
-            return "I don't think I'm /in/ $param";
-        } 
+
+        $self->remove_channel($param);
+        return "Ok.";
+
     } elsif ($command eq "channels") {
-        return "I'm in ".join(", ", keys(%{$self->{store}{channels}}));
+        return "I'm in ".$self->get("channels");
     }
 
     return undef;
+}
+
+sub add_channel {
+    my ($self, $channel) = @_;
+    my %channels = map { $_ => 1 } split(/\s+/, $self->get("channels"));
+    $channels{$channel} = 1;
+    $self->set( channels => join(" ", keys %channels) );
+    $self->{Bot}->join($channel);
+}
+
+sub remove_channel {
+    my ($self, $channel) = @_;
+    my %channels = map { $_ => 1 } split(/\s+/, $self->get("channels"));
+    delete $channels{$channel};
+    $self->set( channels => join(" ", keys %channels) );
+    $self->{Bot}->part($channel);
 }
 
 1;

@@ -1,7 +1,3 @@
-package Bot::BasicBot::Pluggable::Module::Auth;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Module::Auth
@@ -75,11 +71,16 @@ architecture bug.
 
 =cut
 
+package Bot::BasicBot::Pluggable::Module::Auth;
+use base qw(Bot::BasicBot::Pluggable::Module);
+use warnings;
+use strict;
+
 sub init {
     my $self = shift;
     
-    unless ($self->{store}{admin}) {
-        $self->{store}{admin}{password} = "julia"; # mmmm, defaults.
+    unless ( $self->get("password_admin") ) {
+        $self->set("password_admin" => "julia"); # mmmm, defaults.
     }
 }
 
@@ -98,24 +99,22 @@ sub said {
     # we don't care about commands that don't start with '!'
     return 0 unless $body =~ /^!/;
 
-    return "What am I, a RiscOS machine?" if ($pri == 3 and $body and $body =~ /^!boot$/i);
-    return "Unknown admin command" if ($pri == 3);
-
-
     # system commands have to be directly addressed.
     return "System commands must be directly addressed" unless $mess->{address};
 
     if ($body =~ /^!auth\s+(\w+)\s+(\w+)/) {
         my $user = $1;
         my $pass = $2;
+        my $stored = $self->get("password_".$user);
 
-        if ($pass eq $self->{store}{$user}{password}) {
+        if ( $pass and $stored and $pass eq $stored ) {
             $self->{auth}{$mess->{who}}{time} = time();
             $self->{auth}{$mess->{who}}{username} = $user;
             if ($user eq "admin" and $pass eq "julia") {
                 return "Authenticated. But change the password - you're using the default.";
             }
             return "Authenticated.";
+
         } else {
             delete $self->{auth}{$mess->{who}};
             return "Bad password";
@@ -128,8 +127,7 @@ sub said {
         my $user = $1;
         my $pass = $2;
         if ($self->authed($mess->{who})) {
-            $self->{store}{$user}{password} = $pass;
-            $self->save();
+            $self->set( "password_".$user, $pass );
             return "Added user $user";
         } else {
             return "You need to authenticate.";
@@ -141,8 +139,7 @@ sub said {
     } elsif ($body =~ /^!deluser\s+(\w+)/) {
         my $user = $1;
         if ($self->authed($mess->{who})) {
-            delete $self->{store}{$user};
-            $self->save();
+            $self->unset( "password_".$user );
             return "Deleted user $user";
         } else {
             return "You need to authenticate.";
@@ -156,9 +153,8 @@ sub said {
         my $pass = $2;
         if ($self->authed($mess->{who})) {
             my $username = $self->{auth}{$mess->{who}}{username};
-            if ($old_pass eq $self->{store}{$username}{password}) {
-                $self->{store}{$username}{password} = $pass;
-                $self->save();
+            if ( $old_pass eq $self->get("password_$username") ) {
+                $self->set("password_$username", $pass);
                 return "Changed password to $pass";
             } else {
                 return "wrong password";
@@ -171,7 +167,7 @@ sub said {
         return "usage: !passwd <old password> <newpassword>";
 
     } elsif ($body =~ /^!users/) {
-        return "Users: ".join(", ", keys(%{$self->{store}}));
+        return "Users: ".join(", ", map { s/^password_// ? $_ : () } $self->store_keys);
 
     } else {
 

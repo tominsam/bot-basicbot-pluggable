@@ -1,7 +1,3 @@
-package Bot::BasicBot::Pluggable::Module::Google;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Module::Google
@@ -42,31 +38,34 @@ way to do this is to use the 'Vars' module and tell the bot
 =cut
 
 
+package Bot::BasicBot::Pluggable::Module::Google;
+use warnings;
+use strict;
+use Bot::BasicBot::Pluggable::Module;
+use base qw(Bot::BasicBot::Pluggable::Module);
 
 use Net::Google;
 
 sub init {
     my $self = shift;
 
-    # default value for google_key is blank, so it shows up in the list of vars.
-    $self->set("google_key", "") unless $self->get("google_key");
+    # default value for google_key, so it shows up in the list of vars.
+    $self->set("user_google_key", "** SET ME **") unless $self->get("user_google_key");
 }
 
 sub said {
     my ($self, $mess, $pri) = @_;
     my $body = $mess->{body};
 
-    return unless ($pri == 2);
+    return unless ($pri == 2 and $mess->{address});
 
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
 
     if ($command eq "google") {
-        return "No google key set! Set it with '!set Google google_key <key>'." unless $self->get("google_key");
+        return "No google key set! Set it with '!set Google google_key <key>'." unless $self->get("user_google_key");
 
-        print "Googling for $param\n";
-
-        my $google = Net::Google->new(key=>$self->get("google_key"));
+        my $google = Net::Google->new(key=>$self->get("user_google_key"));
         my $search = $google->search();
 
         # Search interface
@@ -84,10 +83,11 @@ sub said {
 
         return "No results" unless $res;
         return "$res";
-    } elsif ($command eq "spell") {
-        return "No google key set! Set it with '!set Google google_key <key>'." unless $self->get("google_key");
 
-        my $google = Net::Google->new(key=>$self->get("google_key"));
+    } elsif ($command eq "spell") {
+        return "No google key set! Set it with '!set Google google_key <key>'." unless $self->get("user_google_key");
+
+        my $google = Net::Google->new(key=>$self->get("user_google_key"));
         my $search = $google->search();
 
         my $res = $google->spelling(phrase=>$param)->suggest();

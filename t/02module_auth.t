@@ -11,7 +11,7 @@ use_ok('Bot::BasicBot::Pluggable::Module::Auth');
 ok(my $auth = Bot::BasicBot::Pluggable::Module::Auth->new(), "created auth module");
 
 ok(!$auth->authed('bob'), "bob not authed yet");
-ok(command("!auth admin muppet"), "sent good login");
+ok(command("!auth admin muppet"), "sent bad login");
 ok(!$auth->authed('bob'), "bob not authed yet");
 ok(command("!auth admin julia"), "sent good login");
 ok($auth->authed('bob'), "bob authed now");
@@ -35,5 +35,9 @@ ok(unlink("Auth.storable"), "removed settings file");
 
 sub command {
   my $body = shift;
-  $auth->said( { address => 1, body => $body, who => 'bob' }, 1 );
+  my $response = $auth->said( {
+    address => 1, body => $body, who => 'bob'
+  }, 1 );
+  #warn "$response\n";
+  return $response;
 }

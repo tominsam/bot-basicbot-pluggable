@@ -1,7 +1,3 @@
-package Bot::BasicBot::Pluggable::Module::Loader;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Module::Loader
@@ -38,42 +34,21 @@ Lists loaded modules
 
 =cut
 
-sub save {
-    my ($self) = @_;
-    my $filename = "loader.settings";
-    unless (open SAVE, ">$filename") {
-        warn "Can't open settings file to save: $!\n";
-        return;
-    }
-    for ($self->{Bot}->handlers) {
-      print SAVE ( $self->{modules}{lc($_)} || $_ ) . "\n";
-    }
-    close SAVE;
+package Bot::BasicBot::Pluggable::Module::Loader;
+use warnings;
+use strict;
+use base qw(Bot::BasicBot::Pluggable::Module);
 
-}
-    
-sub load {
-    my ($self) = @_;
-    my $filename = "loader.settings";
-    unless (open(LOAD, "<$filename")) {
-        warn "Can't open settings file: $!\n";
-        return;
+sub init {
+    my $self = shift;
+    warn "loader init\n";
+    my @modules = $self->store_keys;
+    for (@modules) {
+      eval { $self->{Bot}->load($_) };
+      warn "Error loading $_: $@" if $@;
     }
-    my $reply = "";
-    while (my $mod = <LOAD>) {
-        chomp($mod);
-        next unless ($mod);
-        next if $mod =~ /^\s*$/;
-        next if (lc($mod) eq "loader");
-        my $status = ($self->{Bot}->load($mod)) ? "OK" : "NOT OK";
-        $reply .= "Loading $mod: $status  ";
-        print STDERR "Loading $mod: $status\n";
-        $self->{modules}{lc($mod)} = $mod;
-    }
-    close LOAD;
-    return $reply;
-    
 }
+
 
 sub help {
     my ($self, $mess) = @_;
@@ -94,24 +69,18 @@ sub said {
     $command = lc($command);
 
     if ($command eq "!list") {
-        return "Modules: ".join(", ", $self->{Bot}->handlers);
+        return "Modules: ".join(", ", $self->store_keys);
     }
     no warnings 'redefine';
-    eval '
-        if ($command eq "!load") {
-             $self->{modules}{lc($param)} = $param;
-             $self->{Bot}->load($param);
-             die "success";
-        } elsif ($command eq "!reload") {
-             $self->{Bot}->reload($param);
-             die "success";
-        } elsif ($command eq "!unload") {
-             $self->{Bot}->unload($param);
-             die "success";
-        }
-    ';
-    $self->save();
-    return $@ if $@;
+    if ($command eq "!load") {
+         eval { $self->bot->load($param) } && $self->set( $param => 1 );
+    } elsif ($command eq "!reload") {
+         eval { $self->bot->reload($param) };
+    } elsif ($command eq "!unload") {
+         eval { $self->bot->unload($param) } && $self->unset( $param );
+    }
+
+    return $@ || "Success";
 }
 
 1;

@@ -1,6 +1,5 @@
 package Bot::BasicBot::Pluggable::Module::DNS;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
+use base qw(Bot::BasicBot::Pluggable::Module);
 
 =head1 NAME
 

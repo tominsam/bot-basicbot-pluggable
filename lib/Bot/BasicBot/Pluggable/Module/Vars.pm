@@ -12,6 +12,12 @@ Changes internal module variables. Bot modules have variables that they can
 use to change their behaviour. This module, when loaded, gives people who
 are logged in the ability to change these variables from the IRC interface.
 
+The variables that are set are in the object store, and begin "user_", so
+
+  !set Module foo bar
+  
+will set the store key 'user_foo' to 'bar' in the 'Module' module.
+
 =head1 IRC USAGE
 
 Commands:
@@ -47,7 +53,7 @@ sub said {
         return "Usage: !set <module> <var> <value>" unless $value;
         my $module = $self->{Bot}->module($mod);
         return "No such module" unless $module;
-        $module->set($var, $value);
+        $module->set("user_$var", $value);
         return "Set.";
         
     } elsif ($command eq "!unset") {
@@ -55,18 +61,16 @@ sub said {
         return "Usage: !unset <module> <var>" unless $var;
         my $module = $self->{Bot}->module($mod);
         return "No such module" unless $module;
-        $module->unset($var);
+        $module->unset("user_$var");
         return "Unset.";
         
     } elsif ($command eq "!vars") {
         my $module = $self->{Bot}->module($param);
         return "No such module" unless $module;
-        return "$param has no vars" unless $module->{store}{vars};
-        my %vars = %{$module->{store}{vars}};
-        my $response = "Variables for $param: ";
-        for (keys(%vars)) {
-            $response .= "[ $_ = '$vars{$_}' ] ";
-        }
+        my @vars = map { s/^user_// ? $_ : () } $module->store_keys();
+        return "$param has no vars" unless @vars;
+        my $response = "Variables for $param:" .
+          map { " '$_' => '".$module->get("user_$_")."'" } @possible;
         return $response;
     }
 

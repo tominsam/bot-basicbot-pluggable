@@ -19,12 +19,6 @@ the help text for the module.
 You MAY override the 'chanjoin', 'chanpart', and 'tick' methods. the said()
 method MAY return a response to the event.
 
-The bot has a local hash, $self->{store}, that is saved and loaded when the bot
-quits and starts. The variables are accessed through the get() and set() methods
-(or the var() method), and the store is automatically saved after every set
-call, but if you change the store in any other way, I suggest you explicitly
-save it with the save() method.
-
 =head1 OBJECT STORE
 
 Every pluggable module gets an object store to save variables in. Access
@@ -33,19 +27,24 @@ this store using the seg() and set() accessors, ie
   my $count = $self->get("count");
   $self->set( count => $count + 1 );
 
-The store is currently implemented using Storable to a big file on disk.
-This isn't very memory efficient, though, and will probably change.
+Do not access the store through any other means - the location of the
+store, and it's method of storage, may change at any time.
 
-=head1 BUGS
+Keys that begin "user_" should be considered _USER_ variables, and can be
+changed be people with admin access in the IRC channel, using
+L<Bot::BasicBot::Pluggable::Module::Vars>. Don't use them as unchecked
+input data.
 
-The {store} isn't any good for /big/ data sets, like the infobot sets. We
-need a better solution, probably involving Tie.
+Implementation detail - TODO - describe this. Fast summary - try not to
+put things that aren't scalars in the object store.
 
 =head1 METHODS
 
 =cut
 
 package Bot::BasicBot::Pluggable::Module;
+use strict;
+use warnings;
 
 use Storable;
 
@@ -75,6 +74,17 @@ sub new {
     return $self;
 }
 
+=head2 bot()
+
+returns the Bot::BasicBot::Pluggable bot we're running under
+
+=cut
+
+sub bot {
+    my $self = shift;
+    return $self->{Bot};
+}
+
 =head2 var( name, [ value ] )
 
 get or set a local variable from the module store
@@ -95,15 +105,15 @@ sub var {
 
 =head2 set( name => value )
 
-set a local variable into the object store
+set a local variable into the object store.
 
 =cut
 
 sub set {
     my ($self, $name, $val) = @_;
-    $self->{store}{vars}{$name} = $val;
+    $self->{store}{$name} = $val;
     $self->save();
-    return $self->{store}{vars}{$name};
+    return $self->{store}{$name};
 }
 
 =head2 get( name )
@@ -114,7 +124,7 @@ returns the value of a local variable from the object store.
 
 sub get {
     my ($self, $name) = @_;
-    return $self->{store}{vars}{$name};
+    return $self->{store}{$name};
 }
 
 =head2 unset(var)
@@ -125,8 +135,19 @@ unsets a local variable - removes it from the store, not just undefs it.
 
 sub unset {
     my ($self, $name) = @_;
-    delete $self->{store}{vars}{$name};
+    delete $self->{store}{$name};
     $self->save();
+}
+
+=head2 store_keys()
+
+returns a list of all keys in the object store
+
+=cut
+
+sub store_keys {
+  my $self = shift;
+  return keys(%{$self->{store}});
 }
 
 =head2 save

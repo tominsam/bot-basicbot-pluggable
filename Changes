@@ -1,27 +1,20 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
-0.01  Mon Feb 24 17:08:02 2003
-  - original version; created by h2xs 1.22
-
-0.011 Mon Feb 24 18:00:00 2003
-  - oops.
-
-0.04
-  - release to coincide with Simon's release of Bot::Basicbot,
-    version number bumped to match.
-  - therefore the first release that actually Worked out the box.
-
-0.05
-  - Better documentation
-  - Vars changable through better interface.
-
+0.40 2004/01/18
+  - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm, and
+    added Base.pm as an empty subclass, for neatness.
+  - Documented the object store methods better.
+  - changed all the core modules to use the proget get/set store methods
+  - Loader now uses the standard store system.
+  - Installed shell script to run B::B::P.
+  
 0.30
   - Improved docs
   - Synced version number with Bot::BasicBot again
   - Added NINJA support
   - Moved to Module::Build-based module layout
   - Huge docs improvement, based on feedback from people who clearly had no
-    idea what I waas smoking at the time.
+    idea what I was smoking at the time.
   - Decent examples in examples/, and copies on the web page for people
     who use CPAN
   - Removed the Blog and Shout modules - blog is to be spun off into a
@@ -57,3 +50,17 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - Karma
       - Removed case-sensitivity in karma objects.
  
+0.05
+  - Better documentation
+  - Vars changable through better interface.
+
+0.04
+  - release to coincide with Simon's release of Bot::Basicbot,
+    version number bumped to match.
+  - therefore the first release that actually Worked out the box.
+
+0.011 Mon Feb 24 18:00:00 2003
+  - oops.
+
+0.01  Mon Feb 24 17:08:02 2003
+  - original version; created by h2xs 1.22
