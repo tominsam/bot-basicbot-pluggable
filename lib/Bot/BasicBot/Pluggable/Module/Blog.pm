@@ -238,8 +238,7 @@ sub comment {
     $query->execute($id);
     my $count = $query->fetchrow_hashref()->{comments};
     print STDERR "There are $count comments now\n";
-    if ($count > 4) {
-        break unless my $tb = $self->{Bot}->handler('Trackback');
+    if ($count > 4 and my $tb = $self->{Bot}->handler('Trackback')) {
 
         print STDERR "Trying trackbacks\n";
         my $query = $self->{DB}->prepare("SELECT data FROM mindblog WHERE blog_id=?");
