@@ -1,6 +1,8 @@
 package Bot::BasicBot::Pluggable::Module::Vars;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
+use warnings;
+use strict;
+use Bot::BasicBot::Pluggable::Module;
+use base qw(Bot::BasicBot::Pluggable::Module);
 
 =head1 NAME
 
@@ -45,11 +47,10 @@ sub said {
     my $body = $mess->{body};
     
     return unless ($pri == 2); # most common
-    my ($command, $param) = split(/\s+/, $body, 2);
+    my ($command, $mod, $var, $value) = split(/\s+/, $body, 4);
     $command = lc($command);
 
     if ($command eq "!set") {
-        my ($mod, $var, $value) = split(/\s+/, $param, 3);
         return "Usage: !set <module> <var> <value>" unless $value;
         my $module = $self->{Bot}->module($mod);
         return "No such module" unless $module;
@@ -57,7 +58,6 @@ sub said {
         return "Set.";
         
     } elsif ($command eq "!unset") {
-        my ($mod, $var) = split(/\s+/, $param);
         return "Usage: !unset <module> <var>" unless $var;
         my $module = $self->{Bot}->module($mod);
         return "No such module" unless $module;
@@ -65,13 +65,12 @@ sub said {
         return "Unset.";
         
     } elsif ($command eq "!vars") {
-        my $module = $self->{Bot}->module($param);
+        my $module = $self->bot->module($mod);
         return "No such module" unless $module;
         my @vars = map { s/^user_// ? $_ : () } $module->store_keys();
         return "$param has no vars" unless @vars;
-        my $response = "Variables for $param:" .
-          map { " '$_' => '".$module->get("user_$_")."'" } @possible;
-        return $response;
+        return "Variables for $mod: " .
+          join ", ", map { "'$_' => '".$module->get("user_$_")."'" } @vars;
     }
 
 }

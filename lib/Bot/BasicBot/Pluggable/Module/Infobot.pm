@@ -80,15 +80,16 @@ use Bot::BasicBot::Pluggable::Module;
 use base qw(Bot::BasicBot::Pluggable::Module);
 
 use XML::RSS;
-use LWP::Simple;
+use LWP::Simple ();
 use strict;
 use warnings;
 
 sub init {
     my $self = shift;
-
-    $self->{store}{vars}{ask} = '' unless defined($self->{store}{vars}{ask});
-    $self->{infobot} = {};
+    for (qw( ask passive stopwords )) {
+      $self->set("user_$_" => "") unless $self->get("user_$_");
+    }
+    $self->{remote_infobot} = {};
 }
 
 # TODO
@@ -105,7 +106,7 @@ sub said {
     
     if ($body =~ s/^:INFOBOT:REPLY (\S+) (.*)$// and $pri == 0) {
         my $return = $2;
-        my $infobot_data = $self->{infobot}{$1};
+        my $infobot_data = $self->{remote_infobot}{$1};
         my ($object, $db, $factoid) = ($return =~ /^(.*) =(\w+)=> (.*)$/);
 
         if ($infobot_data->{learn}) {
@@ -121,7 +122,7 @@ sub said {
 
 #            print STDERR "factoid is '$factoid'\n";
             if ($factoid =~ s/^<action>\s*//i) {
-                $self->{Bot}->emote({who=>$infobot_data->{who}, channel=>$infobot_data->{channel}, body=>"$factoid (via $mess->{who})"});
+                $self->bot->emote({who=>$infobot_data->{who}, channel=>$infobot_data->{channel}, body=>"$factoid (via $mess->{who})"});
                 return 1;
             }
 
@@ -138,7 +139,7 @@ sub said {
             $shorter .= substr($factoid, 0, 300, "");
         }
 
-        $self->{Bot}->say(channel => $infobot_data->{channel},
+        $self->bot->say(channel => $infobot_data->{channel},
                           who     => $infobot_data->{who},
                           body    => "$_"
                          ) for (split(/\n/, $shorter));
@@ -162,7 +163,7 @@ sub said {
         $reply =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
 
         if ($reply =~ s/^<action>\s*//i) {
-            $self->{Bot}->emote({
+            $self->bot->emote({
                 who=>$mess->{who},
                 channel=>$mess->{channel},
                 body=>$reply
@@ -197,7 +198,7 @@ sub said {
     
 
     return unless ($pri==3);
-    return unless ($mess->{address} or $self->{store}{vars}{passive});
+    return unless ( $mess->{address} or $self->get("user_passive") );
     return unless ($body =~ /\s+(is)\s+/i or $body =~ /\s+(are)\s+/i);
     my $is_are = $1 or return;
 
@@ -208,7 +209,7 @@ sub said {
     
     my $replace = 1 if ($object =~ s/no,?\s*//i);
 
-    my @stopwords = split(/\s*,?\s*/, $self->{store}{vars}{stopwords} || "");
+    my @stopwords = split(/\s*,?\s*/, $self->get("user_stopwords") || "");
     return if grep(/^\Q$object$/i, @stopwords);
                 
     if (my $old_factoid = $self->get_factoid($object)) {
@@ -230,15 +231,15 @@ sub get_factoid {
     my ($self, $object, $mess, $from) = @_;
 
     my $factoid;
-    if ($factoid = $self->{store}{infobot}{lc($object)}->[-1]
+    if ($factoid = ( $self->get( "infobot_".lc($object) ) || [] )->[-1]
        and $factoid->{description} ) {
         return $factoid;
     }
 
-    if ($self->{store}{vars}{ask} and $mess) {
+    if ($self->get("user_ask") and $mess) {
         my $id = "<" . int(rand(10000)) . ">";
-        $self->{infobot}{$id} = $mess;
-        $self->{Bot}->say(who=>$from || $self->{store}{vars}{ask},
+        $self->{remote_infobot}{$id} = $mess;
+        $self->bot->say(who=>$from || $self->get("user_ask"),
                           channel=>'msg',
                           body=>":INFOBOT:QUERY $id $object"
                          );
@@ -250,8 +251,8 @@ sub search_factoid {
     my ($self, @terms) = @_;
 
     my $factoids = [];
-    FACTOID: for my $key (keys(%{ $self->{store}{infobot} })) {
-      my $factoid = $self->{store}{infobot}{$key}->[-1];
+    FACTOID: for my $key ( map { s/^infobot_// ? $_ : () } $self->store_keys ) {
+      my $factoid = ( $self->get("infobot_$key") || [] )->[-1];
       next unless $factoid->{description};
       for (@terms) { next FACTOID unless $factoid->{object} =~ /$_/i }
       push @$factoids, $factoid->{object};
@@ -261,28 +262,22 @@ sub search_factoid {
 
 sub set_factoid {
     my ($self, $who, $object, $is_are, $description) = @_;
-    push(@{$self->{store}{infobot}{lc($object)}}, {
+    my @factoids = @{$self->get("infobot_".lc($object) ) || [] };
+    push(@factoids, {
         create_time => time,
         create_who => $who,
         object => $object,
         is_are => $is_are,
         description => $description,
     });
-    $self->save();
+    $self->set( "infobot_".lc($object), \@factoids );
+    return 1;
 }
 
 sub delete_factoid {
     my ($self, $who, $object) = @_;
     return 0 unless ($self->get_factoid($object));
-    push(@{$self->{store}{infobot}{lc($object)}}, {
-        create_time => time,
-        create_who => $who,
-        object => $object,
-        is_are => undef,
-        description => undef,
-    });
-    $self->save();
-    return 1;
+    return $self->set_factoid($who, $object, undef, undef);
 }
 
 sub parseRSS {
@@ -291,7 +286,7 @@ sub parseRSS {
     my $items;
     eval '
         my $rss = new XML::RSS;
-        $rss->parse(get($url));
+        $rss->parse(LWP::Simple::get($url));
         $items = $rss->{items};
     ';
 

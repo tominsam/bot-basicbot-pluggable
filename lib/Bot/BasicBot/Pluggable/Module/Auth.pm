@@ -100,7 +100,7 @@ sub said {
     return 0 unless $body =~ /^!/;
 
     # system commands have to be directly addressed.
-    return "System commands must be directly addressed" unless $mess->{address};
+    return 1 unless $mess->{address};
 
     if ($body =~ /^!auth\s+(\w+)\s+(\w+)/) {
         my $user = $1;

@@ -47,6 +47,7 @@ sub said {
     
     if ($command eq "karma" and $pri == 2 and $param) {
         return "$param has karma of ".$self->get_karma($param);
+
     } elsif ($command eq "explain" and $pri == 2 and $param) {
         $param =~ s/^karma\s+//i;
         my ($karma, $good, $bad) = $self->get_karma($param);
@@ -115,7 +116,7 @@ sub add_karma {
     $object =~ s/-/ /g;
     my $row = { reason=>$reason, who=>$who, timestamp=>time, positive=>$good };
 
-    my @changes = @{ $self->get("karma_$object") };
+    my @changes = @{ $self->get("karma_$object") || [] };
     push @changes, $row;
     $self->set( "karma_$object" => \@changes );
     return;

@@ -70,17 +70,22 @@ sub said {
 
     if ($command eq "!list") {
         return "Modules: ".join(", ", $self->store_keys);
-    }
-    no warnings 'redefine';
-    if ($command eq "!load") {
-         eval { $self->bot->load($param) } && $self->set( $param => 1 );
+
+    } elsif ($command eq "!load") {
+        eval { $self->bot->load($param) } or return "Failed: $@";
+        $self->set( $param => 1 );
+        return "Success";
+
     } elsif ($command eq "!reload") {
-         eval { $self->bot->reload($param) };
+        eval { $self->bot->reload($param) } or return "Failed: $@";
+        return "Success";
+
     } elsif ($command eq "!unload") {
-         eval { $self->bot->unload($param) } && $self->unset( $param );
+        eval { $self->bot->unload($param) } or return "Failed: $@";
+        $self->unset( $param );
+        return "Success";
     }
 
-    return $@ || "Success";
 }
 
 1;

@@ -44,6 +44,8 @@ sub said {
     my ($self, $mess, $pri) = @_;
     my $body = $mess->{body};
 
+    # no admin stuff please.
+    return if $mess->{body} =~ /^!/;
     
     if ($pri == 0) {
         my $nick = lc($mess->{who});
