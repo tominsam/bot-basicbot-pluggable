@@ -189,6 +189,12 @@ sub said {
         return "asking $1 about $2..\n";
     }
 
+    if ($pri==2 and $mess->{address} and $body =~ /^search\s+for\s+(.*)$/i) {
+        my @results = $self->search_factoid(split(/\s+/, $1)) or return;
+        return "Keys: ".join(", ", map { "'$_'" } @results);
+    }
+    
+
     return unless ($pri==3);
     return unless ($mess->{address} or $self->{store}{vars}{passive});
     return unless ($body =~ /\s+(is)\s+/i or $body =~ /\s+(are)\s+/i);
@@ -197,6 +203,8 @@ sub said {
     my ($object, $description) = split(/\s+${is_are}\s+/i, $body, 2);
 #    $description =~ s/\.\s.*$//;
 
+    return if length($object) > 25;
+    
     my $replace = 1 if ($object =~ s/no,?\s*//i);
 
     my @stopwords = split(/\s*,?\s*/, $self->{store}{vars}{stopwords} || "");
@@ -235,6 +243,19 @@ sub get_factoid {
                          );
     }
     return undef;
+}
+
+sub search_factoid {
+    my ($self, @terms) = @_;
+
+    my $factoids;
+    FACTOID: for my $key (keys(%{ $self->{store}{infobot} })) {
+      my $factoid = $self->{store}{infobot}{$key}->[-1];
+      next unless $factoid->{description};
+      for (@terms) { next FACTOID unless $factoid->{object} =~ /$_/i }
+      push @$factoids, $factoid->{object};
+    }
+    return @$factoids;
 }
 
 sub set_factoid {
