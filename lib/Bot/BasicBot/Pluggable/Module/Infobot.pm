@@ -86,15 +86,16 @@ use warnings;
 
 sub init {
     my $self = shift;
-    for (qw( ask passive stopwords )) {
-      $self->set("user_$_" => "") unless $self->get("user_$_");
+    for (qw( ask passive_ask passive_learn stopwords )) {
+      $self->set("user_$_" => "") unless defined($self->get("user_$_"));
     }
     $self->{remote_infobot} = {};
 }
 
 # TODO
 sub help {
-  return "ooooooh, infobots. They're hard.";
+  return "ooooooh, infobots. They're hard. ".
+  "See http://search.cpan.org/perldoc?Bot::BasicBot::Pluggable::Module::Infobot";
 }
 
 sub said {
@@ -145,7 +146,7 @@ sub said {
         return 1;
     }
 
-    if ( $body =~ s/\?+$// and $mess->{address} and $pri == 3) {
+    if ( $body =~ s/\?+$// and ( $mess->{address} or $self->get("user_passive_ask") ) and $pri == 3) {
         my $literal = 1 if ($body =~ s/^literal\s+//i);
 
         my $factoid;
@@ -194,10 +195,10 @@ sub said {
         my @results = $self->search_factoid(split(/\s+/, $1)) or return;
         return "Keys: ".join(", ", map { "'$_'" } @results);
     }
-    
+
 
     return unless ($pri==3);
-    return unless ( $mess->{address} or $self->get("user_passive") );
+    return unless ( $mess->{address} or $self->get("user_passive_learn") );
     return unless ($body =~ /\s+(is)\s+/i or $body =~ /\s+(are)\s+/i);
     my $is_are = $1 or return;
 
