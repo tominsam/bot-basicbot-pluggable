@@ -47,9 +47,6 @@ sub new {
 # subclass this for your store setup
 sub init { }
 
-# subclass this to load your data (assuming you want to at startup)
-sub load { }
-
 =head2 keys( namespace )
 
 returns a list of all store keys
@@ -98,6 +95,17 @@ sub unset {
   return $self;
 }
 
+=head2 namespaces()
+
+returns a list of all namespaces in the store.
+
+=cut
+
+sub namespaces {
+  my $self = shift;
+  return CORE::keys(%{$self->{store}});
+}
+
 =head2 load()
 
 =cut
@@ -109,6 +117,52 @@ sub load {}
 =cut
 
 sub save {}
+
+=head2 dump()
+
+Dumps the complete store to a huge scalar. This is mostly so you can
+convert from one store to another easily. Ie:
+
+  my $from = Bot::BasicBot::Pluggable::Store::Storable->new();
+  my $to   = Bot::BasicBot::Pluggable::Store::DBI->new( ... );
+  $to->restore( $from->dump );
+
+=cut
+
+# dump is written generally, so that you don't have to re-implement it
+# in subclasses. I hope. This does make it a leeetle inefficient, of 
+# course.
+use Storable;
+
+sub dump {
+  my $self = shift;
+  my $data = {};
+  for my $n ($self->namespaces) {
+    warn "dumping namespace '$n'\n";
+    for my $k ($self->keys($n)) {
+      $data->{$n}{$k} = $self->get($n, $k);
+    }
+  }
+  return Storable::nfreeze($data);
+}
+
+=head2 restore( data )
+
+restores the store from a L<dump()>.
+
+=cut
+
+sub restore {
+  my ($self, $dump) = @_;
+  my $data = Storable::thaw($dump);
+  for my $n (CORE::keys(%$data)) {
+    warn "restoring namespace '$n'\n";
+    for my $k (CORE::keys(%{ $data->{$n} })) {
+      $self->set($n, $k, $data->{$n}{$k});
+    }
+  }
+  warn "Complete\n";
+}
 
 1;
 

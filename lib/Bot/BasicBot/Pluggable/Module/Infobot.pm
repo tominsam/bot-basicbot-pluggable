@@ -89,6 +89,9 @@ sub init {
     for (qw( ask passive_ask passive_learn stopwords )) {
       $self->set("user_$_" => "") unless defined($self->get("user_$_"));
     }
+    
+    $self->set("db_version" => "1") unless $self->get("db_version");
+
     $self->{remote_infobot} = {};
 }
 
@@ -286,11 +289,11 @@ sub parseRSS {
     my ($self, $url) = @_;
 
     my $items;
-    eval '
+    eval {
         my $rss = new XML::RSS;
         $rss->parse(LWP::Simple::get($url));
         $items = $rss->{items};
-    ';
+    };
 
     return "<< Error parsing RSS from $url: $@ >>" if $@;
     my $ret;

@@ -1,10 +1,22 @@
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Store::DBI
-
-=head1 DESCRIPTION
+Bot::BasicBot::Pluggable::Store::DBI - A database B::B::P store
 
 =head1 SYNOPSIS
+
+  my $store = Bot::BasicBot::Pluggable::Store::DBI->new(
+    dsn => "dbi:mysql:bot",
+    user => "user",
+    password => "password",
+    table => "brane",
+  );
+  
+  $store->set( "namespace", "key" => "value" );
+  
+=head1 DESCRIPTION
+
+This is a L<Bot::BasicBot::Pluggable::Store> that uses a database to store
+the values set by modules. Complex values are stored using Storable.
 
 =head1 METHODS
 
@@ -99,6 +111,18 @@ sub keys {
     "SELECT store_key FROM $table WHERE namespace=?"
   );
   $sth->execute($namespace);
+  my @keys = map { $_->[0] } @{ $sth->fetchall_arrayref };
+  $sth->finish;
+  return @keys;
+}
+
+sub namespaces {
+  my ($self) = @_;
+  my $table = $self->{table} or die "Need DB table";
+  my $sth = $self->dbh->prepare_cached(
+    "SELECT DISTINCT namespace FROM $table"
+  );
+  $sth->execute();
   my @keys = map { $_->[0] } @{ $sth->fetchall_arrayref };
   $sth->finish;
   return @keys;

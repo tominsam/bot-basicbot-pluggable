@@ -102,6 +102,10 @@ sub said {
     # system commands have to be directly addressed.
     return 1 unless $mess->{address};
 
+    # ..and in privmsg
+    return "Admin commands in privmsg only, please"
+      unless $mess->{channel} eq 'msg';
+
     if ($body =~ /^!auth\s+(\w+)\s+(\w+)/) {
         my $user = $1;
         my $pass = $2;
