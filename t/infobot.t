@@ -34,7 +34,7 @@ is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
 
 # ..but it will learn things it's told directly.
 is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
-is( direct("foo is red"), "ok", "active learning works" );
+is( direct("foo is red"), "okay.", "active learning works" );
 is( direct("foo?"), "foo is red", "correct answer to active learn" );
 ok( !indirect("foo?"), "passive questioning off by default" );
 
@@ -44,7 +44,7 @@ is( indirect("foo?"), "foo is red", "passive questioning now on" );
 
 # and the ability to add factoids without addressing the bot
 ok( $ib->set("user_passive_learn", 1), "activate passive learn" );
-is( direct("bar is green"), "ok", "passive learning now works" );
+is( direct("bar is green"), "okay.", "passive learning now works" );
 is( indirect("bar?"), "bar is green", "passive questioning works" );
 
 # you can search factoids, but not in public
@@ -52,9 +52,9 @@ is( direct("search for foo"), "privmsg only, please", "not searched in public");
 is( private("search for foo"), "Keys: 'foo'", "searched for 'foo'");
 
 # you can append strings to factoids
-is( direct("foo is also blue"), "ok", "can append to faactoids" );
+is( direct("foo is also blue"), "okay.", "can append to faactoids" );
 is( direct("foo?"), "foo is red or blue", "works" );
-is( direct("foo is also pink"), "ok", "can append to faactoids" );
+is( direct("foo is also pink"), "okay.", "can append to faactoids" );
 is( direct("foo?"), "foo is red or blue or pink", "works" );
 
 # factoids can be forgotten
@@ -65,11 +65,11 @@ is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
 is( direct("bar is yellow"), "But I already know something about bar",
   "Can't just redefine factoids" );
 is( indirect("bar?"), "bar is green", "not changed" );
-is( direct("no, bar is yellow"), "ok", "Can explicitly redefine factoids" );
+is( direct("no, bar is yellow"), "okay.", "Can explicitly redefine factoids" );
 is( indirect("bar?"), "bar is yellow", "changed" );
 
 # factoids can contain RSS
-is( direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "ok", "set RSS" );
+is( direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "okay.", "set RSS" );
 is( indirect("rsstest?"), "rsstest is title;", "can read rss");
 
 # certain things can't be factoid keys.
@@ -86,46 +86,42 @@ is( direct("literal bar?"), "bar =is= yellow =or= fum", "bar" );
 
 
 # alternate factoids ('|')
-is( direct("foo is one"), "ok", "foo is one");
-is( direct("foo is also two"), "ok", "foo is also two");
-is( direct("foo is also |maybe"), "ok", "foo is also maybe");
+is( direct("foo is one"), "okay.", "foo is one");
+is( direct("foo is also two"), "okay.", "foo is also two");
+is( direct("foo is also |maybe"), "okay.", "foo is also maybe");
 
 ok( my $reply = direct("foo?"), "got one of the foos" );
-ok( $reply eq 'foo is maybe'
- or $reply eq 'foo is one or two', "it's one of the two");
+ok( ( $reply eq 'foo is maybe' or $reply eq 'foo is one or two' ), "it's one of the two");
 
 # blech's torture test, all three in one
 # notes on dipsy differences:
 # * 'ok' is 'okay.' in a true infobot
-# * a true infobot strips spaces between '|' and the factoid 
-#   (see commented test)
 # * literal doesn't highlight =or= like it does =is=
 
 is( direct("forget foo"), "I forgot about foo", "forgotten foo");
-is( direct("foo is foo"), "ok", "simple set" );
+
+is( direct("foo is foo"), "okay.", "simple set" );
 is( direct("foo?"), "foo is foo", "simple get" );
-is( direct("foo is also bar"), "ok", "simple append");
+is( direct("foo is also bar"), "okay.", "simple append");
 is( direct("foo?"), "foo is foo or bar", "appended ok");
-is( direct("foo is also baz or quux"), "ok", "complex append");
+is( direct("foo is also baz or quux"), "okay.", "complex append");
 is( direct("foo?"), "foo is foo or bar or baz or quux", "also ok");
-is( direct("foo is also |a silly thing"), "ok", "alternate appended");
-#is( direct("foo is also | a silly thing", "ok", ""); # should be identical in
-# result to test above, but isn't
-# could test from now on like Tom tests replies above, but ho hum
+is( direct("foo is also | a silly thing"), "okay.", "alternate appended");
+
 is( direct("literal foo?"), 
            "foo =is= foo =or= bar =or= baz =or= quux =or= |a silly thing", 
            "entire factoid looks right");
-is( direct("foo is also |<reply>this a very silly thing"), "ok", "and a reply");
+is( direct("foo is also |<reply>this is a very silly thing"), "okay.", "and a reply");
 is( direct("literal foo?"), 
-           "foo =is= foo =or= bar =or= baz =or= quux =or= |a silly thing =or= |<reply>this a very silly thing", 
+           "foo =is= foo =or= bar =or= baz =or= quux =or= |a silly thing =or= |<reply>this is a very silly thing", 
            "entire entry looks fine to me");
 
 # run through a few times, and see what we get out
 foreach my $i (0..9) {
-  ok( my $reply = direct("foo?"), "got one of the foos" );
-  ok( $reply eq 'foo is foo or bar or baz or quux'
+  ok( $reply = direct("foo?"), "got one of the foos" );
+  ok( ( $reply eq 'foo is foo or bar or baz or quux'
    or $reply eq 'foo is a silly thing' 
-   or $reply eq 'this is a very silly thing', 
+   or $reply eq 'this is a very silly thing' ),
                 "it's '$reply'" # this never gets printed, dunno why
   );
 }
