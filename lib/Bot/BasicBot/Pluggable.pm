@@ -131,7 +131,6 @@ use Bot::BasicBot::Pluggable::Module;
 use Bot::BasicBot::Pluggable::Store::Storable;
 use Bot::BasicBot::Pluggable::Store::DBI;
 
-
 sub init {
   my $self = shift;
 
@@ -139,6 +138,7 @@ sub init {
   $self->{store} ||= {
     type => "DBI",
     dsn => "dbi:SQLite:bot-basicbot.sqlite",
+    table => "basicbot",
   };
 
   # calculate the class we're going to use. If you pass a full
