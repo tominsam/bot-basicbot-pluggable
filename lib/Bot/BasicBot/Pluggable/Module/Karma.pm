@@ -83,6 +83,8 @@ sub trim_list {
 sub get_karma {
     my ($self, $object) = @_;
     $object = lc($object);
+    $object =~ s/-/ /g;
+
     my @changes = @{$self->{store}{karma}{$object}};
 
     my @good;
@@ -109,6 +111,7 @@ sub get_karma {
 sub add_karma {
     my ($self, $object, $good, $reason, $who) = @_;
     $object = lc($object);
+    $object =~ s/-/ /g;
     my $row = { reason=>$reason, who=>$who, timestamp=>time, positive=>$good };
     push @{$self->{store}{karma}{$object}}, $row;
     $self->save();
