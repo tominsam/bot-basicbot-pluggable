@@ -117,12 +117,18 @@ sub said {
     $command =~ s/:+$//;
 
     if ($command eq "blog" or $command eq "spool") {
+        unless ($self->zlmc($mess->{who})) {
+          return $self->policy;
+        }
         my $query = $self->{DB}->prepare("INSERT INTO mindblog (timestamp, entry_type, channel, who, data) VALUES (?, ?, ?, ?, ?)");
         $query->execute(time, 1, $mess->{channel}, $mess->{who}, $param);
         $self->{blog_id} = $self->{DB}->{mysql_insertid};
         return 1;
 
     } elsif ($command eq "chump") {
+        unless ($self->zlmc($mess->{who})) {
+          return $self->policy;
+        }
         my $query = $self->{DB}->prepare("INSERT INTO mindblog (timestamp, entry_type, channel, who, data) VALUES (?, ?, ?, ?, ?)");
         $query->execute(time, 1, $mess->{channel}, $mess->{who}, $param);
         $self->{blog_id} = $self->{DB}->{mysql_insertid};
@@ -254,6 +260,20 @@ sub comment {
             print STDERR $tb->send_ping($1, $id)."\n";
         }        
     }
+}
+
+sub zlmc {
+  my $self = shift;
+  my $who = shift;
+  for (qw(jerakeen blech hitherto the)) {
+    return 1 if ($who =~ /$_/i);
+  }
+  return 0;
+}
+
+sub policy {
+  my $self = shift;
+  return "I'm sorry, but only house [ex]residents can do that.";
 }
 
 1;
