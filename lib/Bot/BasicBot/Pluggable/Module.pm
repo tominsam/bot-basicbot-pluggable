@@ -235,14 +235,64 @@ I suggest a method like:
     return;
   }
 
-Note - I intend to deprecate this method in the near future in favour of
-seperate seen(), admin(), told() and fallback() (or something) methods,
-where you can override just the one. This seems to me to be a nicer
-interface to present. said() will still work, however.
+Optionally, you can not override this method, and override one of the
+seperate seen(), admin(), told() and fallback() methods, corresponding
+to priorities 0, 1, 2 and 3 in order - this is much preferred, and will
+lead to nicer code. It's very new, though, which is why it's not used
+in most of the shipped moduels yet. It will eventually become the only thing
+to do, and I will deprecate said()
 
 =cut
 
-sub said { undef }
+sub said {
+  my ($self, $mess, $pri) = @_;
+  $mess->{body} =~ s/\s+$//;
+  $mess->{body} =~ s/^\s+//;
+  
+  if ($pri == 0) {
+    return $self->seen($mess);
+  } elsif ($pri == 1) {
+    return $self->admin($mess);
+  } elsif ($pri == 2) {
+    return $self->told($mess);
+  } elsif ($pri == 3) {
+    return $self->fallback($mess);
+  }
+  return undef;
+}
+
+=head2 seen(mess)
+
+Like said(), called if you don't override said, but only for priority 0.
+
+=cut
+
+sub seen { undef }
+
+=head2 admin(mess)
+
+Like said(), called if you don't override said, but only for priority 1.
+
+=cut
+
+sub admin { undef }
+
+=head2 seen(mess)
+
+Like said(), called if you don't override said, but only for priority 2.
+
+=cut
+
+sub told { undef }
+
+=head2 fallback(mess)
+
+Like said(), called if you don't override said, but only for priority 3.
+
+=cut
+
+sub fallback { undef }
+
 
 =head2 connected
 

@@ -89,7 +89,9 @@ sub new_id {
   my $table = shift;
   my $sth = $self->dbh->prepare_cached("SELECT MAX(id) FROM $table");
   $sth->execute();
-  return $sth->fetchrow_arrayref->[0] || "1";
+  my $id = $sth->fetchrow_arrayref->[0] || "0";
+  $sth->finish();
+  return $id + 1;
 }
   
 sub get {

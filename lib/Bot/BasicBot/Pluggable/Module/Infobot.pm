@@ -85,209 +85,209 @@ use strict;
 use warnings;
 
 sub init {
-    my $self = shift;
-    for (qw( ask passive_ask passive_learn stopwords )) {
-      $self->set("user_$_" => "") unless defined($self->get("user_$_"));
-    }
-    
-    $self->set("db_version" => "1") unless $self->get("db_version");
+  my $self = shift;
 
-    $self->{remote_infobot} = {};
+  # set lots of user vars if they're not already set, so that they
+  # show up for users of the Vars module.
+  for (qw( ask passive_ask passive_learn stopwords )) {
+    $self->set("user_$_" => "") unless defined($self->get("user_$_"));
+  }
+  
+  # some vague plan to allow DB version upgrades
+  $self->set("db_version" => "1") unless $self->get("db_version");
+
+  # hash to record the queries we've asked of other infobots
+  $self->{remote_infobot} = {};
 }
 
-# TODO
 sub help {
   return "ooooooh, infobots. They're hard. ".
   "See http://search.cpan.org/perldoc?Bot::BasicBot::Pluggable::Module::Infobot";
 }
 
-sub said {
-    my ($self, $mess, $pri) = @_;
+sub told {
+  my ($self, $mess) = @_;
+  my $body = $mess->{body};
 
-    my $body = $mess->{body};
-    $body =~ s/\s+$//;
-    $body =~ s/^\s+//;
-    
-    if ($body =~ s/^:INFOBOT:REPLY (\S+) (.*)$// and $pri == 0) {
-        my $return = $2;
-        my $infobot_data = $self->{remote_infobot}{$1};
-        my ($object, $db, $factoid) = ($return =~ /^(.*) =(\w+)=> (.*)$/);
+  # looks like an infobot reply
+  if ($body =~ s/^:INFOBOT:REPLY (\S+) (.*)$//) {
+    return $self->infobot_reply($1, $2, $mess);
+  }
 
-        if ($infobot_data->{learn}) {
-            $self->set_factoid($mess->{who}, $object, $db, $factoid);
-            $factoid = "Learnt about $object from $mess->{who}"; # hacky.
+  # these are all direct commands, and must be addressed.
 
-        } else {
+  return unless $mess->{address};
+  
+  if ($body =~ /^forget\s+(.*)$/i) {
+    if ($self->delete_factoid($mess->{who}, $1)) {
+      return "I forgot about $1";
+    } else {
+      return "I don't know anything about $1";
+    }
+  }
 
-            my @possibles = split(/(?:=?or=?\s*)\|\s*/, $factoid);
-            $factoid = $possibles[int(rand(scalar(@possibles)))];
+  if ($body =~ /^ask\s+(\S+)\s+about\s+(.*)$/i) {
+    $self->ask_factoid($2, $1, $mess);
+    return "asking $1 about $2..\n";
+  }
 
-            $factoid =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
+  if ($body =~ /^search\s+for\s+(.*)$/i) {
+    return "privmsg only, please" unless $mess->{channel} eq "msg";
+    my @results = $self->search_factoid(split(/\s+/, $1)) or return;
+    $#results = 20 if $#results > 20;
+    return "Keys: ".join(", ", map { "'$_'" } @results);
+  }
 
-            if ($factoid =~ s/^<action>\s*//i) {
-                $self->bot->emote({who=>$infobot_data->{who}, channel=>$infobot_data->{channel}, body=>"$factoid (via $mess->{who})"});
-                return 1;
-            }
+}
 
-           $factoid = "$object $db $factoid" unless ($factoid =~ s/^<reply>\s*//i);
+sub fallback {
+  my ($self, $mess) = @_;
+  my $body = $mess->{body};
 
-            return unless $factoid;
-            $factoid .= " (via $mess->{who})";
+  # fallback - passively learn things and answer questions.
+  
+  if ( $body =~ s/\?+$// and ( $mess->{address} or $self->get("user_passive_ask") ) ) {
+    # literal question?
+    my $literal = 1 if ($body =~ s/^literal\s+//i);
 
+    # get the factoid, and the type of relationship
+    my ($is_are, $factoid) = $self->get_factoid($body, $literal);
 
-        }
-        
-        my $shorter;
-        while ($factoid) {
-            $shorter .= substr($factoid, 0, 300, "");
-        }
-
-        $self->bot->say(channel => $infobot_data->{channel},
-                          who     => $infobot_data->{who},
-                          body    => "$_"
-                         ) for (split(/\n/, $shorter));
-        return 1;
+    # if there's no such factoid, we give up.
+    unless ($factoid) {
+      return $mess->{address} ? "No clue. Sorry." : undef;
     }
 
-    if ( $body =~ s/\?+$// and ( $mess->{address} or $self->get("user_passive_ask") ) and $pri == 3) {
-        my $literal = 1 if ($body =~ s/^literal\s+//i);
-
-        my $factoid;
-        unless ($factoid = $self->get_factoid($body, $mess)) {
-            return undef unless $mess->{address};
-            return "No clue. Sorry.";
-        }
-
-        return "$body =$factoid->{is_are}= $factoid->{description}" if $literal;
-
-        my @possibles = split(/(?:=?or=?\s*)\|\s*/, $factoid->{description});
-        my $reply = $possibles[int(rand(scalar(@possibles)))];
-
-        $reply =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
-
-        if ($reply =~ s/^<action>\s*//i) {
-            $self->bot->emote({
-                who=>$mess->{who},
-                channel=>$mess->{channel},
-                body=>$reply
-            });
-            return 1;
-        }
-
-        $reply = "$body $factoid->{is_are} $reply" unless ($reply =~ s/^<reply>\s*//i);
-        return $reply;
+    # emote?
+    if ($factoid =~ s/^<action>\s*//i) {
+      $self->bot->emote({
+        who => $mess->{who},
+        channel => $mess->{channel},
+        body => $factoid
+      });
+      return 1;
     }
 
-    if ($pri==2 and $mess->{address} and $body =~ /^forget\s+(.*)$/i) {
-        if ($self->delete_factoid($mess->{who}, $1)) {
-            return "I forgot about $1";
-        } else {
-            return "I don't know anything about $1";
-        }
-    }
-    if ($pri==2 and $mess->{address} and $body =~ /^ask\s+(\w+)\s+about\s+(.*)$/i) {
-        $mess->{learn} = 1;
-        if ($self->get_factoid($2, $mess, $1)) {
-            return "I already know about $2";
-        }
-        return "asking $1 about $2..\n";
+    # a straight reply
+    if ($factoid =~ s/^<reply>\s*//i) {
+      return $factoid;
     }
 
-    if ($pri==2 and $mess->{address} and $body =~ /^search\s+for\s+(.*)$/i) {
-        return "privmsg only, please" unless $mess->{channel} eq "msg";
-        my @results = $self->search_factoid(split(/\s+/, $1)) or return;
-        $#results = 20 if $#results > 20;
-        return "Keys: ".join(", ", map { "'$_'" } @results);
-    }
+    # normal factoid
+    return "$body $is_are $factoid";
 
+  }
 
-    return unless ($pri==3);
-    return unless ( $mess->{address} or $self->get("user_passive_learn") );
-    return unless ($body =~ /\s+(is)\s+/i or $body =~ /\s+(are)\s+/i);
-    my $is_are = $1 or return;
+  # the only thing left is learning factoids. are we addressed? Or
+  # are we willing to learn passively?
+  return unless ( $mess->{address} or $self->get("user_passive_learn") );
 
-    my ($object, $description) = split(/\s+${is_are}\s+/i, $body, 2);
+  # does it even look like a factoid?
+  return unless ($body =~ /^(.*?)\s+(is)\s+(.*)$/i or $body =~ /^(.*?)\s+(are)\s+(.*)$/i);
 
-    # long factoid keys are almost _always_ wrong.
-    return if length($object) > 25;
+  my ($object, $is_are, $description) = ($1, $2, $3);
 
-    my $replace = 1 if ($object =~ s/no,?\s*//i);
+  # allow corrections and additions.
+  my $replace = 1 if ($object =~ s/no,?\s*//i);
+  my $also = 1 if ($description =~ s/^also\s+//i);
 
-    my @stopwords = split(/\s*,?\s*/, $self->get("user_stopwords") || "");
-    return if grep(/^\Q$object$/i, @stopwords);
-                
-    if (my $old_factoid = $self->get_factoid($object)) {
-        if ($description =~ s/^also\s+//i) {
-            $description = $old_factoid->{description} .= " or ".$description;
-        } elsif (!$replace) {
-            return 1 unless $mess->{address};
-            return "but I already know something about $object";
-        }
-    }
-    
-    $self->set_factoid($mess->{who}, $object, $is_are, $description);
-    return 1 unless $mess->{address};
-    return "ok."; # $object $is_are $description";
+  # long factoid keys are almost _always_ wrong.
+  # TODO - this should be a user variable
+  return if length($object) > 25;
 
+  # certain words can't ever be factoid keys, to prevent insanity.
+  my @stopwords = split(/\s*,?\s*/, $self->get("user_stopwords") || "");
+  return if grep(/^\Q$object$/i, @stopwords);
+
+  # if we're replacing things, remove it first.
+  if ($replace) {
+    $self->delete_factoid($object);
+  }
+
+  # get any current factoid there might be.
+  my (undef, $current) = $self->get_factoid($object);
+  
+  # we cna't add without explicit instruction.
+  if ($current and !$also) {
+    return "But I already know something about $object";
+  }
+
+  $self->add_factoid($object, $is_are, $description);
+
+  # return an ack if we were addressed only
+  return $mess->{address} ? "ok" : 1;
 }
 
 sub get_factoid {
-    my ($self, $object, $mess, $from) = @_;
+  my ($self, $object, $literal) = @_;
+  my $raw = $self->get( "infobot_".lc($object) )
+    or return;
 
-    my $factoids = $self->get( "infobot_".lc($object) );
+  my ($is_are, @factoids) = split(/\t/, $raw);
 
-    if ($factoids) {
-      while (my $chosen = $factoids->[rand(@$factoids)]) { 
-          return $chosen if $chosen->{description};
-       }
+  my @simple;
+  my @alternatives;
+  for (@factoids) {
+    if (s/^\|//) {
+      push @alternatives, $_;
+    } else {
+      push @simple, $_;
     }
+  }
+  unshift @alternatives, join(" or ", @simple);
 
+  return ("=${is_are}=", join (" =or= ", @alternatives)) if $literal;
 
+  my $factoid = $alternatives[ rand(@alternatives) ];
+  $factoid =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
 
-    my $to_ask = $from || $self->get("user_ask");
-    if ($to_ask and $mess) {
-        my $id = "<" . int(rand(10000)) . ">";
-        $self->{remote_infobot}{$id} = $mess;
-        $self->bot->say(
-            who => $to_ask,
-            channel=>'msg',
-            body=>":INFOBOT:QUERY $id $object"
-        );
-    }
-    return undef;
+  return ($is_are, $factoid);
+}
+
+sub ask_factoid {
+  my ($self, $object, $ask, $mess) = @_;
+
+  # unique ID to reference this in future
+  my $id = "<" . int(rand(100000)) . ">";
+  
+  # store the message, so we can reply in context later
+  $self->{remote_infobot}{$id} = $mess;
+
+  # ask, using an infobot protocol, the thing we've been told to ask.
+  # this will hopefully result in a reply coming back later.
+  $self->bot->say(
+    who => $ask,
+    channel=>'msg',
+    body=>":INFOBOT:QUERY $id $object"
+  );
 }
 
 sub search_factoid {
-    my ($self, @terms) = @_;
-
-    my $factoids = [];
-    FACTOID: for my $key ( map { s/^infobot_// ? $_ : () } $self->store_keys ) {
-      my $factoid = ( $self->get("infobot_$key") || [] )->[-1];
-      next unless $factoid->{description};
-      for (@terms) { next FACTOID unless $factoid->{object} =~ /$_/i }
-      push @$factoids, $factoid->{object};
-    }
-    return @$factoids;
+  my ($self, @terms) = @_;
+  my @keys = map { s/^infobot_// ? $_ : () } $self->store_keys;
+  for my $term (@terms) {
+    @keys = grep { /\Q$term/ } @keys;
+  }
+  return @keys;
 }
 
-sub set_factoid {
-    my ($self, $who, $object, $is_are, $description) = @_;
-    my @factoids = @{$self->get("infobot_".lc($object) ) || [] };
-    push(@factoids, {
-        create_time => time,
-        create_who => $who,
-        object => $object,
-        is_are => $is_are,
-        description => $description,
-    });
-    $self->set( "infobot_".lc($object), \@factoids );
-    return 1;
+sub add_factoid {
+  my ($self, $object, $is_are, $factoid) = @_;
+  
+  # we're splitting on tabs, so we can't store them. Last-ditch
+  # safety measure.
+  $factoid =~ s/\t+//g;
+  
+  my $raw = $self->get( "infobot_".lc($object) ) || "$is_are";
+  $raw .= "\t$factoid";
+
+  $self->set( "infobot_".lc($object) , $raw );  return 1;
 }
 
 sub delete_factoid {
-    my ($self, $who, $object) = @_;
-    return 0 unless ($self->get_factoid($object));
-    return $self->set_factoid($who, $object, undef, undef);
+  my ($self, $object) = @_;
+  $self->unset( "infobot_".lc($object) );
+  return 1;
 }
 
 sub parseRSS {
@@ -313,5 +313,28 @@ sub parseRSS {
     return $ret;
 }
 
+# We've been replied to by an infobot.
+sub infobot_reply {
+  my ($self, $id, $return, $mess) = @_;
+
+  # get the message that caused the ask initially, so we can reply to it
+  # if there wasn't one, just give up.
+  my $infobot_data = $self->{remote_infobot}{$id} or return 1;
+
+  # this is the string that the other infobot returned to us.
+  my ($object, $db, $factoid) = ($return =~ /^(.*) =(\w+)=> (.*)$/);
+
+  $self->set_factoid($mess->{who}, $object, $db, $factoid);
+
+  # reply to the original request saying 'we got it'
+  $self->bot->say(
+    channel => $infobot_data->{channel},
+    who     => $infobot_data->{who},
+    body    => "Learnt about $object from $mess->{who}",
+  );
+
+  return 1;
+
+}
 
 1;
