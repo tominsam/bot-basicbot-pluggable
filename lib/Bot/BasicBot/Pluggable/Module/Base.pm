@@ -214,7 +214,10 @@ sub emoted {
 
 =head2 tick()
 
-the tick event. All modules have this called every 5 seconds. It's
+the tick event. All modules can have a regulat tick event called. By default,
+this method is called 5 seconds after the module starts
+
+have this called every 5 seconds. It's
 probably worth having a counter and not responding to every single one,
 assuming you want to respond to it at all.
 
@@ -223,6 +226,24 @@ assuming you want to respond to it at all.
 sub tick {
     undef;
 }
+
+=head2 schedule_tick(time)
+
+Causes the C<tick> event to be called in 'time' seconds (or 5 seconds if
+time is left unspecified). Note that if the tick event is due to be
+called already, this will override it, you can't schedule multiple
+future events with this funtction.
+
+=cut
+
+sub schedule_tick {
+  my $self = shift;
+  my $time = shift || 5;
+#  $self->{Bot}{kernel}->delay( "tick_$self->{Name}" => $time );
+}
+
+
+=cut
 
 =head2 chanjoin($mess)
 
