@@ -3,6 +3,7 @@ use warnings;
 use strict;
 use lib qw(lib t/lib);
 use Test::More no_plan => 1;
+use FindBin qw( $Bin );
 
 use Bot::BasicBot::Pluggable::Module::Infobot;
 use Bot::BasicBot::Pluggable::Store;
@@ -67,11 +68,25 @@ is( indirect("bar?"), "bar is green", "not changed" );
 is( direct("no, bar is yellow"), "ok", "Can explicitly redefine factoids" );
 is( indirect("bar?"), "bar is yellow", "changed" );
 
-# TODO - test RSS
+# factoids can contain RSS
+is( direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "ok", "set RSS" );
+is( indirect("rsstest?"), "rsstest is title;", "can read rss");
+
+# certain things can't be factoid keys.
+ok( $ib->set("user_stopwords", "and"), "set stopword 'and'" );
+ok( !direct("and is mumu"), "can't set 'and' as factoid");
+ok( !direct("dkjsdlfkdsjfglkdsfjglfkdjgldksfjglkdfjglds is mumu"),
+  "can't set very long factoid");
+
+# literal syntax
+is( direct("literal rsstest?"), "rsstest =is= <rss=\"file://$Bin/test.rss\">",
+  "literal of rsstest" );
+
+ok( direct("bar is also fum"), "bar also fum" );
+is( direct("literal bar?"), "bar =is= yellow =or= fum", "bar" );
+
+
 # TODO - test alternate factoids ('|')
-# TODO - test stopwords
-# TODO - test very long factoid keys
-# TODO - test literal syntaax
 
 
 

@@ -198,8 +198,10 @@ sub fallback {
   return if length($object) > 25;
 
   # certain words can't ever be factoid keys, to prevent insanity.
-  my @stopwords = split(/\s*,?\s*/, $self->get("user_stopwords") || "");
-  return if grep(/^\Q$object$/i, @stopwords);
+  my @stopwords = split(/\s*[\s,]\s*/, $self->get("user_stopwords") || "");
+  for (@stopwords) {
+    return if $object =~ /\Q$_/;
+  }
 
   # if we're replacing things, remove it first.
   if ($replace) {
@@ -318,7 +320,7 @@ sub add_factoid {
     factoids => \@current,
   };
 
-  warn Dumper({ setting => $set });
+  #warn Dumper({ setting => $set });
   
   # put the list back into the store.
   $self->set( "infobot_".lc($object), $set);
@@ -381,6 +383,7 @@ sub parseRSS {
         $title =~ s/^\s+//;
         $ret .= "$item->{'title'}; ";
     }
+    $ret =~ s/\s*$//;
     return $ret;
 }
 
