@@ -156,7 +156,7 @@ sub load {
     
     die "Can't call $module->new(): $@" if $@;
 
-    die "->new didn't return an object" unless $m;
+    die "->new didn't return an object" unless ($m and ref($m));
 
     $self->add_handler($m, $module);
 
@@ -178,7 +178,7 @@ sub reload {
     my $self = shift;
     my $module = shift;
 
-    print STDERR "Reloading module $module\n";
+    warn "Reloading module $module\n";
 
     return "Need name" unless $module;
 
@@ -196,7 +196,7 @@ sub unload {
     my $self = shift;
     my $module = shift;
 
-    print STDERR "Unloading module $module\n";
+    warn "Unloading module $module\n";
 
     return "Need name" unless $module;
     return "Not loaded" unless $self->handler($module);
@@ -315,9 +315,14 @@ sub dispatch {
     for my $who ($self->handlers) {
         next unless $self->handler($who)->can($method);
         eval "\$self->handler(\$who)->$method(\@_);";
-        print STDERR $@ if $@;
+        warn $@ if $@;
     }
     return undef;
+}
+
+sub tick {
+    $self->dispatch('tick');
+    return 5;
 }
 
 =head2 said
@@ -397,7 +402,7 @@ sub help {
 
 sub connected {
     my $self = shift;
-    print STDERR "Bot::BasicBot::Pluggable connected\n";
+    warn "Bot::BasicBot::Pluggable connected\n";
     $self->dispatch('connected');
 }
 
