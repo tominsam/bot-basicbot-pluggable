@@ -197,6 +197,21 @@ sub help {
     return "No help for: $self->{Name}. This is a bug.";
 }
 
+=head2 emoted($mess, $priority)
+
+called when a user emotes something in channel. Params are the same as those
+passed to said(), and the semantics as regards returning are identical as
+well.
+
+=cut
+
+sub emoted {
+    my $self = shift;
+    my $mess = shift;
+    my $priority = shift;
+}
+
+
 =head2 tick()
 
 the tick event. All modules have this called every 5 seconds. It's
@@ -231,7 +246,6 @@ the channel they joined
 sub chanjoin {
     my $self = shift;
     my $mess = shift;
-
 }
 
 =head2 chanpart($mess)

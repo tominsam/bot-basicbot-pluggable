@@ -237,7 +237,7 @@ sub remove_handler {
 
 sub dispatch {
     my $self = shift;
-    my $method = shiftl;
+    my $method = shift;
 
     for my $who ($self->handlers) {
         next unless $self->handler($who)->can($method);
@@ -262,6 +262,31 @@ sub said {
             $who = $_;
             eval "\$response = \$self->handler(\$who)->said(\$mess, \$priority); ";
             $self->reply($mess, "Error calling said() for $who: $@") if $@;
+            if ($response and $priority) {
+                return if ($response eq "1");
+                my $shorter;
+                while ($response) {
+                    $shorter .= substr($response, 0, 300, "");
+                }
+                $self->reply($mess, $_) for split(/\n/, $shorter);
+                return;
+            }
+        }
+    }
+    return undef;
+}
+
+sub emoted {
+    my $self = shift;
+    my $mess = shift;
+    my $response;
+    my $who;
+    
+    for my $priority (0..3) {
+        for ($self->handlers) {
+            $who = $_;
+            eval "\$response = \$self->handler(\$who)->emoted(\$mess, \$priority); ";
+            $self->reply($mess, "Error calling emoted() for $who: $@") if $@;
             if ($response and $priority) {
                 return if ($response eq "1");
                 my $shorter;
