@@ -45,7 +45,8 @@ sub save {
         warn "Can't open settings file to save: $!\n";
         return;
     }
-    print SAVE "$_\n" for ($self->{Bot}->handlers);
+    print SAVE ( $self->{modules}{lc($_)} || $_ ) . "\n"
+      for ($self->{Bot}->handlers);
     close SAVE;
 
 }
@@ -65,6 +66,7 @@ sub load {
         $status = $self->{Bot}->load($_);
         $reply .= "Loading $_: $status  ";
         print STDERR "Loading $_: $status\n";
+        $self->{modules}{lc($_)} = $_;
     }
     close LOAD;
     return $reply;
@@ -97,6 +99,7 @@ sub said {
     no warnings 'redefine';
     eval '
         if ($command eq "!load") {
+             $self->{modules}{lc($param)} = $param;
              $self->{Bot}->load($param);
              die "success";
         } elsif ($command eq "!reload") {
