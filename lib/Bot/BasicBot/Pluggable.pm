@@ -10,7 +10,7 @@ use Carp qw(croak);
 
 our @ISA = qw(Bot::BasicBot);
 
-our $VERSION = '0.10';
+our $VERSION = '0.2';
 
 =head1 NAME
 
@@ -235,18 +235,20 @@ sub remove_handler {
 ####################################################
 # ..from Bot::BasicBot:
 
-sub despatch {
-    my ($self, $method, @params) = @_;
+sub dispatch {
+    my $self = shift;
+    my $method = shiftl;
 
     for my $who ($self->handlers) {
-        eval "\$self->handler(\$who)->$method(\@params);";
+        next unless $self->handler($who)->can($method);
+        eval "\$self->handler(\$who)->$method(\@_);";
         print STDERR $@ if $@;
     }
     return undef;
 }
 
 sub tick {
-    shift->despatch("tick");
+    shift->dispatch("tick");
 }
 
 sub said {
@@ -280,7 +282,7 @@ sub help {
     $mess->{body} =~ s/^help\s*//i;
     
     unless ($mess->{body}) {
-        return "Ask me for help about: " . join(", ", $self->handlers())
+        return "Ask me for help about: " . join(", ", $self->handlers())." (say 'help <modulename>')";
     } else {
         if (my $handler = $self->handler($mess->{body})) {
             my $help;
@@ -294,16 +296,16 @@ sub help {
 }
 
 sub connected {
-    my $self = shift;
     print STDERR "Bot::BasicBot::connected()\n";
-    for ($self->handlers) {
-        if ($self->handler($_)->can("connected")) {
-            print STDERR "Calling connected() for $_\n";
-            eval "\$self->handler(\$_)->connected(); ";
-        }
-    }
-    
+    shift->dispatch('connected');
+}
 
+sub chanjoin {
+    shift->dispatch("chanjoin", @_);
+}
+
+sub chanpart {
+    shift->dispatch("chanpart", @_);
 }
 
 =item run

@@ -1,7 +1,6 @@
 package Bot::BasicBot::Pluggable::Module::Google;
 use Bot::BasicBot::Pluggable::Module::Base;
 use base qw(Bot::BasicBot::Pluggable::Module::Base);
-our $VERSION = '0.05';
 
 =head1 NAME
 

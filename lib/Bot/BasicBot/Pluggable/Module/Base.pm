@@ -13,8 +13,11 @@ There isn't one - the 'real' modules inherit from this one.
 
 =head1 MODULE INTERFACE
 
-You need to override the 'said' and the 'help' methods. help() should return
+You MUST override the 'said' and the 'help' methods. help() MUST return
 the help text for the module.
+
+You MAY override the 'chanjoin', 'chanpart', and 'tick' methods. the said()
+method MAY return a response to the event.
 
 =head1 BUGS
 
@@ -26,7 +29,6 @@ need a better solution, probably involving Tie.
 =cut
 
 package Bot::BasicBot::Pluggable::Module::Base;
-our $VERSION = $Bot::BasicBot::Pluggable::VERSION;
 
 use Storable;
 use Data::Dumper;
@@ -160,17 +162,6 @@ sub said {
     return;
 }
 
-=head2 emoted(message, priority)
-
-similar to said, called when there's an emote in channel. By default, we
-call the said method with it's arguments.
-
-=cut
-
-sub emoted {
-    shift->said(@_);
-}
-
 =head2 connected
 
 called when the bot connects to the server
@@ -217,6 +208,45 @@ assuming you want to respond to it at all.
 sub tick {
     undef;
 }
+
+=head2 chanjoin($mess)
+
+called when a user joins a channel. $mess is the event described in
+L<Bot::BasicBot>, it's a hashref, the important keys are:
+
+=over 4
+
+=item who
+
+the nick of the joining user
+
+=item channel
+
+the channel they joined
+
+=back
+
+=cut
+
+sub chanjoin {
+    my $self = shift;
+    my $mess = shift;
+
+}
+
+=head2 chanpart($mess)
+
+called when a user leaves a channel. Passed the same structure as the
+chanjoin method is.
+
+=cut
+
+sub chanpart {
+    my $self = shift;
+    my $mess = shift;
+
+}
+
 
 
 1;

@@ -17,8 +17,6 @@ use base qw(Bot::BasicBot::Pluggable::Module::Base);
 
 use LWP::Simple;
 
-our $VERSION = $Bot::BasicBot::Pluggable::VERSION;
-
 =head2 said
 
 checks all messages that haven't been picked up by any 'serious' modules
