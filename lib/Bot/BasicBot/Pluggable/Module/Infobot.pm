@@ -120,7 +120,7 @@ sub told {
   return unless $mess->{address};
   
   if ($body =~ /^forget\s+(.*)$/i) {
-    if ($self->delete_factoid($mess->{who}, $1)) {
+    if ( $self->delete_factoid($1) ) {
       return "I forgot about $1";
     } else {
       return "I don't know anything about $1";

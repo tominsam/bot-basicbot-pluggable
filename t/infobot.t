@@ -29,8 +29,10 @@ ok( $ib->help, "module has help text" );
 # by default, the infobot doesn't learn things that it merely overhears
 ok( ! indirect("foo is red"), "passive learning off by default" );
 ok( ! indirect("foo?"), "no answer to passive learn" );
+is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
 
 # ..but it will learn things it's told directly.
+is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
 is( direct("foo is red"), "ok", "active learning works" );
 is( direct("foo?"), "foo is red", "correct answer to active learn" );
 ok( !indirect("foo?"), "passive questioning off by default" );
@@ -49,12 +51,24 @@ is( direct("search for foo"), "privmsg only, please", "not searched in public");
 is( private("search for foo"), "Keys: 'foo'", "searched for 'foo'");
 
 # you can append strings to factoids
+is( direct("foo is also blue"), "ok", "can append to faactoids" );
+is( direct("foo?"), "foo is red or blue", "works" );
+is( direct("foo is also pink"), "ok", "can append to faactoids" );
+is( direct("foo?"), "foo is red or blue or pink", "works" );
 
-# TODO - test factoid appending
-# TODO - test factoid deletion
-# TODO - test factoid replacement
+# factoids can be forgotten
+is( direct("forget foo"), "I forgot about foo", "forgotten foo");
+is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
+
+# factoids can be replaced
+is( direct("bar is yellow"), "But I already know something about bar",
+  "Can't just redefine factoids" );
+is( indirect("bar?"), "bar is green", "not changed" );
+is( direct("no, bar is yellow"), "ok", "Can explicitly redefine factoids" );
+is( indirect("bar?"), "bar is yellow", "changed" );
+
 # TODO - test RSS
-# TODO - test alternat factoids
+# TODO - test alternate factoids ('|')
 # TODO - test stopwords
 # TODO - test very long factoid keys
 # TODO - test literal syntaax
