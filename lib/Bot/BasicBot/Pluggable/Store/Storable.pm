@@ -21,7 +21,10 @@ use Storable qw( nstore retrieve );
 
 sub save {
   my $self = shift;
-  for my $name ( keys(%{ $self->{store} }) ) {
+  my $namespace = shift;
+  my @modules = $namespace ? ($namespace) : keys(%{ $self->{store} });
+
+  for my $name ( @modules ) {
     my $filename = $name.".storable";
     warn "Saving to $filename\n";
     nstore($self->{store}{$name}, $filename)

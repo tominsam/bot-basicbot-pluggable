@@ -81,6 +81,7 @@ sets stored value for 'key' to 'val'. returns the store object.
 sub set {
   my ($self, $namespace, $key, $value) = @_;
   $self->{store}{$namespace}{$key} = $value;
+  $self->save($namespace);
   return $self;
 }
 
@@ -93,8 +94,21 @@ removes the key 'key' from the store. Returns the store object.
 sub unset {
   my ($self, $namespace, $key) = @_;
   delete $self->{store}{$namespace}{$key};
+  $self->save($namespace);
   return $self;
 }
+
+=head2 load()
+
+=cut
+
+sub load {}
+
+=head2 save()
+
+=cut
+
+sub save {}
 
 1;
 
