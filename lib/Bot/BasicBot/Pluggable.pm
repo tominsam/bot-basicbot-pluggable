@@ -145,7 +145,7 @@ sub init {
   # classname as the type, use that class, otherwise assume it's
   # a B::B::Store:: subclass.
   my $store_class = delete $self->{store}{type} || "DBI";
-  my $store_class = "Bot::BasicBot::Pluggable::Store::$type"
+  $store_class = "Bot::BasicBot::Pluggable::Store::$store_class"
     unless $store_class =~ /::/;
 
   # load the store class
