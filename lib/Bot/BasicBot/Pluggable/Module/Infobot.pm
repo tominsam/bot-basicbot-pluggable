@@ -288,7 +288,7 @@ sub get_raw_factoids {
     my @strings;
     ($is_are, @strings) = split(/\t/, $raw);
     for my $text (@strings) {
-      my $alt = ($text =~ s/^\|// ? 1 : 0);
+      my $alt = ($text =~ s/^\|\s*// ? 1 : 0);
       push @factoids, { alternate => $alt, text => $text };
     }
   }
@@ -308,7 +308,7 @@ sub add_factoid {
 
   # add these factoids to the list, trimming trailing space after |
   for (@factoids) {
-    my $alt = s/^\| *// ? 1 : 0;
+    my $alt = s/^\|\s*// ? 1 : 0;
     push @current, {
       alternate => $alt,
       text => $_,
