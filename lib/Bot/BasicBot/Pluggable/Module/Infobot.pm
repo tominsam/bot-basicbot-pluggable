@@ -212,23 +212,50 @@ sub fallback {
     return "But I already know something about $object";
   }
 
-  $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description);
+  $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description) );
 
   # return an ack if we were addressed only
   return $mess->{address} ? "ok" : 1;
 }
 
+sub get_raw_factoids {
+  my ($self, $object) = @_;
+  my $raw = $self->get( "infobot_".lc($object) )
+    or return ();
+
+  my ($is_are, @factoids);
+
+  use Data::Dumper;
+  warn Dumper({ got => $raw });
+
+  if (ref($raw)) {
+    # it's a deep structure
+    $is_are = $raw->{is_are};
+    @factoids = @{ $raw->{factoids} || [] };
+
+  } else {
+    # old-style tab seperated thing
+    my @strings;
+    ($is_are, @strings) = split(/\t/, $raw);
+    for (@strings) {
+      my $alt = s/^\|// ? 1 : 0;
+      my $text = $_;
+      push @factoids, { alternate => $alt, text => $text };
+    }
+  }
+  
+  return ($is_are, @factoids);
+}
+
 sub get_factoid {
   my ($self, $object, $literal) = @_;
-  my $raw = $self->get( "infobot_".lc($object) )
-    or return;
+  
+  my ($is_are, @factoids) = $self->get_raw_factoids($object, $literal);
 
-  my ($is_are, @factoids) = split(/\t/, $raw);
+  my (@simple, @alternatives);
 
-  my @simple;
-  my @alternatives;
   for (@factoids) {
-    if (s/^\|//) {
+    if ($_->{alternate}) {
       push @alternatives, $_;
     } else {
       push @simple, $_;
@@ -242,6 +269,45 @@ sub get_factoid {
   $factoid =~ s/<rss\s*=\s*\"?([^>\"]+)\"?>/$self->parseRSS($1)/ieg;
 
   return ($is_are, $factoid);
+}
+
+sub add_factoid {
+  my ($self, $object, $is_are, @factoids) = @_;
+
+  # get the current list, if any
+  my ($current_is_are, @current) = $self->get_raw_factoids($object);
+  
+  # if there's already an is_are set, use it.
+  $is_are = $current_is_are if ($current_is_are);
+  $is_are ||= "is"; # defaults
+
+  # add these factoids to the list
+  for (@factoids) {
+    my $alt = s/^\|// ? 1 : 0;
+    push @current, {
+      alternate => $alt,
+      text => $_,
+    };
+  }
+
+  my $set = {
+    is_are => $is_are,
+    factoids => \@current,
+  };
+
+  warn Dumper({ setting => $set });
+  
+  # put the list back into the store.
+  $self->set( "infobot_".lc($object), $set);
+  
+  
+  return 1;
+}
+
+sub delete_factoid {
+  my ($self, $object) = @_;
+  $self->unset( "infobot_".lc($object) );
+  return 1;
 }
 
 sub ask_factoid {
@@ -271,24 +337,6 @@ sub search_factoid {
   return @keys;
 }
 
-sub add_factoid {
-  my ($self, $object, $is_are, @factoids) = @_;
-  
-  # we're splitting on tabs, so we can't store them. Last-ditch
-  # safety measure.
-  s/\t+//g for @factoids;
-  
-  my $raw = $self->get( "infobot_".lc($object) ) || "$is_are";
-  $raw .= "\t$_" for @factoids;
-
-  $self->set( "infobot_".lc($object) , $raw );  return 1;
-}
-
-sub delete_factoid {
-  my ($self, $object) = @_;
-  $self->unset( "infobot_".lc($object) );
-  return 1;
-}
 
 sub parseRSS {
     my ($self, $url) = @_;
