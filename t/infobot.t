@@ -103,21 +103,21 @@ ok( $reply eq 'foo is maybe'
 
 is( direct("forget foo"), "I forgot about foo", "forgotten foo");
 is( direct("foo is foo"), "ok", "simple set" );
-ok( direct("foo?", "foo is foo", "simple get" );
-is( direct("foo is also bar", "ok", "simple append");
-is( direct("foo?", "foo is foo or bar", "appended ok");
-is( direct("foo is also baz or quux", "ok", "complex append");
-is( direct("foo?", "foo is foo or bar or baz or quux", "also ok");
-is( direct("foo is also |a silly thing", "ok", "alternate appended");
+is( direct("foo?"), "foo is foo", "simple get" );
+is( direct("foo is also bar"), "ok", "simple append");
+is( direct("foo?"), "foo is foo or bar", "appended ok");
+is( direct("foo is also baz or quux"), "ok", "complex append");
+is( direct("foo?"), "foo is foo or bar or baz or quux", "also ok");
+is( direct("foo is also |a silly thing"), "ok", "alternate appended");
 #is( direct("foo is also | a silly thing", "ok", ""); # should be identical in
 # result to test above, but isn't
 # could test from now on like Tom tests replies above, but ho hum
-is( direct("literal foo?", 
-           "foo is foo =or= bar =or= baz =or= quux =or= |a silly thing", 
+is( direct("literal foo?"), 
+           "foo =is= foo =or= bar =or= baz =or= quux =or= |a silly thing", 
            "entire factoid looks right");
-is( direct("foo is also |<reply>this a very silly thing", "ok", "and a reply");
-is( direct("literal foo?", 
-           "foo is foo =or= bar =or= baz =or= quux =or= |a silly thing =or= |<reply>this a very silly thing", 
+is( direct("foo is also |<reply>this a very silly thing"), "ok", "and a reply");
+is( direct("literal foo?"), 
+           "foo =is= foo =or= bar =or= baz =or= quux =or= |a silly thing =or= |<reply>this a very silly thing", 
            "entire entry looks fine to me");
 
 # run through a few times, and see what we get out
