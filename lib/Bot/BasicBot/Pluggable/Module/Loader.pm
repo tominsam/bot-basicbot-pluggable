@@ -45,8 +45,9 @@ sub save {
         warn "Can't open settings file to save: $!\n";
         return;
     }
-    print SAVE ( $self->{modules}{lc($_)} || $_ ) . "\n"
-      for ($self->{Bot}->handlers);
+    for ($self->{Bot}->handlers) {
+      print SAVE ( $self->{modules}{lc($_)} || $_ ) . "\n";
+    }
     close SAVE;
 
 }
@@ -62,7 +63,7 @@ sub load {
     while (<LOAD>) {
         chomp;
         next unless ($_);
-        next if ($_ eq "Loader");
+        next if (lc($_) eq "loader");
         $status = $self->{Bot}->load($_);
         $reply .= "Loading $_: $status  ";
         print STDERR "Loading $_: $status\n";
