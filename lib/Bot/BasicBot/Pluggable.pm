@@ -121,7 +121,7 @@ package Bot::BasicBot::Pluggable;
 use strict;
 use warnings;
 
-our $VERSION = '0.40';
+our $VERSION = '0.50';
 
 use POE;
 use Bot::BasicBot;
@@ -386,11 +386,7 @@ sub emoted {
             $self->reply($mess, "Error calling emoted() for $who: $@") if $@;
             if ($response and $priority) {
                 return if ($response eq "1");
-                my $shorter;
-                while ($response) {
-                    $shorter .= substr($response, 0, 300, "");
-                }
-                $self->reply($mess, $_) for split(/\n/, $shorter);
+                $self->reply($mess, $response);
                 return;
             }
         }

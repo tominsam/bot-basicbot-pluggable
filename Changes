@@ -1,6 +1,6 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
-0.40 2004/01/18
+0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm, and
     added Base.pm as an empty subclass, for neatness.
   - Documented the object store methods better.
