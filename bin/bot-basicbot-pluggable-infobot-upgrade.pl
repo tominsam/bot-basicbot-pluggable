@@ -23,9 +23,8 @@ my $data = retrieve("Infobot.storable")
   or die "Can't load Infobot.storable for some reason\n";
 
 my $new;
-
+warn "converting...\n";
 for my $factoid (keys %{  $data->{infobot}  }) {
-  warn "$factoid\n";
   $new->{ "infobot_$factoid" } = delete $data->{infobot}{$factoid};
 }
 
