@@ -78,7 +78,8 @@ sub get {
   $sth->execute($namespace, $key);
   my $row = $sth->fetchrow_arrayref;
   $sth->finish;
-  return $row ? $row->[0] : undef;
+  return undef unless my $value = $row->[0];
+  return eval { thaw($value) } || $value;
 }
 
 sub unset {
