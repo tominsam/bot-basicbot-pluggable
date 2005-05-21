@@ -1,44 +1,41 @@
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Module
+Bot::BasicBot::Pluggable::Module - base module for all BasicBot plugins
 
 =head1 SYNOPSIS
 
-The base module for all Bot::BasicBot::Pluggable modules. Inherit from this
-to get all sorts of exciting things.
+You MUST override C<help()>, which MUST return help text for the module.
 
-=head1 IRC INTERFACE
+You MUST override at least C<said()>, though it is preferred that you
+override the more specific C<seen()>, C<admin()>, C<told()> and C<fallback()>
+for cleaner code without relying on checks against C<$pri>.
 
-There isn't one - the 'real' modules inherit from this one.
+You MAY override C<chanjoin()>, C<chanpart()>, and C<tick()>.
 
-=head1 MODULE INTERFACE
+You MAY return a response from C<said()> to the event.
 
-You MUST override the 'said' and the 'help' methods. help() MUST return
-the help text for the module.
+=head1 DESCRIPTION
 
-You MAY override the 'chanjoin', 'chanpart', and 'tick' methods. the said()
-method MAY return a response to the event.
+The base module for all your BasicBot modules.
 
-=head1 OBJECT STORE
+=head2 Object Store
 
 Every pluggable module gets an object store to save variables in. Access
-this store using the seg() and set() accessors, ie
+this store using the C<get()> and C<set()> accessors. Do not access the store
+through any other means - the location of the store, and its method of storage,
+may change at any time:
 
   my $count = $self->get("count");
   $self->set( count => $count + 1 );
 
-Do not access the store through any other means - the location of the
-store, and it's method of storage, may change at any time.
 
-Keys that begin "user_" should be considered _USER_ variables, and can be
-changed be people with admin access in the IRC channel, using
-L<Bot::BasicBot::Pluggable::Module::Vars>. Don't use them as unchecked
-input data.
-
-Implementation detail - TODO - describe this. Fast summary - try not to
-put things that aren't scalars in the object store.
+Keys that begin "user_" are considered _USER_ variables, and can be changed by
+administrators in the IRC channel using L<Bot::BasicBot::Pluggable::Module::Vars>.
+Don't use them as unchecked input data.
 
 =head1 METHODS
+
+=over 4
 
 =cut
 
@@ -46,12 +43,11 @@ package Bot::BasicBot::Pluggable::Module;
 use strict;
 use warnings;
 
-=head2 new()
+=item new()
 
-Standard new method, blesses a hash into the right class and puts any
-key/value pairs passed to it into the blessed hash. Calls load() to load
-any internal variables, then init(), which you should override in your
-module.
+Standard C<new> method, blesses a hash into the right class and puts any
+key/value pairs passed to it into the blessed hash. Calls C<load()> to load any
+internal variables, then C<init>, which you can also override in your module.
 
 =cut
 
@@ -71,9 +67,17 @@ sub new {
     return $self;
 }
 
-=head2 bot()
+=item init
 
-returns the Bot::BasicBot::Pluggable bot we're running under
+Called after the settings have loaded. May or may not be after server connection.
+
+=cut
+
+sub init { undef }
+
+=item bot
+
+Returns the L<Bot::BasicBot::Pluggable> bot we're running under.
 
 =cut
 
@@ -82,10 +86,9 @@ sub bot {
     return $self->{Bot};
 }
 
-=head2 store()
+=item store
 
-returns the Bot::BasicBot::Pluggable::Store subclass that the bot is
-using to store it's variables.
+Returns L<Bot::BasicBot::Pluggable::Store> subclass used to store variables.
 
 =cut
 
@@ -95,9 +98,42 @@ sub store {
   return $self->bot->store;
 }
 
-=head2 var( name, [ value ] )
+=item get($name)
 
-get or set a local variable from the module store
+Returns the value of a local variable from the object store.
+
+=cut
+
+sub get {
+    my $self = shift;
+    $self->store->get($self->{Name}, @_);
+}
+
+=item set($name => $value)
+
+Set a local variable into the object store.
+
+=cut
+
+sub set {
+    my $self = shift;
+    $self->store->set($self->{Name}, @_);
+}
+
+=item unset($name)
+
+Unsets a local variable - removes it from the store, not just C<undef>s it.
+
+=cut
+
+sub unset {
+    my $self = shift;
+    $self->store->unset($self->{Name}, @_);
+}
+
+=item var($name, [$value])
+
+C<get()> or C<set()> a local variable from the module store.
 
 =cut
 
@@ -111,42 +147,9 @@ sub var {
     }
 }
 
-=head2 set( name => value )
+=item store_keys
 
-set a local variable into the object store.
-
-=cut
-
-sub set {
-    my $self = shift;
-    $self->store->set($self->{Name}, @_);
-}
-
-=head2 get( name )
-
-returns the value of a local variable from the object store.
-
-=cut
-
-sub get {
-    my $self = shift;
-    $self->store->get($self->{Name}, @_);
-}
-
-=head2 unset(var)
-
-unsets a local variable - removes it from the store, not just undefs it.
-
-=cut
-
-sub unset {
-    my $self = shift;
-    $self->store->unset($self->{Name}, @_);
-}
-
-=head2 store_keys()
-
-returns a list of all keys in the object store
+Returns a list of all keys in the object store.
 
 =cut
 
@@ -155,10 +158,48 @@ sub store_keys {
     $self->store->keys($self->{Name}, @_);
 }
 
-=head2 say(message)
+=item connected
 
-passing through to the underlying Bot::BasicBot object, this method lets
-you send messages without replying to a said() call, eg:
+Called when the bot connects to the server. The return value is meaningless.
+
+=cut
+
+sub connected { undef }
+
+=item chanjoin($message)
+
+Called when a user joins a channel.
+
+=cut
+
+sub chanjoin { undef }
+
+=item chanpart($message)
+
+Called when a user leaves a channel.
+
+=cut
+
+sub chanpart { undef }
+
+=item help
+
+Called when a user asks for help on a topic and thus should return some useful
+help text. For L<Bot::BasicBot::Pluggable>, when a user asks the bot 'help',
+the bot will return a list of modules. Asking the bot 'help <modulename>' will
+call the C<help> function of that module, passing in the first parameter the
+message object that represents the question.
+
+=cut
+
+sub help {
+    my ($self, $mess) = @_;
+    return "No help for module '$self->{Name}'. This is a bug.";
+}
+
+=item say($message)
+
+Passing through L<Bot::BasicBot>, send messages without replying to a C<said()>:
 
   $self->say({ who => 'tom', body => 'boo', channel => 'msg' });
 
@@ -169,10 +210,10 @@ sub say {
   return $self->{Bot}->say(@_);
 }
 
-=head2 reply(message, body)
+=item reply($message, $body)
 
-replies to the given message with the given text. Another passthrough to the
-Bot::BasicBot object. The message is used to pre-populate the reply, so it'll
+Replies to the given message with the given text. Another passthrough to
+C<Bot::BasicBot>. The message is used to pre-populate the reply, so it'll
 be in the same channel as the question, directed to the right user, etc.
 
 =cut
@@ -182,15 +223,11 @@ sub reply {
   return $self->{Bot}->reply(@_);
 }
 
-=head2 tell(nick / channel, message)
+=item tell($nick | $channel, $message)
 
-convenience method to send a message to the given nick or channel, will send
-a privmsg if a nick is given, or a public for a channel.
+Convenience method to send message to nick (privmsg) or channel (public):
 
   $self->tell('tom', "hello there, fool");
-
-or
-
   $self->tell('#sailors', "hello there, sailor");
 
 =cut
@@ -206,21 +243,17 @@ sub tell {
   }
 }
 
-=head2 said(message, priority)
+=item said($message, $priority)
 
-This is I<the> method to override. It's called when the bot sees
-something said. The first parameter is a Bot::BasicBot 'message' object,
-as passed to it's 'said' function - see the Bot::BasicBot docs for
-details. The second parameter is the priority of the message - all
-modules will have the 'said' function called up to 4 times, with a
-priority of 0, then 1, then 2, then 3. The first module to return a
-non-null value 'claims' the message, and the bot will reply to it with
-the value returned.
+This method is called whenever the bot sees something said. The first parameter
+is a L<Bot::BasicBot> 'message' object, as passed to it's 'said' function - see
+those docs for further details. The second parameter is the priority of the
+message - all modules will have the 'said' function called up to 4 times, with
+priorities of 0, 1, 2, and 3. The first module to return a non-null value
+'claims' the message, and the bot will reply to it with the value returned.
 
-The exception to this is the '0' priority, which a module MUST NOT
-respond to. This is so that all modules will at least see all messages.
-
-I suggest a method like:
+The exception to this is the 0 priority, which a module MUST NOT respond to.
+This is so that all modules will at least see all messages. I suggest:
 
   sub said {
     my ($self, $mess, $pri) = @_;
@@ -236,12 +269,11 @@ I suggest a method like:
     return;
   }
 
-Optionally, you can not override this method, and override one of the
-seperate seen(), admin(), told() and fallback() methods, corresponding
-to priorities 0, 1, 2 and 3 in order - this is much preferred, and will
-lead to nicer code. It's very new, though, which is why it's not used
-in most of the shipped moduels yet. It will eventually become the only thing
-to do, and I will deprecate said()
+The preferred way, however, is to override one of the seperate C<seen()>, C<admin()>,
+C<told()> and C<fallback()> methods, corresponding to priorities 0, 1, 2 and 3
+in order - this will lead to nicer code. This approach is new, though, which
+is why it's not yet used in most of the shipped modules yet. It will eventually
+become the only thing to do, and I will deprecate C<said()>.
 
 =cut
 
@@ -262,120 +294,65 @@ sub said {
   return undef;
 }
 
-=head2 seen(mess)
+=item seen($message)
 
-Like said(), called if you don't override said, but only for priority 0.
+Like C<said()>; called if you don't override C<said()>, but only for priority 0.
 
 =cut
 
 sub seen { undef }
 
-=head2 admin(mess)
+=item admin($message)
 
-Like said(), called if you don't override said, but only for priority 1.
+Like C<said()>; called if you don't override C<said()>, but only for priority 1.
 
 =cut
 
 sub admin { undef }
 
-=head2 seen(mess)
+=item told($message)
 
-Like said(), called if you don't override said, but only for priority 2.
+Like C<said()>; called if you don't override C<said()>, but only for priority 2.
 
 =cut
 
 sub told { undef }
 
-=head2 fallback(mess)
+=item fallback($message)
 
-Like said(), called if you don't override said, but only for priority 3.
+Like C<said()>; called if you don't override C<said()>, but only for priority 3.
 
 =cut
 
 sub fallback { undef }
 
+=item emoted($message, $priority)
 
-=head2 connected
-
-called when the bot connects to the server. The return value is meaningless.
-
-=cut
-
-sub connected { undef }
-
-=head2 init
-
-called when the module is created, and after the settings are loaded.
-This may or may not be after the bot has connected to the server - make
-no assumptions.
-
-=cut
-
-sub init { undef }
-
-=head2 help
-
-Called when a user asks for help on a topic. Should return some useful
-help text. For Bot::BasicBot::Pluggable, when a user asks the bot
-'help', the bot will return a list of modules. Asking the bot 'help
-<modulename>' will call the help function of that module, passing in the
-first parameter the message object that represents the question.
-
-=cut
-
-sub help {
-    my ($self, $mess) = @_;
-    return "No help for module '$self->{Name}'. This is a bug.";
-}
-
-=head2 emoted($mess, $priority)
-
-called when a user emotes something in channel. Params are the same as those
-passed to said(), and the semantics as regards returning are identical as
-well.
+Called when a user emotes something in channel.
 
 =cut
 
 sub emoted { undef }
 
-=head2 tick()
+=item tick
 
-the tick event. The method is called every 5 seconds. It's probably
-worth having a counter and not responding to every single one, assuming
-you want to respond to it at all. The return value is ignored.
-
-=cut
-
-sub tick { undef }
-
-=head2 chanjoin($mess)
-
-called when a user joins a channel. $mess is the event described in
-L<Bot::BasicBot>, it's a hashref, the important keys are:
-
-=over 4
-
-=item who
-
-the nick of the joining user
-
-=item channel
-
-the channel they joined
+Called every five seconds. It is probably worth having a counter and not
+responding to every single one, assuming you want to respond at all. The
+return value is ignored.
 
 =back
 
 =cut
 
-sub chanjoin { undef }
+sub tick { undef }
 
-=head2 chanpart($mess)
+=head1 AUTHOR
 
-called when a user leaves a channel. Passed the same structure as the
-chanjoin method is.
+Tom Insam E<lt>tom@jerakeen.orgE<gt>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
-
-sub chanpart { undef }
 
 1;

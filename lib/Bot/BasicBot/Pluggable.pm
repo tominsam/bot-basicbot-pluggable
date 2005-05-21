@@ -152,11 +152,11 @@ sub init {
   return 1;
 }
 
-=head2 Methods
+=head1 METHODS
 
 =over 4
 
-=item new( key => value, ... )
+=item new(key => value, ...)
 
 Create a new Bot. Identical to the C<new> method in L<Bot::BasicBot>.
 
