@@ -2,6 +2,7 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
 
 0.xx xxxx/xx/xx
   - Revised documentation for Pluggable.pm and Module.pm.
+  - Auth: Revised documentation, switched to admin() not said().
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,
