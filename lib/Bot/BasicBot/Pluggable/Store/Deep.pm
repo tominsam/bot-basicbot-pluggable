@@ -24,39 +24,41 @@ Distributed under the same terms as perl itself.
 use warnings;
 use strict;
 use base qw( Bot::BasicBot::Pluggable::Store );
+use Carp qw/croak/;
 
 use DBM::Deep;
 
 sub init {
-	my $self = shift;
-	delete $self->{type};
-	$self->{_db} = DBM::Deep->new(%$self) || die "Couldn't connect to db - $self->{file}";
+    my $self = shift;
+    delete $self->{type};
+    croak "You must pass a filename into the Deep store init" unless defined $self->{file};
+    $self->{_db} = DBM::Deep->new(%$self) || die "Couldn't connect to db - $self->{file}";
 }
 
 sub set {
-	my ($self, $namespace, $key, $value) = @_;
-	$self->{_db}->{$namespace}->{$key} = $value;
-	return $self;
+    my ($self, $namespace, $key, $value) = @_;
+    $self->{_db}->{$namespace}->{$key} = $value;
+    return $self;
 }
 
 sub get {
-  	my ($self, $namespace, $key) = @_;
-	return $self->{_db}->{$namespace}->{$key};
+      my ($self, $namespace, $key) = @_;
+    return $self->{_db}->{$namespace}->{$key};
 }
 
 sub unset {
-	my ($self, $namespace, $key) = @_;
-	delete $self->{_db}->{$namespace}->{$key};
+    my ($self, $namespace, $key) = @_;
+    delete $self->{_db}->{$namespace}->{$key};
 }
 
 sub keys {
-	my ($self, $namespace) = @_;
-	return keys %{ $self->{_db}->{$namespace}};
+    my ($self, $namespace) = @_;
+    return keys %{ $self->{_db}->{$namespace}};
 }
 
 sub namespaces {
-	my ($self) = @_;
-	return CORE::keys %{ $self->{_db} };
+    my ($self) = @_;
+    return CORE::keys %{ $self->{_db} };
 }
 
 1;
