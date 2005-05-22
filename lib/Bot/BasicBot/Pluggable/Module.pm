@@ -40,8 +40,8 @@ Don't use them as unchecked input data.
 =cut
 
 package Bot::BasicBot::Pluggable::Module;
-use strict;
 use warnings;
+use strict;
 
 =item new()
 

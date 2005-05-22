@@ -1,60 +1,59 @@
-package Bot::BasicBot::Pluggable::Module::DNS;
-use base qw(Bot::BasicBot::Pluggable::Module);
-
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Module::DNS
+Bot::BasicBot::Pluggable::Module::DNS - DNS lookups for hosts or IPs
 
-=head1 SYNOPSIS
-
-Does DNS lookups for hosts.
-
-=head1 IRC USAGE
+=head1 IRC COMMANDS
 
 Commands:
 
 =over 4
 
-=item nslookup <name>
-
-returns the IP address of the named host
-
 =item dns <ip address>
 
-reuturns the name of the host with that IP
+Returns the hostname of that IP address
+
+=item nslookup <hostname>
+
+Returns the IP address of the hostname.
 
 =back
 
-=head1 TODO
+=head1 AUTHOR
+
+Tom Insam E<lt>tom@jerakeen.orgE<gt>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
 
+package Bot::BasicBot::Pluggable::Module::DNS;
+use base qw(Bot::BasicBot::Pluggable::Module);
+use warnings;
+use strict;
 
 use Socket;
 
-sub said {
-    my ($self, $mess, $pri) = @_;
+sub help {
+    return "DNS lookups for hosts or IPs. Usage: 'dns <ip address>' for the hostname, 'nslookup <hostname>' for the IP address.";
+}
+
+sub told {
+    my ($self, $mess) = @_;
     my $body = $mess->{body};
 
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
 
-    return unless ($pri == 2);
-
-    if ($command eq "nslookup") {
-        my @addr = gethostbyname($param);
-        my $straddr = inet_ntoa($addr[4]);
-        return "$param is $straddr";
-    } elsif ($command eq "dns") {
+    if ($command eq "dns") {
         my $addr = inet_aton($param);
         my @addr = gethostbyaddr($addr, AF_INET);
-        return "$param is $addr[0]";
+        return "$param is $addr[0].";
+    } elsif ($command eq "nslookup") {
+        my @addr = gethostbyname($param);
+        my $straddr = inet_ntoa($addr[4]);
+        return "$param is $straddr.";
     }
 }
-
-sub help {
-    return "Does DNS lookups. Commands: 'nslookup <name>' for the IP, 'dns <ip>' for a name,";
-}
-
 
 1;

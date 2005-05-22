@@ -10,7 +10,7 @@ merely sit at priority 2 and assume the user is authed if the !command
 reaches them. If you want to use modules that can change bot state, like
 Loader or Vars, you almost certainly want this module.
 
-=head1 IRC INTERFACE
+=head1 IRC COMMANDS
 
 The default user is 'admin' with password 'julia'. Change this.
 
@@ -83,7 +83,6 @@ sub init {
 }
 
 sub help {
-    my ($self, $bot, $mess) = @_;
     return "Authenticator for admin-level commands. Usage: !auth <username> <password>, !adduser <username> <password>, !deluser <username>, !password <old password> <new password>, !users.";
 }
 
@@ -114,12 +113,10 @@ sub admin {
                 return "Authenticated. But change the password - you're using the default.";
             }
             return "Authenticated.";
-
         } else {
             delete $self->{auth}{$mess->{who}};
             return "Wrong password.";
         }
-
     } elsif ($body =~ /^!auth/) {
         return "Usage: !auth <username> <password>.";
 
@@ -131,7 +128,6 @@ sub admin {
         } else {
             return "You need to authenticate.";
         }
-
     } elsif ($body =~ /^!adduser/) {
         return "Usage: !adduser <username> <password>";
 
@@ -143,7 +139,6 @@ sub admin {
         } else {
             return "You need to authenticate.";
         }
-
     } elsif ($body =~ /^!deluser/) {
         return "Usage: !deluser <username>";
 
@@ -157,11 +152,9 @@ sub admin {
             } else {
                 return "Wrong password.";
             }
-
         } else {
             return "You need to authenticate.";
         }
-
     } elsif ($body =~ /^!passw?o?r?d?/) {
         return "Usage: !password <old password> <new password>.";
 

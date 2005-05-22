@@ -113,8 +113,8 @@ C<perldoc Bot::BasicBot::Pluggable::Module> for the details of the module API.
 =cut
 
 package Bot::BasicBot::Pluggable;
-use strict;
 use warnings;
+use strict;
 
 our $VERSION = '0.50';
 
