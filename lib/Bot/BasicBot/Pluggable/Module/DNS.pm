@@ -1,10 +1,8 @@
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Module::DNS - DNS lookups for hosts or IPs
+Bot::BasicBot::Pluggable::Module::DNS - DNS lookups for hostnames or IP addresses
 
-=head1 IRC COMMANDS
-
-Commands:
+=head1 IRC USAGE
 
 =over 4
 

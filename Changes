@@ -4,6 +4,7 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
   - Revised documentation for Pluggable.pm and Module.pm.
   - Auth: Revised documentation, switched to admin() not said().
   - DNS: Revised documentation, switched to told() not said().
+  - Google: Revised documentation, switched to told() not said().
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,
@@ -46,8 +47,8 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
   - Module changes (other than doc improvements):
     - Auth:
       - Fixed silly bug that meant you didn't actually need to auth.
-      - Now requires direct addressing.
       - Smarter about ignoring things that aren't admin commands.
+      - Now requires direct addressing.
     - Blog: removed. Look for Bot::BasicBot::Pluggable::Module::Blog.
     - Spell: Fixed a spelling mistake.
     - Infobot: Fixed annoying parser bugs. Needs to re-write whole thing soon.

@@ -425,6 +425,21 @@ sub chanpart {
   shift->dispatch("chanpart", @_);
 }
 
+=head1 BUGS
+
+During the C<make>, C<make test>, C<make install> process, POE will moan about
+its kernel not being run. This is a C<Bot::BasicBot problem>, apparently.
+Reloading a module causes warnings as the old module gets its namespace stomped.
+Not a lot you can do about that. All modules must be in Bot::Pluggable::Module::
+namespace. Well, that's not really a bug.                                                                                       
+
+=head1 REQUIREMENTS
+
+Bot::BasicBot::Pluggable is based on POE, and really needs the latest version.
+Because POE is like that sometimes. You also need L<POE::Component::IRC>.
+Oh, and L<Bot::BasicBot>. Some of the modules will need more modules, e.g.
+Google.pm needs L<Net::Google>. See the module docs for more details.
+
 =head1 AUTHOR
 
 Tom Insam E<lt>tom@jerakeen.orgE<gt>
@@ -448,21 +463,6 @@ including some /inspired/ calendar evilness.
 And thanks to the rest of #2lmc who were my unwilling guinea pigs during
 development. And who kept suggesting totally stupid ideas for modules that I
 then felt compelled to go implement. Shout.pm owes its existence to #2lmc.
-
-=head1 SYSTEM REQUIREMENTS
-
-Bot::BasicBot::Pluggable is based on POE, and really needs the latest version.
-Because POE is like that sometimes. You also need L<POE::Component::IRC>.
-Oh, and L<Bot::BasicBot>. Some of the modules will need more modules, e.g.
-Google.pm needs L<Net::Google>. See the module docs for more details.
-
-=head1 BUGS
-
-During the C<make>, C<make test>, C<make install> process, POE will moan about
-its kernel not being run. This is a C<Bot::BasicBot problem>, apparently.
-Reloading a module causes warnings as the old module gets its namespace stomped.
-Not a lot you can do about that. All modules must be in Bot::Pluggable::Module::
-namespace. Well, that's not really a bug.                                                                                       
 
 =head1 SEE ALSO
 

@@ -10,7 +10,7 @@ merely sit at priority 2 and assume the user is authed if the !command
 reaches them. If you want to use modules that can change bot state, like
 Loader or Vars, you almost certainly want this module.
 
-=head1 IRC COMMANDS
+=head1 IRC USAGE
 
 The default user is 'admin' with password 'julia'. Change this.
 
@@ -52,13 +52,6 @@ Returns 1 if the given username is logged in, 0 otherwise:
 
 =back
 
-=head1 AUTHOR
-
-Tom Insam E<lt>tom@jerakeen.orgE<gt>
-
-This program is free software; you can redistribute it
-and/or modify it under the same terms as Perl itself.
-
 =head1 BUGS
 
 All users are admins. This is fine at the moment, as the only things that need
@@ -67,6 +60,13 @@ are trivial to extract for any module on the system. I don't consider this a
 bug, because I assume you trust the modules you're loading. If Auth is I<not>
 loaded, all users effectively have admin permissions. This may not be a good
 idea, but is also not an Auth bug, it's an architecture bug.
+
+=head1 AUTHOR
+
+Tom Insam E<lt>tom@jerakeen.orgE<gt>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
 
