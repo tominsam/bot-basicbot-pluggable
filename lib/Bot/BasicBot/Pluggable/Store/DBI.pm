@@ -44,7 +44,7 @@ sub dbh {
   my $dsn = $self->{dsn} or die "I need a DSN";
   my $user = $self->{user};
   my $password = $self->{password};
-  $self->{dbh} ||= DBI->connect($dsn, $user, $password);
+  return DBI->connect_cached($dsn, $user, $password);
 }
 
 sub create_table {
