@@ -16,8 +16,6 @@ You MAY return a response from C<said()> to the event.
 
 =head1 DESCRIPTION
 
-The base module for all your BasicBot modules.
-
 =head2 Object Store
 
 Every pluggable module gets an object store to save variables in. Access
