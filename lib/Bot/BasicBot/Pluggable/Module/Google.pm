@@ -64,10 +64,10 @@ use Net::Google;
 
 sub init {
     my $self = shift;
-    $self->set("user_google_key", "** SET ME FOR GOOGLE LOOKUPS **") unless $self->get("user_google_key");
-    $self->set("user_languages", "en") unless $self->get("user_languages");
-    $self->set("user_num_results", 3) unless $self->get("user_num_results");
-    $self->set("user_require_addressing", 1) unless $self->get("user_require_addressing");
+    $self->set("user_google_key", "** SET ME FOR GOOGLE LOOKUPS **") unless defined($self->get("user_google_key"));
+    $self->set("user_languages", "en") unless defined($self->get("user_languages"));
+    $self->set("user_num_results", 3) unless defined($self->get("user_num_results"));
+    $self->set("user_require_addressing", 1) unless defined($self->get("user_require_addressing"));
 }
 
 sub help {

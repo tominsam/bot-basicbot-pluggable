@@ -1,82 +1,83 @@
-package Bot::BasicBot::Pluggable::Module::Vars;
-use warnings;
-use strict;
-use Bot::BasicBot::Pluggable::Module;
-use base qw(Bot::BasicBot::Pluggable::Module);
-
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Module::Vars
+Bot::BasicBot::Pluggable::Module::Vars - change internal module variables
 
 =head1 SYNOPSIS
 
-Changes internal module variables. Bot modules have variables that they can
-use to change their behaviour. This module, when loaded, gives people who
-are logged in the ability to change these variables from the IRC interface.
-
-The variables that are set are in the object store, and begin "user_", so
+Bot modules have variables that they can use to change their behaviour. This
+module, when loaded, gives people who are logged in and autneticated the
+ability to change these variables from the IRC interface. The variables
+that are set are in the object store, and begin "user_", so:
 
   !set Module foo bar
-  
+
 will set the store key 'user_foo' to 'bar' in the 'Module' module.
 
 =head1 IRC USAGE
 
-Commands:
-
 =over 4
 
-=item !set <Module name> <variable name> <value>
+=item !set <module> <variable> <value>
 
-Sets the variable in a given module. Module must be loaded.
+Sets the variable to value in a given module. Module must be loaded.
 
-=item !unset <module name> <variable name>
+=item !unset <module> <variable>
 
-Unsets a variable.
+Unsets a variable (deletes it entirely) for the current load of the module.
 
-=item !vars <module name>
+=item !vars <module>
 
-Lists the variables in a module
+Lists the variables and their current values in a module.
 
 =back
 
+=head1 AUTHOR
+
+Tom Insam E<lt>tom@jerakeen.orgE<gt>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
+
 =cut
 
-sub said {
-    my($self, $mess, $pri) = @_;
+package Bot::BasicBot::Pluggable::Module::Vars;
+use base qw(Bot::BasicBot::Pluggable::Module);
+use warnings;
+use strict;
+
+sub help {
+    return "Change internal module variables. Usage: !set <module> <variable> <value>, !unset <module> <variable>, !vars <module>.";
+}
+
+sub told {
+    my($self, $mess) = @_;
     my $body = $mess->{body};
-    
-    return unless ($pri == 2); # most common
+
     my ($command, $mod, $var, $value) = split(/\s+/, $body, 4);
     $command = lc($command);
 
     if ($command eq "!set") {
-        return "Usage: !set <module> <var> <value>" unless $value;
         my $module = $self->{Bot}->module($mod);
-        return "No such module" unless $module;
+        return "No such module '$module'." unless $module;
+        $value = $value ? $value : ''; # wipe if no value.
         $module->set("user_$var", $value);
         return "Set.";
-        
+
     } elsif ($command eq "!unset") {
-        return "Usage: !unset <module> <var>" unless $var;
+        return "Usage: !unset <module> <variable>." unless $var;
         my $module = $self->{Bot}->module($mod);
-        return "No such module" unless $module;
+        return "No such module '$module'." unless $module;
         $module->unset("user_$var");
         return "Unset.";
-        
+
     } elsif ($command eq "!vars") {
         my $module = $self->bot->module($mod);
-        return "No such module" unless $module;
+        return "No such module '$module'." unless $module;
         my @vars = map { s/^user_// ? $_ : () } $module->store_keys();
-        return "$mod has no vars" unless @vars;
+        return "$mod has no variables." unless @vars;
         return "Variables for $mod: " .
-          join ", ", map { "'$_' => '".$module->get("user_$_")."'" } @vars;
+          (join ", ", map { "'$_' => '".$module->get("user_$_")."'" } @vars).".";
     }
-
-}
-
-sub help {
-    return "Usage: !set <module> <var> <value>, or !vars <module> to list vars for a module.";
 }
 
 1;

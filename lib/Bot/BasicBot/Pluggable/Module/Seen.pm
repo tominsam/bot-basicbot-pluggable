@@ -1,64 +1,74 @@
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Module::Seen
-
-=head1 SYNOPSIS
-
-Keeps track of when people were last seen, and where.
+Bot::BasicBot::Pluggable::Module::Seen - track when and where people were seen
 
 =head1 IRC USAGE
-
-Commands:
 
 =over 4
 
 =item seen <nick>
 
-When did I last see <nick>
+Find out when the last time a nick was seen and where.
 
 =item hide
 
-Hide from the seen reporting
+Hide yourself from the seen reporting.
 
 =item unhide
 
-Stops hiding
+Stops hiding yourself from the seen reporting.
 
 =back
+
+=head1 VARS
+
+=over 4
+
+=item allow_hiding
+
+Defaults to 1; whether or not a nick can hide themselves from seen status.
+
+=back
+
+=head1 AUTHOR
+
+Tom Insam E<lt>tom@jerakeen.orgE<gt>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
 
 package Bot::BasicBot::Pluggable::Module::Seen;
+use base qw(Bot::BasicBot::Pluggable::Module);
 use warnings;
 use strict;
-use base qw(Bot::BasicBot::Pluggable::Module);
 
-
-sub help {
-    return "Tracks seen status of people. ".
-    "say 'seen <nick>' to find out where I last saw someone. ".
-    "Tell me 'hide' and I'll stop tracking you, stop with 'unhide'.";
+sub init {
+    my $self = shift;
+    $self->set("user_allow_hiding", 1) unless defined($self->get("user_allow_hiding"));
 }
 
-sub said {
-    my ($self, $mess, $pri) = @_;
+sub help {
+    return "Tracks when and where people were seen. Usage: seen <nick>, hide, unhide.";
+}
+
+sub seen {
+    my ($self, $mess) = @_;
     my $body = $mess->{body};
 
-    # no admin stuff please.
-    return if $mess->{body} =~ /^!/;
-    
-    if ($pri == 0) {
-        my $nick = lc($mess->{who});
+    my $nick = lc($mess->{who});
+    $self->set( "seen_$nick" => {
+        time    => time,
+        channel => $mess->{channel},
+        what    => $mess->{channel} ne 'msg' ? $mess->{body} : '<private message>',
+    } );
+    return;
+}
 
-        $self->set( "seen_$nick" => {
-            time => time,
-            channel => $mess->{channel},
-            what => $mess->{channel} ne 'msg' ? $mess->{body} : '<private message>',
-        } );
-        return undef;
-    }
-
-    return undef unless ($pri == 2);
+sub told {
+    my ($self, $mess) = @_;
+    my $body = $mess->{body};
 
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
@@ -67,55 +77,47 @@ sub said {
         my $who = lc($1);
         my $seen = $self->get("seen_$who");
 
-        if ($self->get("hide_$who") or !$seen) {
-            return "Sorry, I haven't seen $who";
+        if ($self->get("user_allow_hiding") and ($self->get("hide_$who") or !$seen)) {
+            return "Sorry, I haven't seen $1.";
         }
+
         my $diff = time - $seen->{time};
         my $time_string = secs_to_string($diff);
-        $mess->{address} = undef;
-        return "$who was last seen in $seen->{channel} $time_string saying '$seen->{what}'";
+        return "$1 was last seen in $seen->{channel} $time_string saying '$seen->{what}'.";
 
     } elsif ($command eq "hide" and $mess->{address}) {
         my $nick = lc($mess->{who});
+        if (!$self->get("user_allow_hiding")) {
+          return "Hiding has been disabled by the administrator.";
+        }
+
         $self->set( "hide_$nick" => 1 );
-        return "Ok, you're hiding";
+        return "Ok, you're hiding from seen status.";
 
     } elsif ($command eq "unhide" and $mess->{address}) {
         my $nick = lc($mess->{who});
         $self->unset( "hide_$nick" );
-        return "Ok, you're visible";
+        return "Ok, you're visible to seen status.";
     }
-
-
-    return undef;
 }
 
 sub secs_to_string {
     my $secs = shift;
 
-    # Hopefully never used. But if the seen time is in the future,
-    # catch it.
-    my $weird = 0;
-    if ($secs < 0) {
-        $secs = -$secs;
-        $weird = 1;
-    }
+    # Hopefully never used. But if the seen time is in the future, catch it.
+    my $weird = 0; if ($secs < 0) { $secs = -$secs; $weird = 1; }
 
-    my $days = int($secs / 86400);
-    $secs = $secs % 86400;
+    my $days  = int($secs / 86400);
     my $hours = int($secs / 3600);
-    $secs = $secs % 3600;
-    my $mins = int($secs / 60);
-    $secs = $secs % 60;
-    
-    my $string;
-    $string .= "$days days " if $days;
-    $string .= "$hours hours " if $hours;
-    $string .= "$mins mins " if ($mins and !$days);
-    $string .= "$secs seconds " if (!$days and !$hours);
+    my $mins  = int($secs / 60);
+    $secs = $secs % 86400 % 3600 % 60;
+
+    my $string = "$days days " if $days;
+    $string   .= "$hours hours " if $hours;
+    $string   .= "$mins mins " if ($mins and !$days);
+    $string   .= "$secs seconds " if (!$days and !$hours);
 
     return $string. ($weird ? "in the FUTURE!!!" : "ago");
 }
-
 
 1;

@@ -21,6 +21,19 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - New option added: show_givers (default: 1).
     - New option added: ignore_selfkarma (default: 1).
   - Loader: Revised documentation, switched to told() not said().
+  - Seen:
+    - Revised documentation, switched to seen() and told().
+    - Echoed $who is now what the user typed, not lc'd version.
+    - New option added: allow_hiding (default: 1).
+  - Title: Revised documentation, switched to admin() not said().
+  - Vars:
+    - Revised documentation, switched to told() not said().
+    - Removed the check for the existence of $value on a !set. This
+      check would fail whenever anyone tried to set the $value to 0,
+      which makes perfect sense when you're trying to turn off a boolean'd
+      feature. !unset doesn't work because that entirely deletes the 
+      $variable, which means it'll be reset to the default the next
+      time the module is reloaded or the bot is restarted.
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,

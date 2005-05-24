@@ -1,41 +1,48 @@
-package Bot::BasicBot::Pluggable::Module::Title;
-use Bot::BasicBot::Pluggable::Module::Base;
-use base qw(Bot::BasicBot::Pluggable::Module::Base);
-
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Module::Title
-
-=head1 SYNOPSIS
-
-Speak the title of urls mentioned in channel
+Bot::BasicBot::Pluggable::Module::Title - speaks the title of URLs mentioned
 
 =head1 IRC USAGE
 
-None. If the module is loaded, the bot will speak the titles of all web pages mentioned.
+None. If the module is loaded, the bot will speak the titles of all URLs mentioned.
+
+=head1 REQUIREMENTS
+
+L<URI::Title>
+
+L<URI::Find::Simple>
+
+=head1 AUTHOR
+
+Tom Insam E<lt>tom@jerakeen.orgE<gt>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
+
+package Bot::BasicBot::Pluggable::Module::Title;
+use base qw(Bot::BasicBot::Pluggable::Module);
+use warnings;
+use strict;
 
 use URI::Title qw(title);
 use URI::Find::Simple qw(list_uris);
 
 sub help {
-    return "will speak the title of any wab page mentioned in channel";
+    return "Speaks the title of URLs mentioned.";
 }
 
-sub said {
-    my ($self, $mess, $pri) = @_;
+sub admin {
+    my ($self, $mess) = @_;
 
-    return unless ($pri == 0); # respond to everything mentioned.
-
-    my $reply = "";
+    my $reply;
     for (list_uris($mess->{body})) {
-      my $title = title($_);
-      $reply .= "[ $title ] " if $title;
+        my $title = title($_);
+        $reply .= "[ $title ] " if $title;
     }
-    $self->reply($mess, $reply) if $reply;
 
-    return 0;
+    return $reply ? $reply : undef;
 }
 
 1;

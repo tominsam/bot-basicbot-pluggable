@@ -77,9 +77,7 @@ use strict;
 
 sub init {
     my $self = shift;
-    unless ( $self->get("password_admin") ) {
-        $self->set("password_admin" => "julia"); # mmmm, defaults.
-    }
+    $self->set("password_admin", "julia") unless defined($self->get("password_admin"));
 }
 
 sub help {
