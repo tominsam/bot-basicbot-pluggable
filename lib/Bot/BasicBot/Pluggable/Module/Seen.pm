@@ -77,7 +77,7 @@ sub told {
         my $who = lc($1);
         my $seen = $self->get("seen_$who");
 
-        if ($self->get("user_allow_hiding") and ($self->get("hide_$who") or !$seen)) {
+        if (($self->get("user_allow_hiding") and $self->get("hide_$who")) or !$seen) {
             return "Sorry, I haven't seen $1.";
         }
 
@@ -107,10 +107,9 @@ sub secs_to_string {
     # Hopefully never used. But if the seen time is in the future, catch it.
     my $weird = 0; if ($secs < 0) { $secs = -$secs; $weird = 1; }
 
-    my $days  = int($secs / 86400);
-    my $hours = int(($secs % 86400) / 3600);
-    my $mins  = int(($secs % 3600) / 60);
-    $secs = $secs % 86400 % 3600 % 60;
+    my $days  = int($secs / 86400); $secs = $secs % 86400;
+    my $hours = int($secs / 3600);  $secs = $secs % 3600;
+    my $mins  = int($secs / 60);    $secs = $secs % 60;
 
     my $string = "$days days " if $days;
     $string   .= "$hours hours " if $hours;
