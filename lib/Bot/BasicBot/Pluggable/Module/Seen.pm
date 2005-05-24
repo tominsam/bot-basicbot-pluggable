@@ -108,8 +108,8 @@ sub secs_to_string {
     my $weird = 0; if ($secs < 0) { $secs = -$secs; $weird = 1; }
 
     my $days  = int($secs / 86400);
-    my $hours = int($secs / 3600);
-    my $mins  = int($secs / 60);
+    my $hours = int(($secs % 86400) / 3600);
+    my $mins  = int(($secs % 3600) / 60);
     $secs = $secs % 86400 % 3600 % 60;
 
     my $string = "$days days " if $days;
