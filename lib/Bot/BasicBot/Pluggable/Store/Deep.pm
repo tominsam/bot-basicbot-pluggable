@@ -1,13 +1,19 @@
-package Bot::BasicBot::Pluggable::Store::Deep;
-
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Store::Deep - use DBM::Deep to provide a storage backend
 
+=head1 SYNOPSIS
+
+  my $store = Bot::BasicBot::Pluggable::Store::Deep->new(
+    file => "filename"
+  );
+
+  $store->set( "namespace", "key", "value" );
+
 =head1 DESCRIPTION
 
-This is a C<Bot::BasicBot::Pluggable::Store> that uses a C<DBM::Deep> to store
-the values set by modules. 
+This is a C<Bot::BasicBot::Pluggable::Store> that uses C<DBM::Deep> to store
+the values set by modules.
 
 =head1 AUTHOR
 
@@ -17,22 +23,24 @@ Simon Wistow <simon@thegestalt.org>
 
 Copyright 2005, Simon Wistow
 
-Distributed under the same terms as perl itself.
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
 
+package Bot::BasicBot::Pluggable::Store::Deep;
 use warnings;
 use strict;
-use base qw( Bot::BasicBot::Pluggable::Store );
-use Carp qw/croak/;
-
+use Carp qw( croak );
 use DBM::Deep;
+
+use base qw( Bot::BasicBot::Pluggable::Store );
 
 sub init {
     my $self = shift;
     delete $self->{type};
-    croak "You must pass a filename into the Deep store init" unless defined $self->{file};
-    $self->{_db} = DBM::Deep->new(%$self) || die "Couldn't connect to db - $self->{file}";
+    croak "You must pass a filename" unless defined $self->{file};
+    $self->{_db} = DBM::Deep->new(%$self) || die "Couldn't connect to DB '$self->{file}'";
 }
 
 sub set {
@@ -42,7 +50,7 @@ sub set {
 }
 
 sub get {
-      my ($self, $namespace, $key) = @_;
+    my ($self, $namespace, $key) = @_;
     return $self->{_db}->{$namespace}->{$key};
 }
 

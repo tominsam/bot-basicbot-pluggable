@@ -1,26 +1,32 @@
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Store::DBI - A database B::B::P store
+Bot::BasicBot::Pluggable::Store::DBI - use DBI to provide a storage backend
 
 =head1 SYNOPSIS
 
   my $store = Bot::BasicBot::Pluggable::Store::DBI->new(
-    dsn => "dbi:mysql:bot",
-    user => "user",
-    password => "password",
-    table => "brane",
+    dsn          => "dbi:mysql:bot",
+    user         => "user",
+    password     => "password",
+    table        => "brane",
+
+    # create indexes on key/values?
+    create_index => 1,
   );
-  
-  $store->set( "namespace", "key" => "value" );
+
+  $store->set( "namespace", "key", "value" );
   
 =head1 DESCRIPTION
 
 This is a L<Bot::BasicBot::Pluggable::Store> that uses a database to store
 the values set by modules. Complex values are stored using Storable.
 
-=head1 METHODS
+=head1 AUTHOR
 
-=over 4
+Tom Insam <tom@jerakeen.org>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
 
@@ -29,8 +35,8 @@ use warnings;
 use strict;
 use Carp qw( croak );
 use Data::Dumper;
-use Storable qw( nfreeze thaw );
 use DBI;
+use Storable qw( nfreeze thaw );
 
 use base qw( Bot::BasicBot::Pluggable::Store );
 
@@ -51,60 +57,41 @@ sub create_table {
   my $self = shift;
   my $table = $self->{table} or die "Need DB table";
   $self->dbh->do("CREATE TABLE $table (
-    id INT PRIMARY KEY,
-    namespace TEXT,
-    store_key TEXT,
-    store_value LONGBLOB
-  )");
+                    id INT PRIMARY KEY,
+                    namespace TEXT,
+                    store_key TEXT,
+                    store_value LONGBLOB )");
   return unless $self->{create_index};
   eval {
       $self->dbh->do("CREATE INDEX lookup ON $table ( namespace(10), store_key(10) )");
   };
-  
+}
+
+sub get {
+  my ($self, $namespace, $key) = @_;
+  my $table = $self->{table} or die "Need DB table";
+  my $sth = $self->dbh->prepare_cached(
+    "SELECT store_value FROM $table WHERE namespace=? and store_key=?"
+  ); $sth->execute($namespace, $key);
+  my $row = $sth->fetchrow_arrayref;
+  $sth->finish; return undef unless $row and @$row;
+  return eval { thaw($row->[0]) } || $row->[0];
 }
 
 sub set {
   my ($self, $namespace, $key, $value) = @_;
   my $table = $self->{table} or die "Need DB table";
   $value = nfreeze($value) if ref($value);
-  my $sql;
   if (defined($self->get($namespace, $key))) {
     my $sth = $self->dbh->prepare_cached(
       "UPDATE $table SET store_value=? WHERE namespace=? AND store_key=?"
-    );
-    $sth->execute($value, $namespace, $key);
-    $sth->finish;
+    ); $sth->execute($value, $namespace, $key); $sth->finish;
   } else {
     my $sth = $self->dbh->prepare_cached(
       "INSERT INTO $table (id, store_value, namespace, store_key) VALUES (?, ?, ?, ?)"
-    );
-    $sth->execute($self->new_id($table), $value, $namespace, $key);
-    $sth->finish;
+    ); $sth->execute($self->new_id($table), $value, $namespace, $key); $sth->finish;
   }
   return $self;
-}
-
-sub new_id {
-  my $self = shift;
-  my $table = shift;
-  my $sth = $self->dbh->prepare_cached("SELECT MAX(id) FROM $table");
-  $sth->execute();
-  my $id = $sth->fetchrow_arrayref->[0] || "0";
-  $sth->finish();
-  return $id + 1;
-}
-  
-sub get {
-  my ($self, $namespace, $key) = @_;
-  my $table = $self->{table} or die "Need DB table";
-  my $sth = $self->dbh->prepare_cached(
-    "SELECT store_value FROM $table WHERE namespace=? and store_key=?"
-  );
-  $sth->execute($namespace, $key);
-  my $row = $sth->fetchrow_arrayref;
-  $sth->finish;
-  return undef unless $row and @$row;
-  return eval { thaw($row->[0]) } || $row->[0];
 }
 
 sub unset {
@@ -112,9 +99,15 @@ sub unset {
   my $table = $self->{table} or die "Need DB table";
   my $sth = $self->dbh->prepare_cached(
     "DELETE FROM $table WHERE namespace=? and store_key=?"
-  );
-  $sth->execute($namespace, $key);
-  $sth->finish;
+  ); $sth->execute($namespace, $key); $sth->finish;
+}
+
+sub new_id {
+  my $self  = shift;
+  my $table = shift;
+  my $sth = $self->dbh->prepare_cached("SELECT MAX(id) FROM $table");
+  $sth->execute(); my $id = $sth->fetchrow_arrayref->[0] || "0";
+  $sth->finish(); return $id + 1;
 }
 
 sub keys {
@@ -122,11 +115,9 @@ sub keys {
   my $table = $self->{table} or die "Need DB table";
   my $sth = $self->dbh->prepare_cached(
     "SELECT store_key FROM $table WHERE namespace=?"
-  );
-  $sth->execute($namespace);
+  ); $sth->execute($namespace);
   my @keys = map { $_->[0] } @{ $sth->fetchall_arrayref };
-  $sth->finish;
-  return @keys;
+  $sth->finish; return @keys;
 }
 
 sub namespaces {
@@ -134,21 +125,10 @@ sub namespaces {
   my $table = $self->{table} or die "Need DB table";
   my $sth = $self->dbh->prepare_cached(
     "SELECT DISTINCT namespace FROM $table"
-  );
-  $sth->execute();
+  ); $sth->execute();
   my @keys = map { $_->[0] } @{ $sth->fetchall_arrayref };
-  $sth->finish;
-  return @keys;
+  $sth->finish; return @keys;
 }
 
 1;
 
-=back
-
-=head1 SEE ALSO
-
-=head1 AUTHOR
-
-Tom
-
-=cut

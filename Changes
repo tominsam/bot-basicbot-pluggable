@@ -34,6 +34,7 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
       feature. !unset doesn't work because that entirely deletes the 
       $variable, which means it'll be reset to the default the next
       time the module is reloaded or the bot is restarted.
+  - Revised documentation for Store.pm and Store/* modules.
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,

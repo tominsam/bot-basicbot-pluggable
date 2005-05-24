@@ -1,23 +1,35 @@
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Store::Storable
-
-=head1 DESCRIPTION
+Bot::BasicBot::Pluggable::Store::Storable - use Storable to provide a storage backend
 
 =head1 SYNOPSIS
 
-=head1 METHODS
+  my $store = Bot::BasicBot::Pluggable::Store::Storable->new(
+    file => "filename"
+  );
 
-=over 4
+  $store->set( "namespace", "key", "value" );
+  
+=head1 DESCRIPTION
+
+This is a L<Bot::BasicBot::Pluggable::Store> that uses Storable to store
+the values set by modules.
+
+=head1 AUTHOR
+
+Tom Insam <tom@jerakeen.org>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
 
 package Bot::BasicBot::Pluggable::Store::Storable;
 use warnings;
 use strict;
-use base qw( Bot::BasicBot::Pluggable::Store );
-
 use Storable qw( nstore retrieve );
+
+use base qw( Bot::BasicBot::Pluggable::Store );
 
 sub save {
   my $self = shift;
@@ -26,31 +38,17 @@ sub save {
 
   for my $name ( @modules ) {
     my $filename = $name.".storable";
-    #warn "Saving to $filename\n";
     nstore($self->{store}{$name}, $filename)
-      or die "cannot save to $filename";
+      or die "Cannot save to $filename";
   }
-  #warn "Done\n";
 }
 
 sub load {
   my $self = shift;
   for my $file (<*.storable>) {
-    #warn "Loading storable file $file..\n";
     my ($name) = $file =~ /^(.*?)\.storable$/;
     $self->{store}{$name} = retrieve($file);
   }
-  #warn "Done.\n";
 }
 
 1;
-
-=back
-
-=head1 SEE ALSO
-
-=head1 AUTHOR
-
-Tom
-
-=cut
