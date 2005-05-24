@@ -13,6 +13,13 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - New option added: languages (default: en).
     - New option added: require_addressing (default: 1).
   - Join: Revised documentation, switched to told() not said().
+  - Karma:
+    - Revised documentation, switched to told() and seen().
+    - Replaced fisher_yates with newer version from Perl 5.8.
+    - Fixed a bunch of little nigglies here and there.
+    - New option added: num_comments (default: 3).
+    - New option added: show_givers (default: 1).
+    - New option added: ignore_selfkarma (default: 1).
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,
