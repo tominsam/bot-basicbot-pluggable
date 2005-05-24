@@ -442,7 +442,7 @@ Google.pm needs L<Net::Google>. See the module docs for more details.
 
 =head1 AUTHOR
 
-Tom Insam E<lt>tom@jerakeen.orgE<gt>
+Tom Insam <tom@jerakeen.org>
 
 This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.

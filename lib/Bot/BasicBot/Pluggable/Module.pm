@@ -44,8 +44,8 @@ use strict;
 =item new()
 
 Standard C<new> method, blesses a hash into the right class and puts any
-key/value pairs passed to it into the blessed hash. Calls C<load()> to load any
-internal variables, then C<init>, which you can also override in your module.
+key/value pairs passed to it into the blessed hash. Calls C<init> to load
+any internal or user variables you may have set in your module.
 
 =cut
 
@@ -67,7 +67,7 @@ sub new {
 
 =item init
 
-Called after the settings have loaded. May or may not be after server connection.
+Called as part of new class construction. May or may not be after server connection.
 
 =cut
 
@@ -346,7 +346,7 @@ sub tick { undef }
 
 =head1 AUTHOR
 
-Tom Insam E<lt>tom@jerakeen.orgE<gt>
+Tom Insam <tom@jerakeen.org>
 
 This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.

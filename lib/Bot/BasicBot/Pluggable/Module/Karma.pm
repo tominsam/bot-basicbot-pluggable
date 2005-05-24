@@ -68,7 +68,7 @@ Defaults to 1; whether to show who gave good or bad comments on explanations.
 
 =head1 AUTHOR
 
-Tom Insam E<lt>tom@jerakeen.orgE<gt>
+Tom Insam <tom@jerakeen.org>
 
 This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
@@ -82,9 +82,9 @@ use strict;
 
 sub init {
     my $self = shift;
-    $self->set("user_ignore_selfkarma", 1) unless $self->get("user_ignore_selfkarma");
-    $self->set("user_num_comments", 3) unless $self->get("user_num_comments");
-    $self->set("user_show_givers", 1) unless $self->get("user_show_givers");
+    $self->set("user_ignore_selfkarma", 1) unless defined($self->get("user_ignore_selfkarma"));
+    $self->set("user_num_comments", 3) unless defined($self->get("user_num_comments"));
+    $self->set("user_show_givers", 1) unless defined($self->get("user_show_givers"));
 }
 
 sub help {
