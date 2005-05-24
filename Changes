@@ -4,7 +4,14 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
   - Revised documentation for Pluggable.pm and Module.pm.
   - Auth: Revised documentation, switched to admin() not said().
   - DNS: Revised documentation, switched to told() not said().
-  - Google: Revised documentation, switched to told() not said().
+  - Google:
+    - Revised documentation, switched to told() not said().
+    - Removed deprecated Net::Google ie() and oe() methods.
+    - Default language restriction set to just 'en'; removed 'fr'.
+    - Removed explicit starts_at of 0, which is the default.
+    - New option added: num_results (default: 3).
+    - New option added: languages (default: en).
+    - New option added: require_addressing (default: 1).
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,

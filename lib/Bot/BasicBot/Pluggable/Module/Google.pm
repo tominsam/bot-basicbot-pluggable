@@ -26,6 +26,18 @@ To set module variables, use L<Bot::BasicBot::Pluggable::Module::Vars>.
 
 A valid Google API key is required for lookups.
 
+=item languages
+
+Defaults to 'en'; a space-separated list of language restrictions.
+
+=item num_results
+
+Defaults to 3; the number of Google search results to return (maximum 10).
+
+=item require_addressing
+
+Defaults to 1; whether you need to address the bot for Google searches.
+
 =back
 
 =head1 REQUIREMENTS
@@ -53,9 +65,10 @@ use Net::Google;
 
 sub init {
     my $self = shift;
-
-    # default value for google_key, so it shows up in the list of vars.
     $self->set("user_google_key", "** SET ME FOR GOOGLE LOOKUPS **") unless $self->get("user_google_key");
+    $self->set("user_languages", "en") unless $self->get("user_languages");
+    $self->set("user_num_results", 3) unless $self->get("user_num_results");
+    $self->set("user_require_addressing", 1) unless $self->get("user_require_addressing");
 }
 
 sub help {
@@ -66,40 +79,30 @@ sub told {
     my ($self, $mess) = @_;
     my $body = $mess->{body};
 
-    return unless $mess->{address};
+    return if ($self->get("user_require_addressing") and not $mess->{address});
 
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
 
     if ($command eq "google") {
         return "No Google key has been set! Set it with '!set Google google_key <key>'." unless $self->get("user_google_key");
+        return "Your configuration has exceeded the maximum number of allowed Google results (10)." if $self->get("user_num_results") > 10;
 
         my $google = Net::Google->new(key=>$self->get("user_google_key"));
-        my $search = $google->search();
+        my $search = $google->search(lr=>qw($self->get("user_languages")), max_results=>$self->get("user_num_results"));
         $search->query(split(/\s+/, $param));
-        $search->lr(qw(en fr));
-        $search->ie("utf8");
-        $search->oe("utf8");
-        $search->starts_at(0);
-        $search->max_results(3);
 
-        my $res;
+        my $res; # magical concatenation of all results.
         $res .= $_->title.": ".$_->URL."\n" for @{$search->results()};
-        $res =~ s/<[^>]+>//g;
+        $res =~ s/<[^>]+>//g; # remove the bolded search terms.
 
-        return "No results" unless $res;
-        return "$res";
+        return $res ? $res : "No results for \'$param\'.";
 
     } elsif ($command eq "spell") {
         return "No Google key has been set! Set it with '!set Google google_key <key>'." unless $self->get("user_google_key");
-
         my $google = Net::Google->new(key=>$self->get("user_google_key"));
-        my $search = $google->search();
-
         my $res = $google->spelling(phrase=>$param)->suggest();
-        return $res if $res;
-        return "No clue";
-
+        return $res ? $res : "No results for \'$param\'.";
     }
 }
 
