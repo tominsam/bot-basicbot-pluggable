@@ -20,6 +20,7 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - New option added: num_comments (default: 3).
     - New option added: show_givers (default: 1).
     - New option added: ignore_selfkarma (default: 1).
+  - Loader: Revised documentation, switched to told() not said().
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,

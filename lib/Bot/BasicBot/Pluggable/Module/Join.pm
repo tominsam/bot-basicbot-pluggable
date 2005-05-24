@@ -1,13 +1,6 @@
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Module::Join - join and leave channels
-
-=head1 SYNOPSIS
-
-Join keeps track of which channels the bot has configured to be in and will
-leave and join channels upon request. Load this module and you can tell the bot
-to join, leave, or lists its current channels, and it will remember these
-settings across restarts. Administrative access is not required.
+Bot::BasicBot::Pluggable::Module::Join - join and leave channels; remembers state
 
 =head1 IRC USAGE
 
