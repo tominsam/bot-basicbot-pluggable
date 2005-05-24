@@ -79,8 +79,8 @@ on module loading is in L<Bot::BasicBot::Pluggable::Module::Loader>.
 
 The Join module lets you tell the bot to join and leave channels:
 
-  !join #mychannel
-  !leave #someotherchannel
+  <botname>, join #mychannel
+  <botname>, leave #someotherchannel
 
 The perldoc pages for the various modules will list other commands.
 

@@ -55,7 +55,6 @@ and/or modify it under the same terms as Perl itself.
 
 =cut
 
-
 package Bot::BasicBot::Pluggable::Module::Google;
 use base qw(Bot::BasicBot::Pluggable::Module);
 use warnings;
