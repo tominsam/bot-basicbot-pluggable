@@ -20,6 +20,8 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - New option added: num_comments (default: 3).
     - New option added: show_givers (default: 1).
     - New option added: ignore_selfkarma (default: 1).
+    - If only "karma", we assume $mess->{who} now.
+    - Now understands "<botname>++" and "<botname>--";
   - Loader: Revised documentation, switched to told() not said().
   - Seen:
     - Revised documentation, switched to seen() and told().
