@@ -1,112 +1,163 @@
 =head1 NAME
 
-Bot::BasicBot::Pluggable::Module::Infobot
+Bot::BasicBot::Pluggable::Module::Infobot - infobot clone redone in B::B::P.
 
 =head1 SYNOPSIS
 
-Does infobot things - basically remmebers and returns factoids. Will ask
-another infobot about factoids that it doesn't know about, if you want.
-
-Due to persistent heckling from the peanut gallery, does things pretty much 
-exactly like the classic infobot, even when they're not necessarily that 
-useful (for example, saying "okay." rather than "OK, water is wet.").
+Does infobot things - basically remembers and returns factoids. Will ask
+another infobot about factoids that it doesn't know about, if you want. Due
+to persistent heckling from the peanut gallery, does things pretty much
+exactly like the classic infobot, even when they're not necessarily that
+useful (for example, saying "Okay." rather than "OK, water is wet."). Further
+infobot backwards compatibility is available through additional packages
+such as L<Bot::BasicBot::Pluggable::Module::Foldoc>.
 
 =head1 IRC USAGE
 
-Assume the bot is called 'eric'. Then you'd use the infobot as follows.
+The following examples assume you're running Infobot with its defaults settings,
+which require the bot to be addressed before learning factoids or answering
+queries. Modify these settings with the Vars below.
 
-  me: eric, water is wet.
-  eric: okay.
-  me: water?
-  eric: water is wet.
-  me: eric, water is also blue.
-  eric: okay.
-  me: eric, water?
-  eric: water is wet or blue.
+  <user> bot: water is wet.
+   <bot> user: okay.
+  <user> bot: water?
+   <bot> user: water is wet.
+  <user> bot: water is also blue.
+   <bot> user: okay.
+  <user> bot: water?
+   <bot> user: water is wet or blue.
+  <user> bot: no, water is translucent.
+   <bot> user: okay.
+  <user> bot: water?
+   <bot> user: water is translucent.
+  <user> bot: forget water.
+   <bot> user: I forgot about water.
+  <user> bot: water?
+   <bot> user: No clue. Sorry.
+
+A fact that begins with "<reply>" will have the "<noun> is" stripped:
+
+  <user> bot: what happen is <reply>somebody set us up the bomb.
+   <bot> user: okay.
+  <user> bot: what happen?
+   <bot> user: somebody set us up the bomb.
+
+A fact that begins "<action>" will be emoted as a response:
+
+  <user> bot: be funny is <action>dances silly.
+   <bot> user: okay.
+  <user> bot: be funny?
+    * bot dances silly.
+
+Pipes ("|") indicate different possible answers, picked at random:
+
+  <user> bot: dice is one|two|three|four|five|six
+   <bot> user: okay.
+  <user> bot: dice?
+   <bot> user: two.
+  <user> bot: dice?
+   <bot> user: four.
   
-etc, etc.
+You can also use RSS feeds as a response:
 
-a response that begins <reply> will have the '<noun> is' stripped, so
+  <user> bot: jerakeen.org is <rss="http://jerakeen.org/rss">.
+   <bot> user: okay.
+  <user> bot: jerakeen.org?
+   <bot> user: jerakeen.org is <item>; <item>; etc...
 
-  me: eric, what happen is <reply>somebody set us up the bomb
-  eric: okay.
-  me: what happen?
-  eric: somebody set us up the bomb
+You can also ask the bot to learn a factoid from another bot, as follows:
 
-just don't do that in #london.pm.
+  <user> bot: ask bot2 about fact.
+   <bot> user: asking bot2 about fact...
+  <user> bot: fact?
+   <bot> user: fact is very boring.
 
-Likewise, a response that begins <action> will be emoted as a response,
-instead of said. Putting '|' characters in the reply indicates different
-possible answers, and the bot will pick one at random.
-
-  me: eric, dice is one|two|three|four|five|six
-  eric: okay.
-  me: eric, dice?
-  eric: two.
-  me: eric, dice?
-  eric: four.
-  
-Finally, you can read RSS feeds:
-
-  me: eric, jerakeen.org is <rss="http://jerakeen.org/index.rdf">
-  eric: okay.
-  
-ok, you get the idea.
-
-You can also tell the bot to learn a factoid from another bot, as follows:
-
-  me: eric, learn fact from dispy
-  eric: learnt 'fact is very boring' from dipsy.
-  me: fact?
-  eric: fact is very boring
-  
 =head1 VARS
 
 =over 4
 
-=item ask
+=item passive_answer
 
-Set this to the nick of an infobot and your bot will ask them about factoids
-that we don't know about, and forward them on (with attribution).
+Defaults to 0; when enabled, the bot will answer factoids without being addressed.
+
+=item passive_learn
+
+Defaults to 0; when enabled, the bot will learn factoids without being addressed.
+
+=item stopwords
+
+A comma or space separated list of words the bot should not learn or answer for.
+This prevents such insanity as the learning of "where is the store?" and "how
+is your mother?" The default list of stopwords is: "here how it something
+that that this what when where which which who why".
 
 =back
 
-=head2 TODO
+=head1 BUGS
 
-If we need to request an RSS feed that takes a long time to come back, we'll
-time out and drop off the server. oops.
+If we request an RSS feed that takes a long time, we'll timeout and drop off.
+
+"is also" doesn't work on <reply>s (ie. "<bot> cheetahs! or <reply>monkies.")
+
+"is also" doesn't work on <action>s (same as the previous bug, hobo.)
+
+The pipe syntax for random replies doesn't actually work. At all. Um.
+
+"no, <bot>, <fact> is <response>" should be possible, but isn't.
+
+If bot is in passive_learn, it'll complain about resetting facts.
+
+There needs to be a settable limit on how many RSS items to return.
+
+There needs to be a settable list of "No clue. Sorry" responses.
+
+"<bot>?" fails, due to removal of <bot> name from $mess->body.
+
+"ask" syntax doesn't work in a private message.
+
+"water." and "water" are entirely different factoids.
+
+The tab stops are set to 2, not 4. OHMYGOD.
+
+=head1 REQUIREMENTS
+
+URI
+
+L<LWP::Simple>
+
+L<XML::Feed>
+
+=head1 AUTHOR
+
+Tom Insam <tom@jerakeen.org>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =cut
 
 package Bot::BasicBot::Pluggable::Module::Infobot;
-use Bot::BasicBot::Pluggable::Module;
 use base qw(Bot::BasicBot::Pluggable::Module);
+use warnings;
+use strict;
 
+use LWP::Simple ();
 use XML::Feed;
 use URI;
-use LWP::Simple ();
-use strict;
-use warnings;
 
 sub init {
-  my $self = shift;
+    my $self = shift;
+    $self->set("user_passive_answer", 0) unless defined($self->get("user_passive_answer"));
+    $self->set("user_passive_learn", 0) unless defined($self->get("user_passive_learn"));
+    $self->set("user_stopwords", "here how it something that that this what when where which which who why") unless defined($self->get("user_stopwords"));
+    $self->set("db_version" => "1") unless $self->get("db_version");
 
-  # set lots of user vars if they're not already set, so that they
-  # show up for users of the Vars module.
-  for (qw( ask passive_ask passive_learn stopwords )) {
-    $self->set("user_$_" => "") unless defined($self->get("user_$_"));
-  }
-  
-  # some vague plan to allow DB version upgrades
-  $self->set("db_version" => "1") unless $self->get("db_version");
-
-  # hash to record the queries we've asked of other infobots
-  $self->{remote_infobot} = {};
+    # record what we've asked other bots.
+    $self->{remote_infobot} = {};
 }
 
 sub help {
-  return "ooooooh, infobots. They're hard. ".
-  "See http://search.cpan.org/perldoc?Bot::BasicBot::Pluggable::Module::Infobot";
+    return "An infobot. See http://search.cpan.org/perldoc?Bot::BasicBot::Pluggable::Module::Infobot.";
 }
 
 sub told {
@@ -150,7 +201,7 @@ sub fallback {
 
   # fallback - passively learn things and answer questions.
   
-  if ( $body =~ s/\?+$// and ( $mess->{address} or $self->get("user_passive_ask") ) ) {
+  if ( $body =~ s/\?+$// and ( $mess->{address} or $self->get("user_passive_answer") ) ) {
     # literal question?
     my $literal = 1 if ($body =~ s/^literal\s+//i);
 
@@ -340,7 +391,7 @@ sub ask_factoid {
 
   # unique ID to reference this in future
   my $id = "<" . int(rand(100000)) . ">";
-  
+
   # store the message, so we can reply in context later
   $self->{remote_infobot}{$id} = $mess;
 

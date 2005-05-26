@@ -1,6 +1,10 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
 0.xx xxxx/xx/xx
+ This is the "Morbus release". Why the "Morbus release"?
+ Quite simply because he did everything you see below.
+ You can chastise him for his ego at http://disobey.com/.
+
   - Revised documentation for Pluggable.pm and Module.pm.
   - Auth: Revised documentation, switched to admin() not said().
   - DNS: Revised documentation, switched to told() not said().
@@ -37,6 +41,11 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
       $variable, which means it'll be reset to the default the next
       time the module is reloaded or the bot is restarted.
   - Revised documentation for Store.pm and Store/* modules.
+  - Infobot:
+    - Revised all the documentation, added more examples.
+    - Removed the 'ask' option; it was never actually used.
+    - Renamed option 'passive_ask' to 'passive_answer'. More sense.
+    - Added a small but decent list of common stopwords.
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,
