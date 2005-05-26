@@ -104,6 +104,16 @@ sub seen {
     } elsif (($body =~ /(\w+)\-\-\s*#?\s*/) or ($body =~ /\(([\w\s]+)\)\-\-\s*#?\s*/)) {
         return if (($1 eq $mess->{who}) and $self->get("user_ignore_selfkarma"));
         $self->add_karma($1, 0, $', $mess->{who});
+    } elsif ($mess->{address} && ($body =~ /\+\+\s*#?\s*/)) {
+        $self->add_karma($mess->{address}, 1, $', $mess->{who});
+
+    # our body check here is constrained to the beginning of the line with
+    # an optional "-" of "--" because Bot::BasicBot sees "<botname>-" as being
+    # an addressing mode (along with "," and ":"). so, "<botname>--" comes
+    # through as "<botname>-" in {address} and "-" as the start of our body.
+    # TODO: add some sort of $mess->{rawbody} to Bot::BasicBot.pm. /me grumbles.
+    } elsif ($mess->{address} && ($body =~ /\-?\-\s*#?\s*/)) {
+        $self->add_karma($mess->{address}, 0, $', $mess->{who});
     }
 }
 
@@ -116,6 +126,9 @@ sub told {
 
     if ($command eq "karma" and $param) {
         return "$param has karma of ".$self->get_karma($param).".";
+
+    } elsif ($command eq "karma" and !$param) {
+        return $mess->{who} ." has karma of ".$self->get_karma($mess->{who}).".";
 
     } elsif ($command eq "explain" and $param) {
         $param =~ s/^karma\s+//i;
