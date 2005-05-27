@@ -169,6 +169,9 @@ sub fallback {
             return $mess->{address} ? $unknown : undef;
         }
 
+        # variable substitution.
+        $factoid =~ s/\$who/$mess->{who}/g;
+
         # emote?
         if ($factoid =~ s/^<action>\s*//i) {
             $self->bot->emote({
@@ -190,22 +193,18 @@ sub fallback {
 
     # allow corrections and additions.
     my ($nick, $replace, $also) = ($self->bot->nick, 0, 0);
-    $replace = 1 if ($object =~ s/no,?\s*//i);            # no, $object is $fact.
-    $replace = 1 if ($object =~ s/^\s*$nick,?\s*//i);     # no, $bot, $object is $fact.
-    $also    = 1 if ($description =~ s/^also\s+//i);      # $object is also $fact.
+    $replace = 1 if ($object =~ s/no,?\s*//i);                     # no, $object is $fact.
+    $replace = 1 if ($replace and $object =~ s/^\s*$nick,?\s*//i); # no, $bot, $object is $fact.
+    $also    = 1 if ($description =~ s/^also\s+//i);               # $object is also $fact.
+
+    # ignore short, long, and stopword'd factoids.
+    return if length($object) <= $self->get("user_min_length");
+    return if length($object) >= $self->get("user_max_length");
+    my @stopwords = split(/\s*[\s,\|]\s*/, $self->get("user_stopwords"));
+    foreach (@stopwords) { return if $object =~ /^$_\b/; }
 
 
 
-  # long factoid keys are almost _always_ wrong.
-  # TODO - this should be a user variable
-  return if length($object) <= $self->get("user_min_length");
-  return if length($object) >= $self->get("user_max_length");
-
-  # certain words can't ever be factoid keys, to prevent insanity.
-  my @stopwords = split(/\s*[\s,\|]\s*/, $self->get("user_stopwords") || "");
-  for (@stopwords) {
-    return if $object =~ /\Q$_/;
-  }
 
   # if we're replacing things, remove it first.
   if ($replace) {
@@ -457,7 +456,7 @@ If we request an RSS feed that takes a long time, we'll timeout and drop off.
 
 The pipe syntax for random replies doesn't actually work. At all. Um.
 
-"no, <bot>, <fact> is <response>" should be possible, but isn't.
+We should probably make a "choose_random_response" function.
 
 There needs to be a settable limit on how many RSS items to return.
 
@@ -465,15 +464,15 @@ There needs to be a settable limit on how many RSS items to return.
 
 "ask" syntax doesn't work in a private message.
 
-"water." and "water" are entirely different factoids.
-
 The tab stops are set to 2, not 4. OHMYGOD.
 
 If a "search" fails, the bot doesn't tell you.
 
 "search" is case-sensitive.
 
-We should probably make a "choose_random_response" function.
+We need to interpolate "my" as $mess->{who}. "my site?".
+
+If Title module is loaded, <rss> factoids don't work cos of told/fallback.
 
 =head1 REQUIREMENTS
 

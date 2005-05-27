@@ -53,6 +53,8 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - New option: max_length (maximum $object length; default 25).
     - New option: unknown_responses (random list of "No clue." responses).
     - You can now replace facts with "no, $bot, $object is..." too.
+    - $who in a factoid is now replaced by $mess->{who}.
+    - Stopwords were NOT being stopped on word boundaries. Fixed.
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,
