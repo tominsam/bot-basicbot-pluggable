@@ -63,7 +63,7 @@ You can also use RSS feeds as a response:
   <user> bot: jerakeen.org is <rss="http://jerakeen.org/rss">.
    <bot> user: okay.
   <user> bot: jerakeen.org?
-   <bot> user: jerakeen.org is <item>; <item>; etc...
+   <bot> user: jerakeen.org is <item>; <item>; etc....
 
 You can also ask the bot to learn a factoid from another bot, as follows:
 
@@ -72,67 +72,12 @@ You can also ask the bot to learn a factoid from another bot, as follows:
   <user> bot: fact?
    <bot> user: fact is very boring.
 
-=head1 VARS
+Finally, you can privmsg the bot to search for particular facts:
 
-=over 4
+  <user> search for options.
+   <bot> I know about 'options indexes', 'charsetoptions override', etc....
 
-=item passive_answer
-
-Defaults to 0; when enabled, the bot will answer factoids without being addressed.
-
-=item passive_learn
-
-Defaults to 0; when enabled, the bot will learn factoids without being addressed.
-
-=item stopwords
-
-A comma or space separated list of words the bot should not learn or answer for.
-This prevents such insanity as the learning of "where is the store?" and "how
-is your mother?" The default list of stopwords is: "here how it something
-that that this what when where which which who why".
-
-=back
-
-=head1 BUGS
-
-If we request an RSS feed that takes a long time, we'll timeout and drop off.
-
-"is also" doesn't work on <reply>s (ie. "<bot> cheetahs! or <reply>monkies.")
-
-"is also" doesn't work on <action>s (same as the previous bug, hobo.)
-
-The pipe syntax for random replies doesn't actually work. At all. Um.
-
-"no, <bot>, <fact> is <response>" should be possible, but isn't.
-
-If bot is in passive_learn, it'll complain about resetting facts.
-
-There needs to be a settable limit on how many RSS items to return.
-
-There needs to be a settable list of "No clue. Sorry" responses.
-
-"<bot>?" fails, due to removal of <bot> name from $mess->body.
-
-"ask" syntax doesn't work in a private message.
-
-"water." and "water" are entirely different factoids.
-
-The tab stops are set to 2, not 4. OHMYGOD.
-
-=head1 REQUIREMENTS
-
-URI
-
-L<LWP::Simple>
-
-L<XML::Feed>
-
-=head1 AUTHOR
-
-Tom Insam <tom@jerakeen.org>
-
-This program is free software; you can redistribute it
-and/or modify it under the same terms as Perl itself.
+=head1 METHODS
 
 =cut
 
@@ -147,9 +92,14 @@ use URI;
 
 sub init {
     my $self = shift;
+    $self->set("user_min_length", 3) unless defined($self->get("user_min_length"));
+    $self->set("user_max_length", 25) unless defined($self->get("user_max_length"));
+    $self->set("user_num_results", 20) unless defined($self->get("user_num_results"));
     $self->set("user_passive_answer", 0) unless defined($self->get("user_passive_answer"));
     $self->set("user_passive_learn", 0) unless defined($self->get("user_passive_learn"));
-    $self->set("user_stopwords", "here how it something that that this what when where which which who why") unless defined($self->get("user_stopwords"));
+    $self->set("user_require_question", 1) unless defined($self->get("user_require_question"));
+    $self->set("user_stopwords", "here|how|it|something|that|this|what|when|where|which|who|why") unless defined($self->get("user_stopwords"));
+    $self->set("user_unknown_responses", "Dunno.|I give up.|I have no idea.|No clue. Sorry.|Search me, bub.|Sorry, I don't know.") unless defined($self->get("user_unknown_responses"));
     $self->set("db_version" => "1") unless $self->get("db_version");
 
     # record what we've asked other bots.
@@ -161,78 +111,79 @@ sub help {
 }
 
 sub told {
-  my ($self, $mess) = @_;
-  my $body = $mess->{body};
+    my ($self, $mess) = @_;
+    my $body = $mess->{body};
 
-  # looks like an infobot reply
-  if ($body =~ s/^:INFOBOT:REPLY (\S+) (.*)$//) {
-    return $self->infobot_reply($1, $2, $mess);
-  }
-
-  # these are all direct commands, and must be addressed.
-
-  return unless $mess->{address};
-  
-  if ($body =~ /^forget\s+(.*)$/i) {
-    if ( $self->delete_factoid($1) ) {
-      return "I forgot about $1";
-    } else {
-      return "I don't know anything about $1";
+    # looks like an infobot reply.
+    if ($body =~ s/^:INFOBOT:REPLY (\S+) (.*)$//) {
+        return $self->infobot_reply($1, $2, $mess);
     }
-  }
 
-  if ($body =~ /^ask\s+(\S+)\s+about\s+(.*)$/i) {
-    $self->ask_factoid($2, $1, $mess);
-    return "asking $1 about $2..\n";
-  }
+    # direct commands must be addressed.
+    return unless $mess->{address};
 
-  if ($body =~ /^search\s+for\s+(.*)$/i) {
-    return "privmsg only, please" unless $mess->{channel} eq "msg";
-    my @results = $self->search_factoid(split(/\s+/, $1)) or return;
-    $#results = 20 if $#results > 20;
-    return "Keys: ".join(", ", map { "'$_'" } @results);
-  }
+    # forget a particular factoid.
+    if ($body =~ /^forget\s+(.*)$/i) {
+        return $self->delete_factoid($1)
+          ? "I forgot about $1."
+          : "I don't know anything about $1.";
+    }
 
+    # ask another bot for facts.
+    if ($body =~ /^ask\s+(\S+)\s+about\s+(.*)$/i) {
+        $self->ask_factoid($2, $1, $mess);
+        return "I'll ask $1 about $2.";
+    }
+
+    # search for a particular factoid.
+    return unless ($mess->{channel} eq "msg");
+    if ($body =~ /^search\s+for\s+(.*)$/i) {
+        my @results = $self->search_factoid(split(/\s+/, $1));
+        unless (@results) { return "I don't know anything about $1."; }
+        $#results = $self->get("user_num_results") unless $#results < $self->get("user_num_results");
+        return "I know about the following: ".join(", ", map { "'$_'" } @results) .".";
+    }
 }
 
 sub fallback {
-  my ($self, $mess) = @_;
-  my $body = $mess->{body};
+    my ($self, $mess) = @_;
+    my $body = $mess->{body};
 
-  # fallback - passively learn things and answer questions.
-  
-  if ( $body =~ s/\?+$// and ( $mess->{address} or $self->get("user_passive_answer") ) ) {
-    # literal question?
-    my $literal = 1 if ($body =~ s/^literal\s+//i);
+    # answer a factoid. this is a crazy check which ensures we will ONLY answer
+    # a factoid if a) there is, or isn't, a question mark, b) we have, or haven't,
+    # been addressed, c) the factoid is bigger and smaller than our requirements,
+    # and d) that it doesn't look like a to-be-learned factoid (which is important
+    # if the user has disabled the requiring of the question mark for answering.
+    my $body_regexp = $self->get("user_require_question") ? qr/\?+$/ : qr/\?*$/;
+    if ($body =~ s/$body_regexp// and ($mess->{address} or $self->get("user_passive_answer")) and
+        length($body) >= $self->get("user_min_length") and length($body) <= $self->get("user_max_length")
+        and $body !~ /^(.*?)\s+(is)\s+(.*)$/i and $body !~ /^(.*?)\s+(are)\s+(.*)$/i) {
 
-    # get the factoid, and the type of relationship
-    my ($is_are, $factoid) = $self->get_factoid($body, $literal);
+        # get the factoid and type of relationship
+        my ($is_are, $factoid) = $self->get_factoid($body);
 
-    # if there's no such factoid, we give up.
-    unless ($factoid) {
-      return $mess->{address} ? "No clue. Sorry." : undef;
+        # no factoid?
+        unless ($factoid) {
+            my @unknowns = split(/\|/, $self->get("user_unknown_responses"));
+            my $unknown = $unknowns[int(rand(scalar(@unknowns))) - 1];
+            return $mess->{address} ? $unknown : undef;
+        }
+
+        # emote?
+        if ($factoid =~ s/^<action>\s*//i) {
+            $self->bot->emote({
+                who     => $mess->{who},
+                channel => $mess->{channel},
+                body    => $factoid }
+            ); return 1; }
+
+        # replying with, or without a noun? hmMmMmmm?!
+        else { return $factoid =~ s/^<reply>\s*//i ? $factoid : "$body $is_are $factoid"; }
     }
 
-    # emote?
-    if ($factoid =~ s/^<action>\s*//i) {
-      $self->bot->emote({
-        who => $mess->{who},
-        channel => $mess->{channel},
-        body => $factoid
-      });
-      return 1;
 
-    } elsif ($factoid =~ s/^<reply>\s*//i) {
-      # a straight reply
-      return $factoid;
 
-    } else {
-      # normal factoid
-      return "$body $is_are $factoid";
 
-    }
-
-  }
 
   # the only thing left is learning factoids. are we addressed? Or
   # are we willing to learn passively?
@@ -249,10 +200,11 @@ sub fallback {
 
   # long factoid keys are almost _always_ wrong.
   # TODO - this should be a user variable
-  return if length($object) > 25;
+  return if length($object) <= $self->get("user_min_length");
+  return if length($object) >= $self->get("user_max_length");
 
   # certain words can't ever be factoid keys, to prevent insanity.
-  my @stopwords = split(/\s*[\s,]\s*/, $self->get("user_stopwords") || "");
+  my @stopwords = split(/\s*[\s,\|]\s*/, $self->get("user_stopwords") || "");
   for (@stopwords) {
     return if $object =~ /\Q$_/;
   }
@@ -279,10 +231,10 @@ sub fallback {
 }
 
 sub get_factoid {
-  my ($self, $object, $literal) = @_;
+  my ($self, $object) = @_;
   
   # get a list of factoid hashes
-  my ($is_are, @factoids) = $self->get_raw_factoids($object, $literal);
+  my ($is_are, @factoids) = $self->get_raw_factoids($object);
 
   # simple is a list of the 'simple' factoids, a is b, etc. These are just
   # joined together. Alternates are factoids that are an alternative to
@@ -297,16 +249,6 @@ sub get_factoid {
     }
   }
 
-  if ($literal) {
-    # we want a literal string describing the factoids entirely, with
-    # explicit joins between the seperate atoms. We indicate alternatives
-    # with a '|', similarly to the 'real' infobot.
-    return ("=${is_are}=", join (" =or= ",
-                                 @simple, map { "|$_" } @alternatives
-                                )
-           );
-  }
-  
   # the simple list is one of the alternatives
   unshift @alternatives, join(" or ", @simple);
 
@@ -459,5 +401,97 @@ sub infobot_reply {
   return 1;
 
 }
+
+=head1 VARS
+
+=over 4
+
+=item min_length
+
+Defaults to 3; the minimum length a factoid, or inquiry, must be before recognizing it.
+
+=item max_length
+
+Defaults to 25; the maximum length a factoid, or inquiry, can be before ignoring it.
+
+=item num_results
+
+Defaults to 20; the number of facts to return for "search for <term>" privmsg.
+
+=item passive_answer
+
+Defaults to 0; when enabled, the bot will answer factoids without being addressed.
+
+=item passive_learn
+
+Defaults to 0; when enabled, the bot will learn factoids without being addressed.
+
+=item require_question
+
+Defaults to 1; determines whether the bot requires a question mark before 
+responding to a factoid. When enabled, the question mark is required (ie. "water?").
+When disabled, the question mark is entirely optional (ie. "water" would also
+produce a response).
+
+=item stopwords
+
+A comma-, space-, or pipe- separated list of words the bot should not learn or
+answer. This prevents such insanity as the learning of "where is the store?" and
+"how is your mother?" The default list of stopwords contains "here", "how", "it",
+"something", "that", "this", "what", "when", "where", "which", "who" and "why").
+
+=item unknown_responses
+
+A pipe-separated list of responses the bot will randomly choose from when it
+doesn't know the answer to a question. The default list of response contains
+"Dunno.", "I give up.", "I have no idea.", "No clue. Sorry.", "Search me, bub.",
+and "Sorry, I don't know."
+
+=back
+
+=head1 BUGS
+
+If we request an RSS feed that takes a long time, we'll timeout and drop off.
+
+"is also" doesn't work on <reply>s (ie. "<bot> cheetahs! or <reply>monkies.")
+
+"is also" doesn't work on <action>s (same as the previous bug, hobo.)
+
+The pipe syntax for random replies doesn't actually work. At all. Um.
+
+"no, <bot>, <fact> is <response>" should be possible, but isn't.
+
+There needs to be a settable limit on how many RSS items to return.
+
+"<bot>?" fails, due to removal of <bot> name from $mess->body.
+
+"ask" syntax doesn't work in a private message.
+
+"water." and "water" are entirely different factoids.
+
+The tab stops are set to 2, not 4. OHMYGOD.
+
+If a "search" fails, the bot doesn't tell you.
+
+"search" is case-sensitive.
+
+We should probably make a "choose_random_response" function.
+
+=head1 REQUIREMENTS
+
+URI
+
+L<LWP::Simple>
+
+L<XML::Feed>
+
+=head1 AUTHOR
+
+Tom Insam <tom@jerakeen.org>
+
+This program is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
+
+=cut
 
 1;

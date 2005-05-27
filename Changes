@@ -46,6 +46,12 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - Removed the 'ask' option; it was never actually used.
     - Renamed option 'passive_ask' to 'passive_answer'. More sense.
     - Added a small but decent list of common stopwords.
+    - New option: num_results (for "search for <term>"; default 20).
+    - New option: require_question ("water?" or "water"; default 1).
+    - Entirely removed the "literal $object" feature.
+    - New option: min_length (minimum $object length; default 3).
+    - New option: max_length (maximum $object length; default 25).
+    - New option: unknown_responses (random list of "No clue." responses).
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,
