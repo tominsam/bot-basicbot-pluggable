@@ -149,12 +149,16 @@ sub fallback {
     my ($self, $mess) = @_;
     my $body = $mess->{body};
 
+    # request starts with "my", so we'll look for
+    # a valid factoid for "$mess->{who}'s $object".
+    $body =~ s/^my /$mess->{who}'s /;
+
     # answer a factoid. this is a crazy check which ensures we will ONLY answer
     # a factoid if a) there is, or isn't, a question mark, b) we have, or haven't,
     # been addressed, c) the factoid is bigger and smaller than our requirements,
     # and d) that it doesn't look like a to-be-learned factoid (which is important
-    # if the user has disabled the requiring of the question mark for answering.
-    my $body_regexp = $self->get("user_require_question") ? qr/\?+$/ : qr/\?*$/;
+    # if the user has disabled the requiring of the question mark for answering.)
+    my $body_regexp = $self->get("user_require_question") ? qr/\?+$/ : qr/[.!?]*$/;
     if ($body =~ s/$body_regexp// and ($mess->{address} or $self->get("user_passive_answer")) and
         length($body) >= $self->get("user_min_length") and length($body) <= $self->get("user_max_length")
         and $body !~ /^(.*?)\s+(is)\s+(.*)$/i and $body !~ /^(.*?)\s+(are)\s+(.*)$/i) {
@@ -193,38 +197,38 @@ sub fallback {
 
     # allow corrections and additions.
     my ($nick, $replace, $also) = ($self->bot->nick, 0, 0);
-    $replace = 1 if ($object =~ s/no,?\s*//i);                     # no, $object is $fact.
+    $replace = 1 if ($object =~ s/no,?\s+//i);                     # no, $object is $fact.
     $replace = 1 if ($replace and $object =~ s/^\s*$nick,?\s*//i); # no, $bot, $object is $fact.
     $also    = 1 if ($description =~ s/^also\s+//i);               # $object is also $fact.
 
     # ignore short, long, and stopword'd factoids.
-    return if length($object) <= $self->get("user_min_length");
-    return if length($object) >= $self->get("user_max_length");
+    return if length($object) < $self->get("user_min_length");
+    return if length($object) > $self->get("user_max_length");
     my @stopwords = split(/\s*[\s,\|]\s*/, $self->get("user_stopwords"));
     foreach (@stopwords) { return if $object =~ /^$_\b/; }
 
+    # if we're replacing things, remove the factoid first.
+    # $also check supports "no, $bot, $object is also $fact".
+    if ($replace and !$also) {
+        $self->delete_factoid($object);
+    }
 
+    # get any current factoid there might be.
+    my ($type, $current) = $self->get_factoid($object);
 
+    # we can't add without explicit instruction, 
+    # but shouldn't warn if this is passive.
+    if ($current and !$also and $mess->{address}) {
+        return "... but $object $type $current ...";
+    } elsif ($current and !$also and !$mess->{address}) {
+        return undef;
+    }
 
-  # if we're replacing things, remove it first.
-  if ($replace) {
-    $self->delete_factoid($object);
-  }
+    # add this factoid. this comment is absolutely useless. excelsior.
+    $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description) );
 
-  # get any current factoid there might be.
-  my ($type, $current) = $self->get_factoid($object);
-  
-  # we can't add without explicit instruction, but shouldn't warn if this is passive.
-  if ($current and !$also and $mess->{address}) {
-    return "... but $object $type $current ...";
-  } elsif ($current and !$also and !$mess->{address}) {
-    return undef;
-  }
-
-  $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description) );
-
-  # return an ack if we were addressed only
-  return $mess->{address} ? "okay." : 1;
+    # return an ack if we were addressed only
+    return $mess->{address} ? "Okay." : 1;
 }
 
 sub get_factoid {
@@ -469,8 +473,6 @@ The tab stops are set to 2, not 4. OHMYGOD.
 If a "search" fails, the bot doesn't tell you.
 
 "search" is case-sensitive.
-
-We need to interpolate "my" as $mess->{who}. "my site?".
 
 If Title module is loaded, <rss> factoids don't work cos of told/fallback.
 

@@ -55,6 +55,8 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - You can now replace facts with "no, $bot, $object is..." too.
     - $who in a factoid is now replaced by $mess->{who}.
     - Stopwords were NOT being stopped on word boundaries. Fixed.
+    - "no, $bot, $object is also $fact" now works for appending.
+    - Added handling of "my" as in "my cat is named chloe".
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,
