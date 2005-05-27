@@ -52,6 +52,7 @@ Revision history for Perl extension Bot::BasicBot::Pluggable.
     - New option: min_length (minimum $object length; default 3).
     - New option: max_length (maximum $object length; default 25).
     - New option: unknown_responses (random list of "No clue." responses).
+    - You can now replace facts with "no, $bot, $object is..." too.
 
 0.50 2004/01/18
   - Moved Bot::BasicBot::Pluggble::Module::Base to B::B::P::Module.pm,

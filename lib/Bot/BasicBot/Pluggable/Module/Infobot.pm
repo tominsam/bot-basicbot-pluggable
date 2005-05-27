@@ -181,22 +181,20 @@ sub fallback {
         else { return $factoid =~ s/^<reply>\s*//i ? $factoid : "$body $is_are $factoid"; }
     }
 
+    # the only thing left is learning factoids. are we
+    # addressed or are we willing to learn passively?
+    # does it even look like a factoid?
+    return unless ($mess->{address} or $self->get("user_passive_learn"));
+    return unless ($body =~ /^(.*?)\s+(is)\s+(.*)$/i or $body =~ /^(.*?)\s+(are)\s+(.*)$/i);
+    my ($object, $is_are, $description) = ($1, $2, $3);
+
+    # allow corrections and additions.
+    my ($nick, $replace, $also) = ($self->bot->nick, 0, 0);
+    $replace = 1 if ($object =~ s/no,?\s*//i);            # no, $object is $fact.
+    $replace = 1 if ($object =~ s/^\s*$nick,?\s*//i);     # no, $bot, $object is $fact.
+    $also    = 1 if ($description =~ s/^also\s+//i);      # $object is also $fact.
 
 
-
-
-  # the only thing left is learning factoids. are we addressed? Or
-  # are we willing to learn passively?
-  return unless ( $mess->{address} or $self->get("user_passive_learn") );
-
-  # does it even look like a factoid?
-  return unless ($body =~ /^(.*?)\s+(is)\s+(.*)$/i or $body =~ /^(.*?)\s+(are)\s+(.*)$/i);
-
-  my ($object, $is_are, $description) = ($1, $2, $3);
-
-  # allow corrections and additions.
-  my $replace = 1 if ($object =~ s/no,?\s*//i);
-  my $also = 1 if ($description =~ s/^also\s+//i);
 
   # long factoid keys are almost _always_ wrong.
   # TODO - this should be a user variable
