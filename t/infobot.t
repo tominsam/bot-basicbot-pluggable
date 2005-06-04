@@ -9,6 +9,7 @@ use Bot::BasicBot::Pluggable::Module::Infobot;
 use Bot::BasicBot::Pluggable::Store;
 
 
+
 # Fake a bot store into the Module base class, so we don't have to mess around
 # with Bot bojects at this point. Use a non-persisting store, it's safe.
 my $store;
@@ -19,6 +20,16 @@ sub Bot::BasicBot::Pluggable::Module::store {
 
 ok( my $ib = Bot::BasicBot::Pluggable::Module::Infobot->new );
 
+my $bot;
+
+sub Bot::BasicBot::Pluggable::Module::bot {
+	$bot ||= bless {}, 'FakeBot';	
+}
+
+
+
+my $uur = $ib->get("user_unknown_responses");
+my $no_regex = qr/($uur)/;
 
 # ok, the intent here is to test / document the infobot grammar, because
 # every time I mess with it I get annoying regressions. In general, B::B::P
@@ -30,11 +41,11 @@ ok( $ib->help, "module has help text" );
 # by default, the infobot doesn't learn things that it merely overhears
 ok( ! indirect("foo is red"), "passive learning off by default" );
 ok( ! indirect("foo?"), "no answer to passive learn" );
-is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
+like( direct("foo?"), $no_regex, "no info on foo" );
 
 # ..but it will learn things it's told directly.
-is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
-is( direct("foo is red"), "okay.", "active learning works" );
+like( direct("foo?"), $no_regex, "no info on foo" );
+is( direct("foo is red"), "Okay.", "active learning works" );
 is( direct("foo?"), "foo is red", "correct answer to active learn" );
 ok( !indirect("foo?"), "passive questioning off by default" );
 
@@ -44,7 +55,7 @@ is( indirect("foo?"), "foo is red", "passive questioning now on" );
 
 # and the ability to add factoids without addressing the bot
 ok( $ib->set("user_passive_learn", 1), "activate passive learn" );
-is( direct("bar is green"), "okay.", "passive learning now works" );
+is( direct("bar is green"), "Okay.", "passive learning now works" );
 is( indirect("bar?"), "bar is green", "passive questioning works" );
 
 # you can search factoids, but not in public
@@ -52,14 +63,14 @@ is( direct("search for foo"), "privmsg only, please", "not searched in public");
 is( private("search for foo"), "Keys: 'foo'", "searched for 'foo'");
 
 # you can append strings to factoids
-is( direct("foo is also blue"), "okay.", "can append to faactoids" );
+is( direct("foo is also blue"), "Okay.", "can append to faactoids" );
 is( direct("foo?"), "foo is red or blue", "works" );
-is( direct("foo is also pink"), "okay.", "can append to faactoids" );
+is( direct("foo is also pink"), "Okay.", "can append to faactoids" );
 is( direct("foo?"), "foo is red or blue or pink", "works" );
 
 # factoids can be forgotten
-is( direct("forget foo"), "I forgot about foo", "forgotten foo");
-is( direct("foo?"), "No clue. Sorry.", "no info on foo" );
+is( direct("forget foo"), "I forgot about foo.", "forgotten foo");
+like( direct("foo?"), $no_regex, "no info on foo" );
 
 # factoids can be replaced
 is( direct("bar is yellow"), "... but bar is green ...",
@@ -67,11 +78,11 @@ is( direct("bar is yellow"), "... but bar is green ...",
 is( indirect("bar is yellow"), 1,
   "Can't just redefine factoids" );
 is( indirect("bar?"), "bar is green", "not changed" );
-is( direct("no, bar is yellow"), "okay.", "Can explicitly redefine factoids" );
+is( direct("no, bar is yellow"), "Okay.", "Can explicitly redefine factoids" );
 is( indirect("bar?"), "bar is yellow", "changed" );
 
 # factoids can contain RSS
-is( direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "okay.", "set RSS" );
+is( direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "Okay.", "set RSS" );
 is( indirect("rsstest?"), "rsstest is title;", "can read rss");
 
 # certain things can't be factoid keys.
@@ -88,9 +99,9 @@ is( direct("literal bar?"), "bar =is= yellow =or= fum", "bar" );
 
 
 # alternate factoids ('|')
-is( direct("foo is one"), "okay.", "foo is one");
-is( direct("foo is also two"), "okay.", "foo is also two");
-is( direct("foo is also |maybe"), "okay.", "foo is also maybe");
+is( direct("foo is one"), "Okay.", "foo is one");
+is( direct("foo is also two"), "Okay.", "foo is also two");
+is( direct("foo is also |maybe"), "Okay.", "foo is also maybe");
 
 ok( my $reply = direct("foo?"), "got one of the foos" );
 ok( ( $reply eq 'foo is maybe' or $reply eq 'foo is one or two' ), "it's one of the two");
@@ -103,30 +114,30 @@ ok( ( $reply eq 'foo is maybe' or $reply eq 'foo is one or two' ), "it's one of 
 # * there's a difference between 'is' and 'are'
 # * doesn't respond to a passive attempt to reset an item
 
-is( direct("forget foo"), "I forgot about foo", "forgotten foo");
+is( direct("forget foo"), "I forgot about foo.", "forgotten foo");
 
-is( direct("foo is foo"), "okay.", "simple set" );
+is( direct("foo is foo"), "Okay.", "simple set" );
 is( direct("foo?"), "foo is foo", "simple get" );
 is( direct("what is foo?"), "foo is foo", "English-language get" ); # fails
 is( direct("where is foo?"), "foo is foo", "Another English get" );
 is( direct("who is foo?"), "foo is foo", "Yet another English get" );
 
-is( direct("foo are things"), "okay.", "simple 'are' set"); # fails
+is( direct("foo are things"), "Okay.", "simple 'are' set"); # fails
 is( direct("what are foo?"), "foo are things", "English-language 'are' get" );
 
 is( direct("foo is a silly thing"), "... but foo is foo ...", "warning about overwriting" );
 is( indirect("foo is a silly thing"), undef, "shouldn't get a reply" );
 
-is( direct("foo is also bar"), "okay.", "simple append");
+is( direct("foo is also bar"), "Okay.", "simple append");
 is( direct("foo?"), "foo is foo or bar", "appended ok");
-is( direct("foo is also baz or quux"), "okay.", "complex append");
+is( direct("foo is also baz or quux"), "Okay.", "complex append");
 is( direct("foo?"), "foo is foo or bar or baz or quux", "also ok");
-is( direct("foo is also | a silly thing"), "okay.", "alternate appended");
+is( direct("foo is also | a silly thing"), "Okay.", "alternate appended");
 
 is( direct("literal foo?"), 
            "foo =is= foo =or= bar =or= baz =or= quux =or= |a silly thing", 
            "entire factoid looks right");
-is( direct("foo is also |<reply>this is a very silly thing"), "okay.", "and a reply");
+is( direct("foo is also |<reply>this is a very silly thing"), "Okay.", "and a reply");
 is( direct("literal foo?"), 
            "foo =is= foo =or= bar =or= baz =or= quux =or= |a silly thing =or= |<reply>this is a very silly thing", 
            "entire entry looks fine to me");
@@ -175,3 +186,7 @@ sub indirect {
   };
   return $ib->told($message) || $ib->fallback($message);
 }
+
+package FakeBot;
+sub nick { "testnick" };
+1;
