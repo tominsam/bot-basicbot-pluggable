@@ -137,8 +137,8 @@ sub told {
     }
 
     # search for a particular factoid.
-    return unless ($mess->{channel} eq "msg");
     if ($body =~ /^search\s+for\s+(.*)$/i) {
+    return "privmsg only, please" unless ($mess->{channel} eq "msg");
         my @results = $self->search_factoid(split(/\s+/, $1));
         unless (@results) { return "I don't know anything about $1."; }
         $#results = $self->get("user_num_results") unless $#results < $self->get("user_num_results");
