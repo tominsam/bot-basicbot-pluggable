@@ -19,4 +19,4 @@ eval {
 	my $tmp = Bot::BasicBot::Pluggable::Store::Deep->new(); 
 };
 
-like($@, qr/You must pass a filename into the Deep store init/, "Catch no file passed into 'new'");
+like($@, qr/You must pass a filename/, "Catch no file passed into 'new'");
