@@ -120,7 +120,7 @@ sub told {
     }
 
     # direct commands must be addressed.
-    # return unless $mess->{address} or $self->get("user_passive_ask");
+    return unless $mess->{address};
 
 
     # forget a particular factoid.
