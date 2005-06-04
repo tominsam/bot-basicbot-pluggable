@@ -221,7 +221,7 @@ sub fallback {
     }
 
     # get any current factoid there might be.
-    my ($type, $current) = $self->get_factoid($object, $literal);
+    my ($type, $current) = $self->get_factoid($object);
 
     # we can't add without explicit instruction, 
     # but shouldn't warn if this is passive.

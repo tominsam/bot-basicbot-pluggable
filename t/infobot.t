@@ -73,9 +73,10 @@ is( direct("forget foo"), "I forgot about foo.", "forgotten foo");
 like( direct("foo?"), $no_regex, "no info on foo" );
 
 # factoids can be replaced
-is( direct("bar is yellow"), "... but bar is green ...",
+my $but_reply = '... but bar is green ...'; # ok, why does this get interpreted as '1'
+is( direct("bar is yellow"), $but_reply,
   "Can't just redefine factoids" );
-is( indirect("bar is yellow"), 1,
+is( indirect("bar is yellow"), undef,
   "Can't just redefine factoids" );
 is( indirect("bar?"), "bar is green", "not changed" );
 is( direct("no, bar is yellow"), "Okay.", "Can explicitly redefine factoids" );
