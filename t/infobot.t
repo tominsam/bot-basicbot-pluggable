@@ -50,7 +50,7 @@ is( direct("foo?"), "foo is red", "correct answer to active learn" );
 ok( !indirect("foo?"), "passive questioning off by default" );
 
 # you can turn on the ability to ask questions without addressing the bot
-ok( $ib->set("user_passive_ask", 1), "activate passive ask" );
+ok( $ib->set("user_passive_answer", 1), "activate passive ask" );
 is( indirect("foo?"), "foo is red", "passive questioning now on" );
 
 # and the ability to add factoids without addressing the bot
@@ -60,7 +60,7 @@ is( indirect("bar?"), "bar is green", "passive questioning works" );
 
 # you can search factoids, but not in public
 is( direct("search for foo"), "privmsg only, please", "not searched in public");
-is( private("search for foo"), "Keys: 'foo'", "searched for 'foo'");
+is( private("search for foo"), "I know about: 'foo'.", "searched for 'foo'");
 
 # you can append strings to factoids
 is( direct("foo is also blue"), "Okay.", "can append to faactoids" );

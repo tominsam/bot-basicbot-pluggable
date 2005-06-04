@@ -120,7 +120,8 @@ sub told {
     }
 
     # direct commands must be addressed.
-    return unless $mess->{address};
+    # return unless $mess->{address} or $self->get("user_passive_ask");
+
 
     # forget a particular factoid.
     if ($body =~ /^forget\s+(.*)$/i) {
@@ -141,7 +142,7 @@ sub told {
         my @results = $self->search_factoid(split(/\s+/, $1));
         unless (@results) { return "I don't know anything about $1."; }
         $#results = $self->get("user_num_results") unless $#results < $self->get("user_num_results");
-        return "I know about the following: ".join(", ", map { "'$_'" } @results) .".";
+        return "I know about: ".join(", ", map { "'$_'" } @results) .".";
     }
 }
 
@@ -216,6 +217,10 @@ sub fallback {
     # get any current factoid there might be.
     my ($type, $current) = $self->get_factoid($object);
 
+    #if ($current && !$replace) {
+    #   return "... but $object is $current ..."; 
+    #}
+
     # we can't add without explicit instruction, 
     # but shouldn't warn if this is passive.
     if ($current and !$also and $mess->{address}) {
@@ -223,6 +228,8 @@ sub fallback {
     } elsif ($current and !$also and !$mess->{address}) {
         return undef;
     }
+
+	
 
     # add this factoid. this comment is absolutely useless. excelsior.
     $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description) );
