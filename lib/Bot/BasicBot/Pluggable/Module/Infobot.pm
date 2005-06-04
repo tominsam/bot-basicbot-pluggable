@@ -165,7 +165,7 @@ sub fallback {
         and $body !~ /^(.*?)\s+(is)\s+(.*)$/i and $body !~ /^(.*?)\s+(are)\s+(.*)$/i) {
 
         # get the factoid and type of relationship
-        my ($is_are, $factoid) = $self->get_factoid($body);
+        my ($is_are, $factoid, $literal) = $self->get_factoid($body);
 
         # no factoid?
         unless ($factoid) {
@@ -183,10 +183,15 @@ sub fallback {
                 who     => $mess->{who},
                 channel => $mess->{channel},
                 body    => $factoid }
-            ); return 1; }
+            ); return 1; 
 
         # replying with, or without a noun? hmMmMmmm?!
-        else { return $factoid =~ s/^<reply>\s*//i ? $factoid : "$body $is_are $factoid"; }
+        } elsif ($literal)  {
+        $body =~ s!^literal\s+!!;
+        return "$body =${is_are}= $factoid";
+    } else { 
+        return $factoid =~ s/^<reply>\s*//i ? $factoid : "$body $is_are $factoid"; 
+    }
     }
 
     # the only thing left is learning factoids. are we
@@ -195,6 +200,7 @@ sub fallback {
     return unless ($mess->{address} or $self->get("user_passive_learn"));
     return unless ($body =~ /^(.*?)\s+(is)\s+(.*)$/i or $body =~ /^(.*?)\s+(are)\s+(.*)$/i);
     my ($object, $is_are, $description) = ($1, $2, $3);
+    my $literal = ($object =~ s!^literal\s+!!);
 
     # allow corrections and additions.
     my ($nick, $replace, $also) = ($self->bot->nick, 0, 0);
@@ -215,11 +221,7 @@ sub fallback {
     }
 
     # get any current factoid there might be.
-    my ($type, $current) = $self->get_factoid($object);
-
-    #if ($current && !$replace) {
-    #   return "... but $object is $current ..."; 
-    #}
+    my ($type, $current) = $self->get_factoid($object, $literal);
 
     # we can't add without explicit instruction, 
     # but shouldn't warn if this is passive.
@@ -229,7 +231,7 @@ sub fallback {
         return undef;
     }
 
-	
+    
 
     # add this factoid. this comment is absolutely useless. excelsior.
     $self->add_factoid($object, $is_are, split(/\s+or\s+/, $description) );
@@ -241,8 +243,11 @@ sub fallback {
 sub get_factoid {
   my ($self, $object) = @_;
   
+  my $literal = ($object =~ s!^literal\s+!!);
+
   # get a list of factoid hashes
   my ($is_are, @factoids) = $self->get_raw_factoids($object);
+
 
   # simple is a list of the 'simple' factoids, a is b, etc. These are just
   # joined together. Alternates are factoids that are an alternative to
@@ -257,6 +262,12 @@ sub get_factoid {
     }
   }
 
+  if ($literal) {
+        my $return .= join " =or= ", (@simple, map { "|$_" } @alternatives);
+    return ($is_are, $return, 1);
+  }  
+
+
   # the simple list is one of the alternatives
   unshift @alternatives, join(" or ", @simple);
 
@@ -269,7 +280,7 @@ sub get_factoid {
   # giving it an RSS feed that'll take a very long time to return.
   $factoid =~ s/<(?:rss|atom|feed|xml)\s*=\s*\"?([^>\"]+)\"?>/$self->parseFeed($1)/ieg;
 
-  return ($is_are, $factoid);
+  return ($is_are, $factoid, 0);
 }
 
 # for a given key, return the raw hashes that are in the store for this
