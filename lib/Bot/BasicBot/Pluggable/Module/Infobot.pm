@@ -158,7 +158,10 @@ sub fallback {
     my %stopwords = map { lc($_) => 1 } split(/\s*[\s,\|]\s*/, $self->get("user_stopwords"));
 
 
-
+    # checks to see if something starts 
+    #     <word> (is|are) 
+    # and then removes if if <word> is a stopword
+    # this means that we treat "what is foo?" as "foo?"
     if ($body =~ /^(.*?)\s+(is|are)\s+(.*)$/i) {
         $body =~ s/^(.*?)\s+(is|are)\s+//i if $stopwords{$1};
     }
