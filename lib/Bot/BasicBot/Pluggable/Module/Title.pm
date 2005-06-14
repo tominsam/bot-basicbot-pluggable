@@ -26,6 +26,7 @@ use base qw(Bot::BasicBot::Pluggable::Module);
 use warnings;
 use strict;
 
+use Text::Unidecode;
 use URI::Title qw(title);
 use URI::Find::Simple qw(list_uris);
 
@@ -36,13 +37,13 @@ sub help {
 sub admin {
     my ($self, $mess) = @_;
 
-    my $reply;
+    my $reply = "";
     for (list_uris($mess->{body})) {
         my $title = title($_);
-        $reply .= "[ $title ] " if $title;
+        $reply .= "[ ".unidecode($title)." ] " if $title;
     }
 
-    return $reply ? $reply : undef;
+    return ($reply ne "") ? $reply : undef;
 }
 
 1;

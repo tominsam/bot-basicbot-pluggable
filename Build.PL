@@ -18,6 +18,7 @@ Module::Build->new(
         'Getopt::Long'      => 0,
         'DBM::Deep'         => 0,
         'XML::Feed'         => 0,
+        'Text::Unidecode'   => 0,
     },
     script_files => [
       'bin/bot-basicbot-pluggable',
