@@ -138,7 +138,7 @@ sub told {
 
     # search for a particular factoid.
     if ($body =~ /^search\s+for\s+(.*)$/i) {
-    return "privmsg only, please" unless ($mess->{channel} eq "msg");
+        return "privmsg only, please" unless ($mess->{channel} eq "msg");
         my @results = $self->search_factoid(split(/\s+/, $1));
         unless (@results) { return "I don't know anything about $1."; }
         $#results = $self->get("user_num_results") unless $#results < $self->get("user_num_results");
@@ -154,6 +154,15 @@ sub fallback {
     # a valid factoid for "$mess->{who}'s $object".
     $body =~ s/^my /$mess->{who}'s /;
 
+
+    my %stopwords = map { lc($_) => 1 } split(/\s*[\s,\|]\s*/, $self->get("user_stopwords"));
+
+
+
+    if ($body =~ /^(.*?)\s+(is|are)\s+(.*)$/i) {
+        $body =~ s/^(.*?)\s+(is|are)\s+//i if $stopwords{$1};
+    }
+
     # answer a factoid. this is a crazy check which ensures we will ONLY answer
     # a factoid if a) there is, or isn't, a question mark, b) we have, or haven't,
     # been addressed, c) the factoid is bigger and smaller than our requirements,
@@ -162,7 +171,7 @@ sub fallback {
     my $body_regexp = $self->get("user_require_question") ? qr/\?+$/ : qr/[.!?]*$/;
     if ($body =~ s/$body_regexp// and ($mess->{address} or $self->get("user_passive_answer")) and
         length($body) >= $self->get("user_min_length") and length($body) <= $self->get("user_max_length")
-        and $body !~ /^(.*?)\s+(is)\s+(.*)$/i and $body !~ /^(.*?)\s+(are)\s+(.*)$/i) {
+        and $body !~ /^(.*?)\s+(is|are)\s+(.*)$/i) {
 
         # get the factoid and type of relationship
         my ($is_are, $factoid, $literal) = $self->get_factoid($body);
@@ -211,8 +220,7 @@ sub fallback {
     # ignore short, long, and stopword'd factoids.
     return if length($object) < $self->get("user_min_length");
     return if length($object) > $self->get("user_max_length");
-    my @stopwords = split(/\s*[\s,\|]\s*/, $self->get("user_stopwords"));
-    foreach (@stopwords) { return if $object =~ /^$_\b/; }
+    foreach (keys %stopwords) { return if $object =~ /^$_\b/; }
 
     # if we're replacing things, remove the factoid first.
     # $also check supports "no, $bot, $object is also $fact".
@@ -242,9 +250,12 @@ sub fallback {
 
 sub get_factoid {
   my ($self, $object) = @_;
-  
+
+
   my $literal = ($object =~ s!^literal\s+!!);
 
+
+  
   # get a list of factoid hashes
   my ($is_are, @factoids) = $self->get_raw_factoids($object);
 

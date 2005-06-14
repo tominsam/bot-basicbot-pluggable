@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 use lib qw(lib t/lib);
-use Test::More tests => 78;
+use Test::More tests => 81;
 use FindBin qw( $Bin );
 
 use Bot::BasicBot::Pluggable::Module::Infobot;
@@ -47,6 +47,12 @@ like( direct("foo?"), $no_regex, "no info on foo" );
 like( direct("foo?"), $no_regex, "no info on foo" );
 is( direct("foo is red"), "Okay.", "active learning works" );
 is( direct("foo?"), "foo is red", "correct answer to active learn" );
+
+like( direct("quux?"), $no_regex, "no info on quux" );
+is( direct("quux are blue"), "Okay.", "active learning works" );
+is( direct("quux?"), "quux are blue", "correct answer to active learn" );
+
+
 ok( !indirect("foo?"), "passive questioning off by default" );
 
 # you can turn on the ability to ask questions without addressing the bot
@@ -86,11 +92,16 @@ is( indirect("bar?"), "bar is yellow", "changed" );
 is( direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "Okay.", "set RSS" );
 is( indirect("rsstest?"), "rsstest is title;", "can read rss");
 
+
+my $old_stopwords = $ib->get("user_stopwords");
+
 # certain things can't be factoid keys.
 ok( $ib->set("user_stopwords", "and"), "set stopword 'and'" );
 ok( !direct("and is mumu"), "can't set 'and' as factoid");
 ok( !direct("dkjsdlfkdsjfglkdsfjglfkdjgldksfjglkdfjglds is mumu"),
   "can't set very long factoid");
+
+$ib->set("user_stopwords", $old_stopwords);
 
 # literal syntax
 is( direct("literal rsstest?"), "rsstest =is= <rss=\"file://$Bin/test.rss\">",
@@ -123,8 +134,8 @@ is( direct("what is foo?"), "foo is foo", "English-language get" ); # fails
 is( direct("where is foo?"), "foo is foo", "Another English get" );
 is( direct("who is foo?"), "foo is foo", "Yet another English get" );
 
-is( direct("foo are things"), "Okay.", "simple 'are' set"); # fails
-is( direct("what are foo?"), "foo are things", "English-language 'are' get" );
+is( direct("hoogas are things"), "Okay.", "simple 'are' set"); # fails
+is( direct("what are hoogas?"), "hoogas are things", "English-language 'are' get" );
 
 is( direct("foo is a silly thing"), "... but foo is foo ...", "warning about overwriting" );
 is( indirect("foo is a silly thing"), undef, "shouldn't get a reply" );
