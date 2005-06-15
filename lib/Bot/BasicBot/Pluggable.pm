@@ -303,6 +303,7 @@ sub remove_handler {
   my ($self, $name) = @_;
   die "Need a name for removing a handler" unless $name;
   die "Hander $name not defined" unless $self->{handlers}{lc($name)};
+  $self->{handlers}{lc($name)}->stop();
   delete $self->{handlers}{lc($name)};
 }
 
@@ -397,12 +398,22 @@ sub said {
       $self->reply($mess, "Error calling said() for $who: $@") if $@;
       if ($response and $priority) {
         return if ($response eq "1");
+        warn "response $response to that!!!";
         $self->reply($mess, $response);
         return;
       }
     }
   }
   return undef;
+}
+
+sub reply {
+  my ($self, $mess, @other) = @_;
+  if ($mess->{reply_hook}) {
+    return $mess->{reply_hook}->($mess, @other);
+  } else {
+    return $self->SUPER::reply($mess, @other);
+  }
 }
 
 sub emoted {

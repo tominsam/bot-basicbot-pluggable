@@ -65,13 +65,33 @@ sub new {
     return $self;
 }
 
-=item init
+=item init()
 
-Called as part of new class construction. May or may not be after server connection.
+Called as part of new class construction. May or may not be after
+server connection. Override this to do things when your module is added
+to the bot.
 
 =cut
 
 sub init { undef }
+
+=item start()
+
+Indicates that the module is added to the bot, and that the bot is
+connected to the IRC server. Do things here that need to be done after
+you're connected.
+
+TODO - this method not yet implemented.
+
+=cut
+
+=item stop()
+
+Called just before your module is removed from the bot. Do cleanup here.
+
+=cut
+
+sub stop { undef }
 
 =item bot
 
@@ -205,7 +225,7 @@ Passing through L<Bot::BasicBot>, send messages without replying to a C<said()>:
 
 sub say {
   my $self = shift;
-  return $self->{Bot}->say(@_);
+  return $self->bot->say(@_);
 }
 
 =item reply($message, $body)
@@ -218,7 +238,7 @@ be in the same channel as the question, directed to the right user, etc.
 
 sub reply {
   my $self = shift;
-  return $self->{Bot}->reply(@_);
+  return $self->bot->reply(@_);
 }
 
 =item tell($nick | $channel, $message)
