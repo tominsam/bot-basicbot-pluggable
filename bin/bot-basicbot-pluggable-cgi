@@ -41,8 +41,11 @@ my $bot = Bot::BasicBot::Pluggable::CLI->new(
   store   => { type => 'Storable' },
 );
 
+
 # Loader lets you tell the bot to load other modules.
 $bot->load("Loader");
+
+my @dunno = split /\|/, $bot->store->get('Infobot',"user_unknown_responses");
 
 my $in = $q->param("q");
 my $ret;
@@ -66,9 +69,9 @@ if ($mess->{body} =~ /^help/i) {
 	$bot->{_tmp_reply} = undef;
 }
 
-$ret = "" unless defined $ret;
-
 VARS:
+$ret = $dunno[rand $#dunno] unless defined $ret and $ret ne "";
+
 my $vars = {
 				nick     => $nick,
 			    question => $in,
