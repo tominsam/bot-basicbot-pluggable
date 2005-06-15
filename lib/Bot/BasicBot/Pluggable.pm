@@ -122,6 +122,7 @@ use POE;
 use Bot::BasicBot;
 use base qw( Bot::BasicBot );
 
+use Module::Pluggable sub_name => '_available', search_path => 'Bot::BasicBot::Pluggable::Module';
 use Bot::BasicBot::Pluggable::Module;
 use Bot::BasicBot::Pluggable::Store::Storable;
 use Bot::BasicBot::Pluggable::Store::DBI;
@@ -176,10 +177,10 @@ sub load {
   die "Already loaded" if $self->handler($module);
 
   # This is possible a leeeetle bit evil.
-  print STDERR "Loading module '$module' ";
+  print STDERR "Loading module '$module' " if $self->{verbose};
   my $file = "Bot/BasicBot/Pluggable/Module/$module.pm";
   $file = "./modules/$module.pm" if (-e "./modules/$module.pm");
-  print STDERR "from file $file.\n";
+  print STDERR "from file $file.\n" if $self->{verbose};
 
   # force a reload of the file (in the event that we've already loaded it).
   no warnings 'redefine';
@@ -251,6 +252,18 @@ sub modules {
   my $self = shift;
   return $self->handlers(@_);
 }
+
+=item available_modules
+
+Returns a list of all available modules whether loaded or not
+
+=cut
+
+sub available_modules {
+  my $self = shift;
+  return sort map { s/^Bot::BasicBot::Pluggable::Module:://; $_ } $self->_available;
+}
+
 
 # deprecated methods
 sub handler {
@@ -340,6 +353,8 @@ sub help {
   
   unless ($mess->{body}) {
     return "Ask me for help about: " . join(", ", $self->handlers())." (say 'help <modulename>').";
+  } elsif ($mess->{body} eq 'modules') { 
+    return "These modules are available for loading: ".join(", ", $self->available_modules);
   } else {
     if (my $handler = $self->handler($mess->{body})) {
       my $help;
