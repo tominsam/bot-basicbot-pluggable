@@ -1,0 +1,82 @@
+#!/usr/bin/perl
+
+=head1 NAME
+
+bot-basicbot-pluggable.pl - A standard Bot::BasicBot::Pluggable script
+
+=head1 DESCRIPTION
+
+A standard Bot::BasicBot::Pluggable interface. You can /query the bot to
+load in more modules. Change the admin password ASAP - 
+See perldoc L<Bot::BasicBot::Pluggable::Auth> for details of this.
+
+=head1 USAGE
+
+  bot-basicbot-pluggable.pl --nick MyBot --server irc.perl.org
+
+=head2 SEE ALSO
+
+Bot::BasicBot::Pluggable
+
+=cut
+
+use warnings;
+use strict;
+#use Bot::BasicBot::Pluggable::CLI;
+use Getopt::Long;
+
+my $nick = "bbpcli";
+
+my $bot = Bot::BasicBot::Pluggable::CLI->new(
+  channels => [ ],
+  server => "",
+  nick => $nick,
+  charset => "utf8",
+  store   => { type => 'Storable' },
+);
+
+# nice to load this one explicitly
+#$bot->load("Auth");
+
+# Loader lets you tell the bot to load other modules.
+$bot->load("Loader");
+
+while (1) {
+	my $in = <>;
+	chomp $in;
+	# strip off whitespace before and after the message
+	$in =~ s!(^\s*|\s*$)!!g;
+
+	last if $in eq 'quit';
+	my $mess = { 
+					address => 1, 
+                    channel => "#$nick",
+					body => $in, 
+					who => $ENV{USER},
+                     
+			   };
+
+    my $ret;
+	if ($mess->{body} =~ /^help/i) {
+		$ret = $bot->help($mess);
+	} else {
+		$bot->said($mess);
+		$ret = $bot->{_tmp_reply}->{body} if ($bot->{_tmp_reply});
+		$bot->{_tmp_reply} = undef;
+	}
+	print "$ret\n" if $ret;
+
+}
+
+package Bot::BasicBot::Pluggable::CLI;
+use base qw(Bot::BasicBot::Pluggable);
+
+sub reply {
+    my $self = shift;
+    my ($mess, $body) = @_;
+	$mess->{body} = $body;
+	$self->{_tmp_reply} = $mess;
+
+}
+
+1;
