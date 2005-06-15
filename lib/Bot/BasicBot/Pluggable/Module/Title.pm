@@ -6,6 +6,19 @@ Bot::BasicBot::Pluggable::Module::Title - speaks the title of URLs mentioned
 
 None. If the module is loaded, the bot will speak the titles of all URLs mentioned.
 
+=head1 VARS
+
+=over 4
+
+=item asciify
+
+Defaults to 1; whether or not we should convert all titles to ascii from Unicode
+
+=back
+
+
+
+
 =head1 REQUIREMENTS
 
 L<URI::Title>
@@ -34,13 +47,22 @@ sub help {
     return "Speaks the title of URLs mentioned.";
 }
 
+
+sub init {
+    my $self = shift;
+    $self->set("asciify", 1) unless defined($self->get("asciify"));
+}
+
+
 sub admin {
     my ($self, $mess) = @_;
 
     my $reply = "";
     for (list_uris($mess->{body})) {
         my $title = title($_);
-        $reply .= "[ ".unidecode($title)." ] " if $title;
+        next unless defined $title;
+        $title = unidecode($title) if $self->get("asciify");
+        $reply .= "[ $title ] ";
     }
 
     return ($reply ne "") ? $reply : undef;
