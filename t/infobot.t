@@ -1,7 +1,8 @@
 #!perl
 use warnings;
 use strict;
-use Test::More tests => 82;
+use lib qw(lib t/lib);
+use Test::More tests => 83;
 
 use FindBin qw( $Bin );
 use lib $Bin;
@@ -48,6 +49,9 @@ is( say_indirect("bar?"), "bar is green", "passive questioning works" );
 
 # you can search factoids, but not in public
 is( say_direct("search for foo"), "privmsg only, please", "not searched in public");
+$ib->set("user_allow_searching",0);
+is( say_private("search for foo"), "searching disabled", "searched for 'foo' disabled");
+$ib->set("user_allow_searching",1);
 is( say_private("search for foo"), "I know about: 'foo'.", "searched for 'foo'");
 
 # you can append strings to factoids

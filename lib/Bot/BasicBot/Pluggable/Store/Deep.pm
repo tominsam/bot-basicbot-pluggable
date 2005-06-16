@@ -60,8 +60,20 @@ sub unset {
 }
 
 sub keys {
-    my ($self, $namespace) = @_;
-    return keys %{ $self->{_db}->{$namespace}};
+    my ($self, $namespace, @res) = @_;
+ 
+    
+    return keys %{$self->{_db}->{$namespace}} unless @res;
+
+    my $mod = $self->{_db}->{$namespace};
+    my @return;
+    OUTER: while (my ($key) = each %$mod) {
+	    for (@res) { next OUTER unless $key =~ m!$_! }
+    	    push @return, $key;
+    }
+
+    return @return;
+
 }
 
 sub namespaces {

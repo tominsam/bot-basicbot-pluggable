@@ -71,9 +71,10 @@ sub told {
         return "Unset.";
 
     } elsif ($command eq "!vars") {
+	return "You must pass a module" unless defined $mod;
         my $module = $self->bot->module($mod);
-        return "No such module '$module'." unless $module;
-        my @vars = map { s/^user_// ? $_ : () } $module->store_keys();
+        return "No such module '$mod'." unless $module;
+        my @vars = map { s/^user_// ? $_ : () } $module->store_keys("^user");
         return "$mod has no variables." unless @vars;
         return "Variables for $mod: " .
           (join ", ", map { "'$_' => '".$module->get("user_$_")."'" } @vars).".";

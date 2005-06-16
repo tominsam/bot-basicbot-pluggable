@@ -111,11 +111,23 @@ sub new_id {
 }
 
 sub keys {
-  my ($self, $namespace) = @_;
+  my ($self, $namespace, @res) = @_;
   my $table = $self->{table} or die "Need DB table";
-  my $sth = $self->dbh->prepare_cached(
-    "SELECT store_key FROM $table WHERE namespace=?"
-  ); $sth->execute($namespace);
+
+
+  my $sql = "SELECT store_key FROM $table WHERE namespace=?";
+
+  my @args = ( $namespace );
+
+  foreach my $re (@res) {
+    # h-h-h-hack .... convert to SQL 
+    $re =~ s!(^\^|\$$)!%!g;
+    $sql .= "AND store_key LIKE ?";
+    push @args, $re;
+  }
+
+  my $sth = $self->dbh->prepare_cached( $sql ); $sth->execute( @args );
+  
   my @keys = map { $_->[0] } @{ $sth->fetchall_arrayref };
   $sth->finish; return @keys;
 }

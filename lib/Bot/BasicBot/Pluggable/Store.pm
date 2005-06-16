@@ -70,15 +70,27 @@ Subclass me. But, only if you want to. See ...Store::Storable.pm as an example.
 
 sub save { }
 
-=item keys($namespace)
+=item keys($namespace,[$regex])
 
 Returns a list of all store keys for the passed C<$namespace>.
+
+If you pass C<$regex> then it will only pass the keys matching C<$regex>
 
 =cut
 
 sub keys {
-  my ($self, $namespace) = @_;
-  return keys %{ $self->{store}{$namespace} || {} };
+  my ($self, $namespace, @res) = @_;
+
+  my $mod = $self->{store}{$namespace} || {};  
+  return keys %$mod unless @res;
+
+  my @return;
+  OUTER: while (my ($key) = each %$mod) {
+    for (@res) { next OUTER unless $key =~ m!$_! }
+      push @return, $key;
+  }
+
+  return @return;
 }
 
 =item get($namespace, $variable)

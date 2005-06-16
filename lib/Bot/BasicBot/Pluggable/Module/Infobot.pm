@@ -92,6 +92,7 @@ use URI;
 
 sub init {
     my $self = shift;
+    $self->set("user_allow_searching", 0) unless defined($self->get("user_allow_searching"));
     $self->set("user_min_length", 3) unless defined($self->get("user_min_length"));
     $self->set("user_max_length", 25) unless defined($self->get("user_max_length"));
     $self->set("user_num_results", 20) unless defined($self->get("user_num_results"));
@@ -139,6 +140,7 @@ sub told {
     # search for a particular factoid.
     if ($body =~ /^search\s+for\s+(.*)$/i) {
         return "privmsg only, please" unless ($mess->{channel} eq "msg");
+        return "searching disabled" unless $self->get("user_allow_searching");
         my @results = $self->search_factoid(split(/\s+/, $1));
         unless (@results) { return "I don't know anything about $1."; }
         $#results = $self->get("user_num_results") unless $#results < $self->get("user_num_results");
@@ -381,9 +383,9 @@ sub ask_factoid {
 
 sub search_factoid {
   my ($self, @terms) = @_;
-  my @keys = map { s/^infobot_// ? $_ : () } $self->store_keys;
-  for my $term (@terms) {
-    @keys = grep { /\Q$term/ } @keys;
+  my @keys;
+  for (@terms) {
+    push @keys, map { s/^infobot_// ? $_ : () } $self->store_keys("^infobot_", "$_");
   }
   return @keys;
 }
@@ -479,6 +481,14 @@ A pipe-separated list of responses the bot will randomly choose from when it
 doesn't know the answer to a question. The default list of response contains
 "Dunno.", "I give up.", "I have no idea.", "No clue. Sorry.", "Search me, bub.",
 and "Sorry, I don't know."
+
+=item allow_searching
+
+Defaults to 0. 
+
+Searching on large factoid lists is ... problematic.
+
+
 
 =back
 
