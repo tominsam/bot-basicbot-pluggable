@@ -66,7 +66,7 @@ sub admin {
         $reply .= "[ $title ] ";
     }
     
-    if ($reply) { $self->reply($mess, $reply);
+    if ($reply) { $self->reply($mess, $reply) }
     
     return undef; # Title.pm is passive, and doesn't intercept things.
 }
