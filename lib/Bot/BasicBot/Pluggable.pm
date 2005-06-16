@@ -130,26 +130,29 @@ use Bot::BasicBot::Pluggable::Store::DBI;
 sub init {
   my $self = shift;
 
-  # the default store is a SQLite store
-  $self->{store} ||= {
-    type  => "DBI",
-    dsn   => "dbi:SQLite:bot-basicbot.sqlite",
-    table => "basicbot",
-  };
+  unless ($self->{store_object}) {
 
-  # calculate the class we're going to use. If you pass a full
-  # classname as the type, use that class, otherwise assume it's
-  # a B::B::Store:: subclass.
-  my $store_class = delete $self->{store}{type} || "DBI";
-  $store_class = "Bot::BasicBot::Pluggable::Store::$store_class"
-    unless $store_class =~ /::/;
-
-  # load the store class
-  eval "require $store_class";
-  die "Couldn't load $store_class - $@" if $@;
-
-  $self->{store_object} ||= $store_class->new(%{$self->{store}});
-
+    # the default store is a SQLite store
+    $self->{store} ||= {
+      type  => "DBI",
+      dsn   => "dbi:SQLite:bot-basicbot.sqlite",
+      table => "basicbot",
+    };
+  
+    # calculate the class we're going to use. If you pass a full
+    # classname as the type, use that class, otherwise assume it's
+    # a B::B::Store:: subclass.
+    my $store_class = delete $self->{store}{type} || "DBI";
+    $store_class = "Bot::BasicBot::Pluggable::Store::$store_class"
+      unless $store_class =~ /::/;
+  
+    # load the store class
+    eval "require $store_class";
+    die "Couldn't load $store_class - $@" if $@;
+  
+    $self->{store_object} = $store_class->new(%{$self->{store}});
+  }
+  
   return 1;
 }
 
@@ -398,7 +401,6 @@ sub said {
       $self->reply($mess, "Error calling said() for $who: $@") if $@;
       if ($response and $priority) {
         return if ($response eq "1");
-        warn "response $response to that!!!";
         $self->reply($mess, $response);
         return;
       }
