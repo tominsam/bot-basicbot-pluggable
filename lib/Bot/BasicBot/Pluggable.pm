@@ -130,7 +130,7 @@ use Bot::BasicBot::Pluggable::Store::DBI;
 sub init {
   my $self = shift;
 
-  unless ($self->{store_object}) {
+  unless ($self->store) {
 
     # the default store is a SQLite store
     $self->{store} ||= {
@@ -150,7 +150,7 @@ sub init {
     eval "require $store_class";
     die "Couldn't load $store_class - $@" if $@;
   
-    $self->{store_object} = $store_class->new(%{$self->{store}});
+    $self->store( $store_class->new(%{$self->{store}}) );
   }
   
   return 1;
@@ -319,7 +319,7 @@ Returns the bot's object store; see L<Bot::BasicBot::Pluggable::Store>.
 sub store {
   my $self = shift;
   if (@_) {
-    $self->{store} = shift;
+    $self->{store_object} = shift;
     return $self;
   }
   return $self->{store_object};

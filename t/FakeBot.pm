@@ -4,17 +4,15 @@ use strict;
 use base qw( Exporter );
 use Bot::BasicBot::Pluggable;
 
-our @EXPORT = qw( load_module say_private say_direct say_indirect );
+our @EXPORT = qw( load_module say_private say_direct say_indirect $basicbot );
 
-my $bot = Bot::BasicBot::Pluggable->new(
+our $basicbot = Bot::BasicBot::Pluggable->new(
   store_object => Bot::BasicBot::Pluggable::Store->new,
 );
 
 my $reply = [];
 
-sub load_module {
-  $bot->load(@_);
-}
+sub load_module { $basicbot->load(@_) }
 
 # tell the module something privately
 sub say_private {
@@ -26,7 +24,7 @@ sub say_private {
     reply_hook => \&catch,
   };
   $reply = [];
-  $bot->said($message);
+  $basicbot->said($message);
   return join "\n",@$reply;
 }
 
@@ -39,7 +37,7 @@ sub say_direct {
     reply_hook => \&catch,
   };
   $reply = [];
-  $bot->said($message);
+  $basicbot->said($message);
   return join "\n",@$reply;
 }
 
@@ -53,7 +51,7 @@ sub say_indirect {
     reply_hook => \&catch,
   };
   $reply = [];
-  $bot->said($message);
+  $basicbot->said($message);
   return join "\n",@$reply;
 }
 
