@@ -55,6 +55,7 @@ sub init {
 
 
 sub admin {
+    # do this in admin so we always get a chance to see titles
     my ($self, $mess) = @_;
 
     my $reply = "";
@@ -64,8 +65,10 @@ sub admin {
         $title = unidecode($title) if $self->get("asciify");
         $reply .= "[ $title ] ";
     }
-
-    return ($reply ne "") ? $reply : undef;
+    
+    if ($reply) { $self->reply($mess, $reply);
+    
+    return undef; # Title.pm is passive, and doesn't intercept things.
 }
 
 1;
