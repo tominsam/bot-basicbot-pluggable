@@ -265,13 +265,15 @@ sub get_factoid {
   my ($is_are, @factoids) = $self->get_raw_factoids($object);
 
 
+
   # simple is a list of the 'simple' factoids, a is b, etc. These are just
   # joined together. Alternates are factoids that are an alternative to
   # the simple factoids, they will randomly be displayed _instead_.
   my (@simple, @alternatives);
 
   for (@factoids) {
-    if ($_->{alternate}) {
+    next if $_->{text} =~ m!^\s*$!;
+    if ($_->{alternate} || $_->{alt} ) {
       push @alternatives, $_->{text};
     } else {
       push @simple, $_->{text};
@@ -279,15 +281,16 @@ sub get_factoid {
   }
 
   if ($literal) {
-        my $return .= join " =or= ", (@simple, map { "|$_" } @alternatives);
-    return ($is_are, $return, 1);
+     my $return .= join " =or= ", (@simple, map { "|$_" } @alternatives);
+     return ($is_are, $return, 1);
   }  
 
 
   # the simple list is one of the alternatives
-  unshift @alternatives, join(" or ", @simple);
+  unshift(@alternatives, join(" or ", @simple)) if @simple;
 
   # pick an option at random
+  srand();
   my $factoid = $alternatives[ rand(@alternatives) ];
 
   # if there are any RSS directives, get the feed.
@@ -305,6 +308,7 @@ sub get_raw_factoids {
   my ($self, $object) = @_;
   my $raw = $self->get( "infobot_".lc($object) )
     or return ();
+
 
   my ($is_are, @factoids);
 
