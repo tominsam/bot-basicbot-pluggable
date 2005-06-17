@@ -173,7 +173,12 @@ Returns a list of all keys in the object store.
 
 sub store_keys {
     my $self = shift;
-    $self->store->keys($self->{Name}, @_);
+    my $store = $self->store;
+
+    die "No store set up" unless defined $store;
+    die "Store isn't a ref" unless ref($store);
+	
+    $store->keys($self->{Name}, @_);
 }
 
 =item connected
