@@ -138,22 +138,32 @@ sub init {
       dsn   => "dbi:SQLite:bot-basicbot.sqlite",
       table => "basicbot",
     };
-  
-    # calculate the class we're going to use. If you pass a full
-    # classname as the type, use that class, otherwise assume it's
-    # a B::B::Store:: subclass.
-    my $store_class = delete $self->{store}{type} || "DBI";
-    $store_class = "Bot::BasicBot::Pluggable::Store::$store_class"
-      unless $store_class =~ /::/;
-  
-    # load the store class
-    eval "require $store_class";
-    die "Couldn't load $store_class - $@" if $@;
-  
-    $self->store( $store_class->new(%{$self->{store}}) );
+    $self->store_from_hashref($self->{store});
   }
   
   return 1;
+}
+
+
+sub store_from_hashref {
+    my ($self, $store) = @_;
+    # calculate the class we're going to use. If you pass a full
+    # classname as the type, use that class, otherwise assume it's
+    # a B::B::Store:: subclass.
+    my $store_class = delete $store->{type} || "DBI";
+    $store_class = "Bot::BasicBot::Pluggable::Store::$store_class"
+      unless $store_class =~ /::/;
+
+    # load the store class
+    eval "require $store_class";
+    die "Couldn't load $store_class - $@" if $@;
+
+    print STDERR "Loading $store_class\n" if $self->{verbose};
+    $self->store( $store_class->new(%{$store}) );
+    die "Couldn't init a $store_class store\n" unless $self->store;
+
+    $self->store;
+
 }
 
 =head1 METHODS
