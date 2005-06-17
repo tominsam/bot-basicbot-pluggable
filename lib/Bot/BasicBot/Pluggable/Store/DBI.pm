@@ -111,8 +111,10 @@ sub new_id {
 }
 
 sub keys {
-  my ($self, $namespace, @res) = @_;
+  my ($self, $namespace, %opts ) = @_;
   my $table = $self->{table} or die "Need DB table";
+
+  my @res = (exists $opts{res})? @{$opts{res}} : ();
 
 
   my $sql = "SELECT store_key FROM $table WHERE namespace=?";
@@ -120,11 +122,21 @@ sub keys {
   my @args = ( $namespace );
 
   foreach my $re (@res) {
-    # h-h-h-hack .... convert to SQL 
-    $re =~ s!(^\^|\$$)!%!g;
+    my $orig = $re;
+
+    # h-h-h-hack .... convert to SQL and limit terms if too general
+    $re = "%$re" if $re !~ m!^\^!;
+    $re = "$re%" if $re !~ m!\$$!;
+    $re = "${namespace}_${re}" if $orig =~ m!^[^\^].*[^\$]$!;
+
     $sql .= "AND store_key LIKE ?";
     push @args, $re;
   }
+  if (exists $opts{limit}) {
+	$sql .= " LIMIT ?";
+	push @args, $opts{limit};
+  }
+
 
   my $sth = $self->dbh->prepare_cached( $sql ); $sth->execute( @args );
   

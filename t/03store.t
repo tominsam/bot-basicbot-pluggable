@@ -12,5 +12,5 @@ is( $store->get("test", "foo"), "bar", "is set");
 
 ok( $store->set("test", "user_foo", "bar"), "set user_foo" );
 is( $store->keys('test'), 2, "2 keys" );
-is( $store->keys('test','^user'), 1, "1 key" );
+is( $store->keys('test', res => [ '^user' ]), 1, "1 key" );
 

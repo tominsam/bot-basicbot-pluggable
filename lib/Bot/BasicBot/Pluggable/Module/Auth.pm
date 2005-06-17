@@ -157,7 +157,7 @@ sub admin {
         return "Usage: !password <old password> <new password>.";
 
     } elsif ($body =~ /^!users/) {
-        return "Users: ".join(", ", map { s/^password_// ? $_ : () } $self->store_keys).".";
+        return "Users: ".join(", ", map { s/^password_// ? $_ : () } $self->store_keys( res => [ "^password" ] ) ).".";
 
     } else {
         return $self->authed($mess->{who}) ? undef : "You need to authenticate.";

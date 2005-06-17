@@ -79,15 +79,29 @@ If you pass C<$regex> then it will only pass the keys matching C<$regex>
 =cut
 
 sub keys {
-  my ($self, $namespace, @res) = @_;
-
+  my ($self, $namespace, %opts) = @_;
   my $mod = $self->{store}{$namespace} || {};  
-  return keys %$mod unless @res;
+  return $self->_keys_aux($mod, $namespace, %opts);
+}
+
+
+sub _keys_aux {
+  my ($self, $mod, $namespace, %opts) = @_;
+
+  my @res = (exists $opts{res}) ? @{$opts{res}} : ();
+
+  return CORE::keys %$mod unless @res;
 
   my @return;
   OUTER: while (my ($key) = each %$mod) {
-    for (@res) { next OUTER unless $key =~ m!$_! }
-      push @return, $key;
+        for my $re (@res) {
+                # limit matches
+                $re = "^".lc($namespace)."_.*${re}.*" if $re =~ m!^[^\^].*[^\$]$!;
+                next OUTER unless $key =~ m!$re!
+        }
+        push @return, $key;
+        last if $opts{limit} &&  @return >= $opts{limit};
+
   }
 
   return @return;

@@ -60,20 +60,11 @@ sub unset {
 }
 
 sub keys {
-    my ($self, $namespace, @res) = @_;
- 
-    
-    return keys %{$self->{_db}->{$namespace}} unless @res;
-
-    my $mod = $self->{_db}->{$namespace};
-    my @return;
-    OUTER: while (my ($key) = each %$mod) {
-	    for (@res) { next OUTER unless $key =~ m!$_! }
-    	    push @return, $key;
-    }
-
-    return @return;
-
+    my ($self, $namespace, %opts) = @_;
+    # no idea why this works
+    return CORE::keys %{$self->{_db}->{$namespace}} unless exists $opts{res} && @{$opts{res}};
+    my $mod = $self->{_db}->{$namespace} || {} ;
+    return $self->_keys_aux($mod, $namespace, %opts);
 }
 
 sub namespaces {

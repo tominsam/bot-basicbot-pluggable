@@ -385,7 +385,7 @@ sub search_factoid {
   my ($self, @terms) = @_;
   my @keys;
   for (@terms) {
-    push @keys, map { s/^infobot_// ? $_ : () } $self->store_keys("^infobot_", "$_");
+    push @keys, map { s/^infobot_// ? $_ : () } $self->store_keys( limit => $self->get("user_num_results"), res => [ "$_" ] );
   }
   return @keys;
 }
