@@ -84,6 +84,11 @@ sub keys {
   return $self->_keys_aux($mod, $namespace, %opts);
 }
 
+sub count_keys {
+  my ($self, $namespace, %opts) = @_;
+  $opts{_count_only} = 1;
+  $self->keys($namespace, %opts);
+}
 
 sub _keys_aux {
   my ($self, $mod, $namespace, %opts) = @_;
@@ -93,18 +98,20 @@ sub _keys_aux {
   return CORE::keys %$mod unless @res;
 
   my @return;
+  my $count = 0;
   OUTER: while (my ($key) = each %$mod) {
         for my $re (@res) {
                 # limit matches
                 $re = "^".lc($namespace)."_.*${re}.*" if $re =~ m!^[^\^].*[^\$]$!;
                 next OUTER unless $key =~ m!$re!
         }
-        push @return, $key;
-        last if $opts{limit} &&  @return >= $opts{limit};
+        push @return, $key if (!$opts{_count_only});
+        last if $opts{limit} &&  ++$count >= $opts{limit};
 
   }
+  
 
-  return @return;
+  return ($opts{_count_only})? $count : @return;
 }
 
 =item get($namespace, $variable)

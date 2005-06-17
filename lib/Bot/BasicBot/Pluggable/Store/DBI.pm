@@ -117,6 +117,7 @@ sub keys {
   my @res = (exists $opts{res})? @{$opts{res}} : ();
 
 
+
   my $sql = "SELECT store_key FROM $table WHERE namespace=?";
 
   my @args = ( $namespace );
@@ -125,11 +126,11 @@ sub keys {
     my $orig = $re;
 
     # h-h-h-hack .... convert to SQL and limit terms if too general
-    $re = "%$re" if $re !~ m!^\^!;
-    $re = "$re%" if $re !~ m!\$$!;
+    $re = "%$re" if $re !~ s!^\^!!;
+    $re = "$re%" if $re !~ s!\$$!!;
     $re = "${namespace}_${re}" if $orig =~ m!^[^\^].*[^\$]$!;
 
-    $sql .= "AND store_key LIKE ?";
+    $sql .= " AND store_key LIKE ?";
     push @args, $re;
   }
   if (exists $opts{limit}) {
@@ -139,6 +140,8 @@ sub keys {
 
 
   my $sth = $self->dbh->prepare_cached( $sql ); $sth->execute( @args );
+
+  return $sth->rows if $opts{_count_only};
   
   my @keys = map { $_->[0] } @{ $sth->fetchall_arrayref };
   $sth->finish; return @keys;
