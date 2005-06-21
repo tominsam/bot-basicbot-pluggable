@@ -100,20 +100,19 @@ sub seen {
 
     if (($body =~ /(\w+)\+\+\s*#?\s*/) or ($body =~ /\(([\w\s]+)\)\+\+\s*#?\s*/)) {
         return if (($1 eq $mess->{who}) and $self->get("user_ignore_selfkarma"));
-        $self->add_karma($1, 1, $', $mess->{who});
+        return $self->add_karma($1, 1, $', $mess->{who});
     } elsif (($body =~ /(\w+)\-\-\s*#?\s*/) or ($body =~ /\(([\w\s]+)\)\-\-\s*#?\s*/)) {
         return if (($1 eq $mess->{who}) and $self->get("user_ignore_selfkarma"));
-        $self->add_karma($1, 0, $', $mess->{who});
+        return $self->add_karma($1, 0, $', $mess->{who});
     } elsif ($mess->{address} && ($body =~ /\+\+\s*#?\s*/)) {
-        $self->add_karma($mess->{address}, 1, $', $mess->{who});
-
+        return $self->add_karma($mess->{address}, 1, $', $mess->{who});
     # our body check here is constrained to the beginning of the line with
     # an optional "-" of "--" because Bot::BasicBot sees "<botname>-" as being
     # an addressing mode (along with "," and ":"). so, "<botname>--" comes
     # through as "<botname>-" in {address} and "-" as the start of our body.
     # TODO: add some sort of $mess->{rawbody} to Bot::BasicBot.pm. /me grumbles.
     } elsif ($mess->{address} && ($body =~ /\-?\-\s*#?\s*/)) {
-        $self->add_karma($mess->{address}, 0, $', $mess->{who});
+        return $self->add_karma($mess->{address}, 0, $', $mess->{who});
     }
 }
 
@@ -168,7 +167,7 @@ sub add_karma {
     my $row = { reason=>$reason, who=>$who, timestamp=>time, positive=>$good };
     my @changes = @{ $self->get("karma_$object") || [] }; push @changes, $row;
     $self->set( "karma_$object" => \@changes );
-    return;
+    return 1;
 }
 
 sub trim_list {
