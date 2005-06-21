@@ -86,6 +86,7 @@ use base qw(Bot::BasicBot::Pluggable::Module);
 use warnings;
 use strict;
 
+use Data::Dumper;
 use LWP::Simple ();
 use XML::Feed;
 use URI;
@@ -256,7 +257,6 @@ sub fallback {
 sub get_factoid {
   my ($self, $object) = @_;
 
-
   my $literal = ($object =~ s!^literal\s+!!);
 
 
@@ -264,7 +264,8 @@ sub get_factoid {
   # get a list of factoid hashes
   my ($is_are, @factoids) = $self->get_raw_factoids($object);
 
-
+  return unless @factoids;  
+  #print STDERR Dumper(@factoids);
 
   # simple is a list of the 'simple' factoids, a is b, etc. These are just
   # joined together. Alternates are factoids that are an alternative to
@@ -285,6 +286,7 @@ sub get_factoid {
      return ($is_are, $return, 1);
   }  
 
+  #print STDERR Dumper(@alternatives);
 
   # the simple list is one of the alternatives
   unshift(@alternatives, join(" or ", @simple)) if @simple;
@@ -292,7 +294,7 @@ sub get_factoid {
   # pick an option at random
   srand();
   my $factoid = $alternatives[ rand(@alternatives) ];
-
+  #print STDERR "$factoid\n";
   # if there are any RSS directives, get the feed.
   # TODO - this could be done in a more general way, with plugins
   # TODO - this blocks. Bad. you can knock the bot off channel by
@@ -309,7 +311,7 @@ sub get_raw_factoids {
   my $raw = $self->get( "infobot_".lc($object) )
     or return ();
 
-
+  #print STDERR Dumper($raw);
   my ($is_are, @factoids);
 
   if (ref($raw)) {
@@ -413,8 +415,8 @@ sub parseFeed {
         $title =~ s/^\s+//;
         $ret .= "${title}; ";
     }
-    $ret =~ s/\s*$//;
-    return $ret;
+    $ret =~ s/\s*;\s*$//;
+    return "<reply>$ret";
 }
 
 # We've been replied to by an infobot.

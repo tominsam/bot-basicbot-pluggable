@@ -76,7 +76,7 @@ is( say_indirect("bar?"), "bar is yellow", "changed" );
 
 # factoids can contain RSS
 is( say_direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "Okay.", "set RSS" );
-is( say_indirect("rsstest?"), "rsstest is title;", "can read rss");
+is( say_indirect("rsstest?"), "title", "can read rss");
 
 
 my $old_stopwords = $ib->get("user_stopwords");
