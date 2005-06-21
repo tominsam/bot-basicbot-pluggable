@@ -111,7 +111,8 @@ sub secs_to_string {
     my $hours = int($secs / 3600);  $secs = $secs % 3600;
     my $mins  = int($secs / 60);    $secs = $secs % 60;
 
-    my $string = "$days days " if $days;
+    my $string = "";
+    $string   .= "$days days " if $days;
     $string   .= "$hours hours " if $hours;
     $string   .= "$mins mins " if ($mins and !$days);
     $string   .= "$secs seconds " if (!$days and !$hours);
