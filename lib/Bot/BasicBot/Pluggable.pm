@@ -133,13 +133,13 @@ sub init {
   unless ($self->store) {
 
     # the default store is a SQLite store
-    $self->{store} ||= {
+    $self->store( {
       type  => "DBI",
       dsn   => "dbi:SQLite:bot-basicbot.sqlite",
       table => "basicbot",
-    };
-    $self->store_from_hashref($self->{store});
+    } );
   }
+  $self->store_from_hashref($self->store) unless UNIVERSAL::isa($self->store, "Bot::BasicBot::Pluggable::Store");
   
   return 1;
 }
