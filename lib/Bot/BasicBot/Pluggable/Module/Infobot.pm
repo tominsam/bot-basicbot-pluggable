@@ -138,6 +138,12 @@ sub told {
         return "I'll ask $1 about $2.";
     }
 
+    # tell someone else about a factoid
+    if ($body =~ /^tell\s+(\S+)\s+about\s+(.*)$/i) {
+        $self->tell_factoid($2, $1, $mess);
+        return "Told $1 about $2.";
+    }
+
     # search for a particular factoid.
     if ($body =~ /^search\s+for\s+(.*)$/i) {
         return "privmsg only, please" unless ($mess->{channel} eq "msg");
@@ -384,6 +390,19 @@ sub ask_factoid {
     who => $ask,
     channel=>'msg',
     body=>":INFOBOT:QUERY $id $object"
+  );
+}
+
+sub tell_factoid {
+  my ($self, $object, $tell, $who, $type, $mess) = @_;
+
+  my ($is_are, $factoid) = get_factoid($object);
+  my $who = $mess->{who};
+
+  $self->bot->say(
+    who => $tell,
+    channel=> 'msg',
+    body=> "$who wanted you to know: $object $is_are $factoid"
   );
 }
 
