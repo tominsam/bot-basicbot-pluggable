@@ -396,7 +396,7 @@ sub ask_factoid {
 sub tell_factoid {
   my ($self, $object, $tell, $who, $type, $mess) = @_;
 
-  my ($is_are, $factoid) = get_factoid($object);
+  my ($is_are, $factoid) = $self->get_factoid($object);
   my $who = $mess->{who};
 
   $self->bot->say(
