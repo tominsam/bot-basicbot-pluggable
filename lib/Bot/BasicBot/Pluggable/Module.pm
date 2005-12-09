@@ -302,8 +302,7 @@ become the only thing to do, and I will deprecate C<said()>.
 
 sub said {
   my ($self, $mess, $pri) = @_;
-  $mess->{body} =~ s/\s+$//;
-  $mess->{body} =~ s/^\s+//;
+  $mess->{body} =~ s/(^\s*|\s*$)//g if defined $mess->{body};
   
   if ($pri == 0) {
     return $self->seen($mess);

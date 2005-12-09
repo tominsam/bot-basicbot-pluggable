@@ -157,7 +157,7 @@ sub told {
 
 sub fallback {
     my ($self, $mess) = @_;
-    my $body = $mess->{body};
+    my $body = $mess->{body} || "";
 
     # request starts with "my", so we'll look for
     # a valid factoid for "$mess->{who}'s $object".
