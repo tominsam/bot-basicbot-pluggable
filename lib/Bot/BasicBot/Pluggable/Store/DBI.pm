@@ -75,6 +75,7 @@ sub get {
   ); $sth->execute($namespace, $key);
   my $row = $sth->fetchrow_arrayref;
   $sth->finish; return undef unless $row and @$row;
+  local $@;
   return eval { thaw($row->[0]) } || $row->[0];
 }
 
