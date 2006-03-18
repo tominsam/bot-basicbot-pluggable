@@ -394,15 +394,15 @@ sub ask_factoid {
 }
 
 sub tell_factoid {
-  my ($self, $object, $tell, $who, $type, $mess) = @_;
+  my ($self, $object, $tell, $mess) = @_;
 
   my ($is_are, $factoid) = $self->get_factoid($object);
-  my $who = $mess->{who};
+  my $from = $mess->{who};
 
   $self->bot->say(
     who => $tell,
     channel=> 'msg',
-    body=> "$who wanted you to know: $object $is_are $factoid"
+    body=> "$from wanted you to know: $object $is_are $factoid"
   );
 }
 
