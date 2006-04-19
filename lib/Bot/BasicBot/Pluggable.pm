@@ -192,6 +192,7 @@ sub load {
   # This is possible a leeeetle bit evil.
   print STDERR "Loading module '$module' " if $self->{verbose};
   my $file = "Bot/BasicBot/Pluggable/Module/$module.pm";
+  $file = "./$module.pm" if (-e "./$module.pm");
   $file = "./modules/$module.pm" if (-e "./modules/$module.pm");
   print STDERR "from file $file.\n" if $self->{verbose};
 
