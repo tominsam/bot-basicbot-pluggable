@@ -132,10 +132,10 @@ sub told {
     } elsif ($command eq "explain" and $param) {
         $param =~ s/^karma\s+//i;
         my ($karma, $good, $bad) = $self->get_karma($param);
-        $self->trim_list($good, $self->get("user_num_comments"));
-        $self->trim_list($bad, $self->get("user_num_comments"));
-        my $reply  = "positive: ".(join(", ", @$good) || "no comments")."; ";
-           $reply .= "negative: ".(join(", ", @$bad) || "no comments")."; ";
+        #$self->trim_list($good, $self->get("user_num_comments"));
+        #$self->trim_list($bad, $self->get("user_num_comments"));
+        my $reply  = "positive: ".scalar(@$good)."; ";
+           $reply .= "negative: ".scalar(@$bad)."; ";
            $reply .= "overall: $karma.";
 
         return $reply;
@@ -154,8 +154,8 @@ sub get_karma {
 
     for my $row (@changes) {
         my $who = $self->get("user_show_givers") ? " (".$row->{who}.")" : undef; 
-        if ($row->{positive}) { $karma++; push(@good, $row->{reason}.$who) if $row->{reason}; }
-        else                  { $karma--; push(@bad, $row->{reason}.$who)  if $row->{reason}; }
+        if ($row->{positive}) { $karma++; push(@good, $row->{reason}.$who) }
+        else                  { $karma--; push(@bad, $row->{reason}.$who)  }
     }
 
     return wantarray() ? ($karma, \@good, \@bad) : $karma;
