@@ -73,7 +73,7 @@ sub told {
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
 
-    if ($command eq "seen" and $param =~ /^(\w+)\??$/) {
+    if ($command eq "seen" and $param =~ /^(.+?)\??$/) {
         my $who = lc($1);
         my $seen = $self->get("seen_$who");
 
