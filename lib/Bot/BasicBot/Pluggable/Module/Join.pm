@@ -57,7 +57,7 @@ sub help {
 sub told {
     my ($self, $mess) = @_;
     my $body = $mess->{body};
-
+	return unless defined $body;
     return unless $mess->{address};
 
     my ($command, $param) = split(/\s+/, $body, 2);

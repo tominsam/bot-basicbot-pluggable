@@ -54,9 +54,11 @@ sub help {
 sub told {
     my ($self, $mess) = @_;
     my $body = $mess->{body};
-
+	
+	
     # we don't care about commands that don't start with '!'
-    return 0 unless $body =~ /^!/;
+    return 0 unless defined $body;
+	return 0 unless $body =~ /^!/;
 
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);

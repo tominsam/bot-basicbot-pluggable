@@ -94,7 +94,7 @@ sub help {
 sub seen {
     my ($self, $mess) = @_;
     my $body = $mess->{body};
-
+	return 0 unless defined $body;
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
 

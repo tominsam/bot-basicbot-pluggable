@@ -115,7 +115,7 @@ sub help {
 sub told {
     my ($self, $mess) = @_;
     my $body = $mess->{body};
-
+	return unless defined $body;
     # looks like an infobot reply.
     if ($body =~ s/^:INFOBOT:REPLY (\S+) (.*)$//) {
         return $self->infobot_reply($1, $2, $mess);

@@ -69,6 +69,7 @@ sub seen {
 sub told {
     my ($self, $mess) = @_;
     my $body = $mess->{body};
+	return unless defined $body;
 
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);

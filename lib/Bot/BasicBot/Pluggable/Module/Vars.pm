@@ -52,7 +52,7 @@ sub help {
 sub told {
     my($self, $mess) = @_;
     my $body = $mess->{body};
-
+	return 0 unless defined $body;
     my ($command, $mod, $var, $value) = split(/\s+/, $body, 4);
     $command = lc($command);
 
