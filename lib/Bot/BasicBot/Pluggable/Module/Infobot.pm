@@ -187,6 +187,10 @@ sub fallback {
 
         # get the factoid and type of relationship
         my ($is_are, $factoid, $literal) = $self->get_factoid($body);
+        if (!$literal && $factoid && $factoid =~ /\|/) {
+		my @f = split /\|/,$factoid;
+		$factoid = $f[ int(rand(scalar @f) ) ];
+	}
 
         # no factoid?
         unless ($factoid) {
@@ -426,6 +430,7 @@ sub parseFeed {
     };
 
     return "<< Error parsing RSS from $url: $@ >>" if $@;
+    # return "Sorry. Unable to retrieve factoid." if $@;
     my $ret;
     foreach my $title (@items) {
         $title =~ s/\s+/ /;
@@ -435,7 +440,7 @@ sub parseFeed {
         $ret .= "${title}; ";
     }
     $ret =~ s/\s*;\s*$//;
-    return "<reply>$ret";
+    return ( $ret =~ m/^<(reply|action)>/ ? $ret : "<reply>$ret");
 }
 
 # We've been replied to by an infobot.
