@@ -123,6 +123,17 @@ sub told {
     my ($command, $param) = split(/\s+/, $body, 2);
     $command = lc($command);
 
+    my $nick = $self->bot->nick;
+
+    my $tmp = $command;
+    $tmp =~ s!^$nick!!;
+    if ($tmp eq '++') {
+       return "Thanks!";
+    } elsif ($tmp eq '--') {
+       return "Pbbbbtt!";
+    }
+    
+
     if ($command eq "karma" and $param) {
         return "$param has karma of ".$self->get_karma($param).".";
 
@@ -139,7 +150,7 @@ sub told {
            $reply .= "overall: $karma.";
 
         return $reply;
-    }
+    } 
 }
 
 sub get_karma {
