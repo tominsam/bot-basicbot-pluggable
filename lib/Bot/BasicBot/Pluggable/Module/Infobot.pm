@@ -159,6 +159,8 @@ sub fallback {
     my ($self, $mess) = @_;
     my $body = $mess->{body} || "";
 
+    my $is_priv = !defined $mess->{channel} || $mess->{channel} eq 'msg';
+
     # request starts with "my", so we'll look for
     # a valid factoid for "$mess->{who}'s $object".
     $body =~ s/^my /$mess->{who}'s /;
@@ -180,7 +182,7 @@ sub fallback {
     # been addressed, c) the factoid is bigger and smaller than our requirements,
     # and d) that it doesn't look like a to-be-learned factoid (which is important
     # if the user has disabled the requiring of the question mark for answering.)
-    my $body_regexp = $self->get("user_require_question") ? qr/\?+$/ : qr/[.!?]*$/;
+    my $body_regexp = $self->get("user_require_question") && !$is_priv ? qr/\?+$/ : qr/[.!?]*$/;
     if ($body =~ s/$body_regexp// and ($mess->{address} or $self->get("user_passive_answer")) and
         length($body) >= $self->get("user_min_length") and length($body) <= $self->get("user_max_length")
         and $body !~ /^(.*?)\s+(is|are)\s+(.*)$/i) {
