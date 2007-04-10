@@ -42,7 +42,7 @@ use strict;
 use Text::Unidecode;
 use URI::Title qw(title);
 use URI::Find::Simple qw(list_uris);
-
+use URI;
 sub help {
     return "Speaks the title of URLs mentioned.";
 }
@@ -50,7 +50,8 @@ sub help {
 
 sub init {
     my $self = shift;
-    $self->set("asciify", 1) unless defined($self->get("asciify"));
+    $self->set("user_asciify", 1) unless defined($self->get("user_asciify"));
+    $self->set("user_be_rude", 0) unless defined($self->get("user_be_rude"));
 }
 
 
@@ -60,9 +61,18 @@ sub admin {
 
     my $reply = "";
     for (list_uris($mess->{body})) {
-        my $title = title($_);
+	my $uri   = URI->new($_);
+	next unless $uri;
+        if ($uri->scheme eq "file") {
+             next unless $self->get("user_be_rude");
+             my $who  = $mess->{who};
+             $self->reply($mess, "Nice try $who, you tosser");
+             return undef;
+        }
+          
+        my $title = title("$_");
         next unless defined $title;
-        $title = unidecode($title) if $self->get("asciify");
+        $title = unidecode($title) if $self->get("user_asciify");
         $reply .= "[ $title ] ";
     }
     
