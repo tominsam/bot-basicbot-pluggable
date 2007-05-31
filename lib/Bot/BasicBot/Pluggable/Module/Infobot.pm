@@ -88,8 +88,11 @@ use strict;
 
 use Data::Dumper;
 use LWP::Simple ();
-use XML::Feed;
 use URI;
+
+# this one is a complete bugger to build
+eval "use XML::Feed";
+our $HAS_XML_FEED = $@ ? 0 : 1;
 
 sub init {
     my $self = shift;

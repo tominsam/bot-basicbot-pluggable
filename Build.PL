@@ -17,8 +17,10 @@ Module::Build->new(
         'DBD::SQLite'       => 0,
         'Getopt::Long'      => 0,
         'DBM::Deep'         => 0,
-        'XML::Feed'         => 0,
         'Text::Unidecode'   => 0,
+    },
+    recommends => {
+        'XML::Feed'         => 0,
     },
     script_files => [
       'bin/bot-basicbot-pluggable',

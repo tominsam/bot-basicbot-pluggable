@@ -7,6 +7,10 @@ use Test::More tests => 83;
 use FindBin qw( $Bin );
 use lib $Bin;
 
+# this one is a complete bugger to build
+eval "use XML::Feed";
+our $HAS_XML_FEED = $@ ? 0 : 1;
+
 use FakeBot;
 
 ok( my $ib = load_module("Infobot"), "Loaded infobot module");
@@ -75,8 +79,11 @@ is( say_direct("no, bar is yellow"), "Okay.", "Can explicitly redefine factoids"
 is( say_indirect("bar?"), "bar is yellow", "changed" );
 
 # factoids can contain RSS
+{ local $TODO = !$HAS_XML_FEED;
 is( say_direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "Okay.", "set RSS" );
 is( say_indirect("rsstest?"), "title", "can read rss");
+}
+
 
 
 my $old_stopwords = $ib->get("user_stopwords");
