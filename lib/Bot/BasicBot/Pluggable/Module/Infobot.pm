@@ -431,6 +431,7 @@ sub parseFeed {
     my @items;
     eval {
         my $feed = XML::Feed->parse( URI->new( $url ) );
+        die "Bad feed\n" unless $feed;
         @items = map { $_->title } $feed->entries;
     };
 
