@@ -408,7 +408,8 @@ sub said {
   for my $priority (0..3) {
     for ($self->handlers) {
       $who = $_;
-      eval "\$response = \$self->handler(\$who)->said(\$mess, \$priority); ";
+      $response = eval { $self->handler($who)->said( $mess, $priority ) };
+      warn $@ if $@;
       $self->reply($mess, "Error calling said() for $who: $@") if $@;
       if ($response and $priority) {
         return if ($response eq "1");
