@@ -1,9 +1,26 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
-0.xx xxxx/xx/xx
- This is the "Morbus release". Why the "Morbus release"?
- Quite simply because he did everything you see below.
- You can chastise him for his ego at http://disobey.com/.
+0.6 2009/03/04
+
+It's been.. uh.. 4 years. There are tickets in RT that simply don't apply to
+the current codebase. Personally, I never work on this module, use it for one
+small thing that never changes, and have started to really dislike programming
+in perl recently. Thus I'm just going to release trunk as-is. It's got a lot
+of changes. Things might break. Sorry. I dislike other people doing this,
+and I dislike _me_ doing this, but I see very few other options at this point.
+ 
+I'm putting all the code in a github repository at
+
+http://github.com/jerakeen/bot-basicbot-pluggable
+
+if people want to actually track what goes on. Anyone want to take B::B::P
+over?
+
+--
+
+This is the "Morbus release". Why the "Morbus release"?
+Quite simply because he did everything you see below.
+You can chastise him for his ego at http://disobey.com/.
 
   - Revised documentation for Pluggable.pm and Module.pm.
   - Auth: Revised documentation, switched to admin() not said().

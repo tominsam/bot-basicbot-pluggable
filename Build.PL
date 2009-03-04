@@ -8,7 +8,7 @@ Module::Build->new(
     module_name => 'Bot::BasicBot::Pluggable',
     license => 'perl',
     requires => {
-        'perl'              => '5.6.0',
+        'perl'              => '5.8.0',
         'Bot::BasicBot'     => '0.30',
         'Test::More'        => '0.01',
         'URI::Title'        => '0.1',
