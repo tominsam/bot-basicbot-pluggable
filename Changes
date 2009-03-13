@@ -1,5 +1,14 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
+0.7 2009/03/10
+  - Missing t/FakeBot.pm added to MANIFEST
+  - Adjusted number of tests for Test::More
+  - Karma:
+    - Testsuide added
+    - Listing of explainations works again (settable by num_comments)
+    - New variable random_reasons
+    - Documentation updated
+
 0.6 2009/03/04
 
 It's been.. uh.. 4 years. There are tickets in RT that simply don't apply to
