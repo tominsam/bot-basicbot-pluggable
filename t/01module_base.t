@@ -3,7 +3,7 @@ use warnings;
 use strict;
 use lib qw(./lib);
 
-use Test::More no_plan => 1;
+use Test::More tests => 13;
 
 use Bot::BasicBot::Pluggable;
 use Bot::BasicBot::Pluggable::Module;
