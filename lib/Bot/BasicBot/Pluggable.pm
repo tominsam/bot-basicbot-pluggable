@@ -176,8 +176,10 @@ Create a new Bot. Identical to the C<new> method in L<Bot::BasicBot>.
 
 =item load($module)
 
-Load a module for the bot by name from C<./modules/ModuleName.pm> if that file
-exists, and falling back to C<Bot::BasicBot::Pluggable::Module::$module> if not.
+Load a module for the bot by name from C<./ModuleName.pm> or
+C<./modules/ModuleName.pm> in that order if one of these files
+exist, and falling back to C<Bot::BasicBot::Pluggable::Module::$module>
+if not.
 
 =cut
 
