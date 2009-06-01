@@ -1,5 +1,12 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
+0.71 2009/06/01
+
+  - Add a test for unparsable rss feeds to Infobot
+  - Better error message for unparsable rss feeds in Infobot
+  - Added ignore_re option to Title (by osfameron)
+  - Adjusting documentation for Load to refer to the real behaviour
+ 
 0.7 2009/03/10
   - Missing t/FakeBot.pm added to MANIFEST
   - Adjusted number of tests for Test::More
