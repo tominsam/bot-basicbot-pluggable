@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 use lib qw(lib t/lib);
-use Test::More tests => 83;
+use Test::More tests => 84;
 
 use FindBin qw( $Bin );
 use lib $Bin;
@@ -82,6 +82,9 @@ is( say_indirect("bar?"), "bar is yellow", "changed" );
 { local $TODO = !$HAS_XML_FEED;
 is( say_direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "Okay.", "set RSS" );
 is( say_indirect("rsstest?"), "title", "can read rss");
+
+say_direct("rsstest2 is <rss=\"file://$Bin/infobot.t\">");
+is( say_indirect("rsstest2?"), "rsstest2 is << Error parsing RSS from file:///Users/dom/github/bot-basicbot-pluggable/t/infobot.t: Cannot detect feed type >>", "can't read rss");
 }
 
 

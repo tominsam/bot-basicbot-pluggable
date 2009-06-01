@@ -431,12 +431,16 @@ sub parseFeed {
     my @items;
     eval {
         my $feed = XML::Feed->parse( URI->new( $url ) );
-        die "Bad feed\n" unless $feed;
+        die XML::Feed->errstr() . "\n" unless $feed;
         @items = map { $_->title } $feed->entries;
     };
 
-    return "<< Error parsing RSS from $url: $@ >>" if $@;
-    # return "Sorry. Unable to retrieve factoid." if $@;
+    if ($@) {
+	chomp $@;
+    	return "<< Error parsing RSS from $url: $@ >>";
+        #return "Sorry. Unable to retrieve factoid." if $@;
+    }
+
     my $ret;
     foreach my $title (@items) {
         $title =~ s/\s+/ /;
