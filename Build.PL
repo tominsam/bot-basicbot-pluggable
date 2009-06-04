@@ -6,8 +6,8 @@ use Module::Build;
 
 Module::Build->new(
     module_name => 'Bot::BasicBot::Pluggable',
-    license => 'perl',
-    requires => {
+    license     => 'perl',
+    requires    => {
         'perl'              => '5.8.0',
         'Bot::BasicBot'     => '0.30',
         'Test::More'        => '0.01',
@@ -19,13 +19,15 @@ Module::Build->new(
         'DBM::Deep'         => 0,
         'Text::Unidecode'   => 0,
     },
-    recommends => {
-        'XML::Feed'         => 0,
-    },
-    script_files => [
-      'bin/bot-basicbot-pluggable',
-    ],
+    recommends         => { 'XML::Feed' => 0, },
+    script_files       => [ 'bin/bot-basicbot-pluggable', ],
     create_makefile_pl => 'passthrough',
-    create_readme => 1,
+    create_readme      => 1,
+    meta_merge         => {
+        resources => {
+            repository => 'http://github.com/jerakeen/bot-basicbot-pluggable',
+        },
+        author => ['Mario Domgoergen <mario@domgoergen.com>']
+    }
 )->create_build_script;
 
