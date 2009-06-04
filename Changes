@@ -1,5 +1,11 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
+0.72 2009/06/04
+
+  - Fixed absolute path in t/infobot.t ... stupid!
+  - Added me (Mario) to the author list 
+  - Added the git repository to the meta resources
+
 0.71 2009/06/01
 
   - Add a test for unparsable rss feeds to Infobot
