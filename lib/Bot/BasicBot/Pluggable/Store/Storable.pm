@@ -3,7 +3,7 @@ use warnings;
 use strict;
 use Storable qw( nstore retrieve );
 use File::Spec;
-use File::Temp;
+use File::Temp qw(tempfile);
 
 use base qw( Bot::BasicBot::Pluggable::Store );
 
@@ -21,7 +21,7 @@ sub save {
 
   for my $name ( @modules ) {
     my $filename = File::Spec->catfile($self->{dir},$name.".storable");
-    my $tempfile = File::Temp->new();
+    my ($fh,$tempfile) = tempfile( UNLINK => 0 );
     nstore($self->{store}{$name}, $tempfile)
       or die "Cannot save to $tempfile\n";
     rename $tempfile,$filename 

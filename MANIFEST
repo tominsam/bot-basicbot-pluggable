@@ -34,6 +34,7 @@ t/01module_base.t
 t/02module_auth.t
 t/03store.t
 t/03store_deep.t
+t/03store_storable.t
 t/04karma.t
 t/05infobot.t
 t/06title.t
