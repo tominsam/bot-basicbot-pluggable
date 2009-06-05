@@ -83,8 +83,8 @@ is( $bot->tell_indirect("bar?"), "bar is yellow", "changed" );
 is( $bot->tell_direct("rsstest is <rss=\"file://$Bin/test.rss\">"), "Okay.", "set RSS" );
 is( $bot->tell_indirect("rsstest?"), "title", "can read rss");
 
-$bot->tell_direct("rsstest2 is <rss=\"file://$Bin/infobot.t\">");
-like( $bot->tell_indirect("rsstest2?"), qr{rsstest2 is << Error parsing RSS from file:///.*/infobot.t: Cannot detect feed type >>}, "can't read rss");
+$bot->tell_direct("rsstest2 is <rss=\"file://$Bin/05infobot.t\">");
+like( $bot->tell_indirect("rsstest2?"), qr{rsstest2 is << Error parsing RSS from file:///.*/05infobot.t: Cannot detect feed type >>}, "can't read rss");
 }
 
 
