@@ -3,83 +3,75 @@
 use warnings;
 use strict;
 
-use Test::More tests => 33;
-use Bot::BasicBot::Pluggable::Store;
-use Bot::BasicBot::Pluggable;
+use Test::More tests => 31;
+use Test::Bot::BasicBot::Pluggable;
 
-my $store = Bot::BasicBot::Pluggable::Store->new;
-
-ok(my $bot = Bot::BasicBot::Pluggable->new(
-  channels => [ '#botzone' ],
-  nick     => 'karmabot',
-  store    => $store
-),'created karma bot');
-
-ok(my $karma = $bot->load('Karma'),'loaded karma module');
+my $bot = Test::Bot::BasicBot::Pluggable->new();
+my $karma = $bot->load('Karma');
 
 ## We start testing without giving any reasons
 $karma->set("user_num_comments", 0);
 
-is(say('karma alice'),'alice has karma of 0.','inital karma of alice');
-is(say('explain karma alice'),'positive: 0; negative: 0; overall: 0.','explain initial karma of alice');
+is($bot->tell_indirect('karma alice'),'alice has karma of 0.','inital karma of alice');
+is($bot->tell_indirect('explain karma alice'),'positive: 0; negative: 0; overall: 0.','explain initial karma of alice');
 
-say('alice--');
-is(say('karma alice'),'alice has karma of -1.','karma of alice after first --');
+$bot->tell_indirect('alice--');
+is($bot->tell_indirect('karma alice'),'alice has karma of -1.','karma of alice after first --');
 
-say('alice++');
-say('alice++');
-is(say('karma alice'),'alice has karma of 1.','karma of alice after first ++');
+$bot->tell_indirect('alice++');
+$bot->tell_indirect('alice++');
+is($bot->tell_indirect('karma alice'),'alice has karma of 1.','karma of alice after first ++');
 
-say('alice++');
-is(say('karma alice'),'alice has karma of 2.','karma of alice after second ++');
+$bot->tell_indirect('alice++');
+is($bot->tell_indirect('karma alice'),'alice has karma of 2.','karma of alice after second ++');
 
-is(say('explain karma alice'),'positive: 3; negative: 1; overall: 2.','explain karma of Alice');
+is($bot->tell_indirect('explain karma alice'),'positive: 3; negative: 1; overall: 2.','explain karma of Alice');
 
-is(say('karmabot++'),'Thanks!','thanking for karming up bot');
-is(say('karmabot--','alice'),'Pbbbbtt!','complaining about karming down bot');
+is($bot->tell_indirect('test_bot++'),'Thanks!','thanking for karming up bot');
+is($bot->tell_indirect('test_bot--','alice'),'Pbbbbtt!','complaining about karming down bot');
 
-is(say('++'),'Thanks!','thanking up bot without explicit addressing');
-is(say('--'),'Pbbbbtt!','complaining about karming down bot without explicit addressing');
+is($bot->tell_direct('++'),'Thanks!','thanking up bot without explicit addressing');
+is($bot->tell_direct('--'),'Pbbbbtt!','complaining about karming down bot without explicit addressing');
 
-say('bob++');
-test_karma('bob',0,'user is not allowed to use positiv selfkarma');
+$bot->tell_indirect('test_user++');
+test_karma('test_user',0,'user is not allowed to use positiv selfkarma');
 
-say('bob--');
-test_karma('bob',0,'user is not allowed to use negative selfkarma');
+$bot->tell_indirect('test_user--');
+test_karma('test_user',0,'user is not allowed to use negative selfkarma');
 
 $karma->set('user_ignore_selfkarma',0);
 
-say('bob++');
-test_karma('bob',1,'user is allowed to use positive selfkarma');
+$bot->tell_indirect('test_user++');
+test_karma('test_user',1,'user is allowed to use positive selfkarma');
 
-say('bob--');
-test_karma('bob',0,'user is allowed to use negativ selfkarma');
+$bot->tell_indirect('test_user--');
+test_karma('test_user',0,'user is allowed to use negativ selfkarma');
 
-say('Foo alice--');
-is(say('karma alice'),'alice has karma of 1.','negative karma in sentance');
+$bot->tell_indirect('Foo alice--');
+is($bot->tell_indirect('karma alice'),'alice has karma of 1.','negative karma in sentance');
 
-say('Foo alice++');
-is(say('karma alice'),'alice has karma of 2.','positiv karma in sentance');
+$bot->tell_indirect('Foo alice++');
+is($bot->tell_indirect('karma alice'),'alice has karma of 2.','positiv karma in sentance');
 
 is($karma->help(),'Gives karma for or against a particular thing. Usage: <thing>++ # comment, <thing>-- # comment, karma <thing>, explain <thing>.','help for karma');
 
-is(say('karma'),'bob has karma of 0.','asking for own karma without arguments');
+is($bot->tell_indirect('karma'),'test_user has karma of 0.','asking for own karma without arguments');
 
-is(say('foobar','alice'),'','ignoring karma unrelated issues');
+is($bot->tell_indirect('foobar','alice'),'','ignoring karma unrelated issues');
 
-say('(alice code)--');
-is(say('karma alice code'),'alice code has karma of -1.','decrease karma of things with spaces ');
+$bot->tell_indirect('(alice code)--');
+is($bot->tell_indirect('karma alice code'),'alice code has karma of -1.','decrease karma of things with spaces ');
 
-say('(alice code)++');
-is(say('karma alice code'),'alice code has karma of 0.','increasing karma of things with spaces ');
+$bot->tell_indirect('(alice code)++');
+is($bot->tell_indirect('karma alice code'),'alice code has karma of 0.','increasing karma of things with spaces ');
 
-say('alice: ++');
-is(say('karma alice'),'alice has karma of 2.','positiv karma in sentance');
+$bot->tell_indirect('alice: ++');
+is($bot->tell_indirect('karma alice'),'alice has karma of 2.','positiv karma in sentance');
 
-is(say('explain',''),'','ignore explain without argument');
+is($bot->tell_indirect('explain',''),'','ignore explain without argument');
 
-is(indirect('++'),'','ignoring ++ without thing or address');
-is(indirect('--'),'','ignoring -- without thing or address');
+is($bot->tell_indirect('++'),'','ignoring ++ without thing or address');
+is($bot->tell_indirect('--'),'','ignoring -- without thing or address');
 
 
 ## Now we start testing reasons
@@ -87,28 +79,28 @@ $karma->set("user_num_comments",      2);
 $karma->set("user_show_givers",       0);
 $karma->set("user_randomize_reasons", 0);
 
-say('alice++ good cipher');
-is(say('explain alice'),'positive: good cipher; negative: nothing; overall: 3.','explaining karma of alice with one positive reason');
+$bot->tell_indirect('alice++ good cipher');
+is($bot->tell_indirect('explain alice'),'positive: good cipher; negative: nothing; overall: 3.','explaining karma of alice with one positive reason');
 
-say('alice-- bad cipher');
-is(say('explain alice'),'positive: good cipher; negative: bad cipher; overall: 2.','explaining karma of alice with one positive and negative reason');
+$bot->tell_indirect('alice-- bad cipher');
+is($bot->tell_indirect('explain alice'),'positive: good cipher; negative: bad cipher; overall: 2.','explaining karma of alice with one positive and negative reason');
 
-say('alice-- Friend of Eve');
-is(say('explain alice'),'positive: good cipher; negative: Friend of Eve, bad cipher; overall: 1.','explaining karma of alice with one positive and two negative reason');
+$bot->tell_indirect('alice-- Friend of Eve');
+is($bot->tell_indirect('explain alice'),'positive: good cipher; negative: Friend of Eve, bad cipher; overall: 1.','explaining karma of alice with one positive and two negative reason');
 
-say('alice-- Friend of Mallory');
-is(say('explain alice'),'positive: good cipher; negative: Friend of Mallory, Friend of Eve; overall: 0.','explaining karma of alice with more than two reasons (user_num_commments=2)');
+$bot->tell_indirect('alice-- Friend of Mallory');
+is($bot->tell_indirect('explain alice'),'positive: good cipher; negative: Friend of Mallory, Friend of Eve; overall: 0.','explaining karma of alice with more than two reasons (user_num_commments=2)');
 
 $karma->set("user_show_givers", 1);
 
-is(say('explain alice'),'positive: good cipher (bob); negative: Friend of Mallory (bob), Friend of Eve (bob); overall: 0.','explaining karma of alice with reasons and givers');
+is($bot->tell_indirect('explain alice'),'positive: good cipher (test_user); negative: Friend of Mallory (test_user), Friend of Eve (test_user); overall: 0.','explaining karma of alice with reasons and givers');
 
 $karma->set("user_randomize_reasons", 1);
 
 { 
   my %explanations;
   for (1..100) {
-    $explanations{say('explain alice')}++
+    $explanations{$bot->tell_indirect('explain alice')}++
   }
   is(keys %explanations,6,'Testing randomness of reason list... (uh!)')
 }
@@ -122,14 +114,14 @@ sub indirect {
   my ($body) = @_;
   my $mess = { who => 'bob' , body => $body || '' };
   ## The return code of seen is ignored
-  $karma->seen( $mess );
-  return $karma->told( $mess ) || '';
+  $bot->seen( $mess );
+  return $bot->told( $mess ) || '';
 }
 	
 sub say {
   my ($body,$to) = @_;
-  my $mess = { who => 'bob',  body => $body || '', address => $to || 'karmabot' };
+  my $mess = { who => 'bob',  body => $body || '', address => $to || 'bot' };
   ## return code of seen is ignored
-  $karma->seen( $mess );
-  return $karma->told( $mess ) || '';
+  $bot->seen( $mess );
+  return $bot->told( $mess ) || '';
 }
