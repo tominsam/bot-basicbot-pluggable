@@ -1,3 +1,46 @@
+package Bot::BasicBot::Pluggable::Store::Storable;
+use warnings;
+use strict;
+use Storable qw( nstore retrieve );
+use File::Spec;
+use File::Temp;
+
+use base qw( Bot::BasicBot::Pluggable::Store );
+
+sub init {
+	my $self = shift;
+	if (!$self->{dir}) {
+	   	$self->{dir} = File::Spec->curdir();
+	}
+}
+
+sub save {
+  my $self = shift;
+  my $namespace = shift;
+  my @modules = $namespace ? ($namespace) : keys(%{ $self->{store} });
+
+  for my $name ( @modules ) {
+    my $filename = File::Spec->catfile($self->{dir},$name.".storable");
+    my $tempfile = File::Temp->new();
+    nstore($self->{store}{$name}, $tempfile)
+      or die "Cannot save to $tempfile\n";
+    rename $tempfile,$filename 
+      or die "Cannot create $filename\n";
+  }
+}
+
+sub load {
+  my $self = shift;
+  for my $file (glob File::Spec->catfile($self->{dir},'*.storable')) {
+    my ($name) = $file =~ /^(.*?)\.storable$/;
+    $self->{store}{$name} = retrieve($file);
+  }
+}
+
+1;
+
+__END__
+
 =head1 NAME
 
 Bot::BasicBot::Pluggable::Store::Storable - use Storable to provide a storage backend
@@ -5,7 +48,7 @@ Bot::BasicBot::Pluggable::Store::Storable - use Storable to provide a storage ba
 =head1 SYNOPSIS
 
   my $store = Bot::BasicBot::Pluggable::Store::Storable->new(
-    file => "filename"
+    dir => "directory"
   );
 
   $store->set( "namespace", "key", "value" );
@@ -23,32 +66,3 @@ This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
 
 =cut
-
-package Bot::BasicBot::Pluggable::Store::Storable;
-use warnings;
-use strict;
-use Storable qw( nstore retrieve );
-
-use base qw( Bot::BasicBot::Pluggable::Store );
-
-sub save {
-  my $self = shift;
-  my $namespace = shift;
-  my @modules = $namespace ? ($namespace) : keys(%{ $self->{store} });
-
-  for my $name ( @modules ) {
-    my $filename = $name.".storable";
-    nstore($self->{store}{$name}, $filename)
-      or die "Cannot save to $filename";
-  }
-}
-
-sub load {
-  my $self = shift;
-  for my $file (<*.storable>) {
-    my ($name) = $file =~ /^(.*?)\.storable$/;
-    $self->{store}{$name} = retrieve($file);
-  }
-}
-
-1;
