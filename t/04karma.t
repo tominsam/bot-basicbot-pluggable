@@ -109,19 +109,3 @@ sub test_karma {
   my ($thing,$value,$message) = @_;
   is($karma->get_karma($thing),$value,$message);
 }
-
-sub indirect {
-  my ($body) = @_;
-  my $mess = { who => 'bob' , body => $body || '' };
-  ## The return code of seen is ignored
-  $bot->seen( $mess );
-  return $bot->told( $mess ) || '';
-}
-	
-sub say {
-  my ($body,$to) = @_;
-  my $mess = { who => 'bob',  body => $body || '', address => $to || 'bot' };
-  ## return code of seen is ignored
-  $bot->seen( $mess );
-  return $bot->told( $mess ) || '';
-}

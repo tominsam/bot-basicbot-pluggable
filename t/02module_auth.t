@@ -1,47 +1,31 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use lib qw(./lib);
 
 use Test::More tests => 18;
+use Test::Bot::BasicBot::Pluggable;
 
-use Bot::BasicBot::Pluggable;
-use Bot::BasicBot::Pluggable::Module::Auth;
+my $bot = Test::Bot::BasicBot::Pluggable->new();
 
-our $store;
-no warnings 'redefine';
-sub Bot::BasicBot::Pluggable::Module::store {
-  $store ||= Bot::BasicBot::Pluggable::Store->new;
-}
+ok(my $auth = $bot->load('Auth'), "created auth module");
 
-ok(my $auth = Bot::BasicBot::Pluggable::Module::Auth->new(), "created auth module");
+ok(!$auth->authed('test_user'), "test_user not authed yet");
+ok($bot->tell_private("!auth admin muppet"), "sent bad login");
+ok(!$auth->authed('test_user'), "test_user not authed yet");
+ok($bot->tell_private("!auth admin julia"), "sent good login");
+ok($auth->authed('test_user'), "test_user authed now");
 
-ok(!$auth->authed('bob'), "bob not authed yet");
-ok(command("!auth admin muppet"), "sent bad login");
-ok(!$auth->authed('bob'), "bob not authed yet");
-ok(command("!auth admin julia"), "sent good login");
-ok($auth->authed('bob'), "bob authed now");
+ok($bot->tell_private("!adduser test_user test_user"), "added test_user user");
+ok($bot->tell_private("!auth test_user fred"), "not logged in as test_user");
+ok(!$auth->authed('test_user'), "not still authed");
+ok($bot->tell_private("!auth test_user test_user"), "logged in as test_user");
+ok($auth->authed('test_user'), "still authed");
 
-ok(command("!adduser bob bob"), "added bob user");
-ok(command("!auth bob fred"), "not logged in as bob");
-ok(!$auth->authed('bob'), "not still authed");
-ok(command("!auth bob bob"), "logged in as bob");
-ok($auth->authed('bob'), "still authed");
+ok($bot->tell_private("!deluser admin"), "deleted admin user");
+ok($bot->tell_private("!auth admin julia"), "tried login");
+ok(!$auth->authed('test_user'), "not authed");
 
-ok(command("!deluser admin"), "deleted admin user");
-ok(command("!auth admin julia"), "tried login");
-ok(!$auth->authed('bob'), "not authed");
-
-ok(command("!auth bob bob"), "logged in as bob");
-ok(command("!passwd bob dave"), "changed password");
-ok(command("!auth bob dave"), "tried login");
-ok($auth->authed('bob'), "authed");
-
-sub command {
-  my $body = shift;
-  my $response = $auth->said( {
-    address => 1, body => $body, who => 'bob'
-  }, 1 );
-  #warn "$response\n";
-  return $response;
-}
+ok($bot->tell_private("!auth test_user test_user"), "logged in as test_user");
+ok($bot->tell_private("!passwd test_user dave"), "changed password");
+ok($bot->tell_private("!auth test_user dave"), "tried login");
+ok($auth->authed('test_user'), "authed");

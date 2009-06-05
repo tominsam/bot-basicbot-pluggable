@@ -7,6 +7,7 @@ examples/chump.cgi
 examples/chump.tem
 examples/mind.pl
 examples/simple.pl
+lib/Test/Bot/BasicBot/Pluggable.pm
 lib/Bot/BasicBot/Pluggable.pm
 lib/Bot/BasicBot/Pluggable/Module.pm
 lib/Bot/BasicBot/Pluggable/Module/Auth.pm
@@ -25,7 +26,7 @@ lib/Bot/BasicBot/Pluggable/Store/DBI.pm
 lib/Bot/BasicBot/Pluggable/Store/Deep.pm
 lib/Bot/BasicBot/Pluggable/Store/Storable.pm
 Makefile.PL
-MANIFEST			This list of files
+MANIFEST
 META.yml
 README
 t/00bootstrap.t
@@ -34,6 +35,6 @@ t/02module_auth.t
 t/03store.t
 t/03store_deep.t
 t/04karma.t
-t/FakeBot.pm
-t/infobot.t
+t/05infobot.t
+t/06title.t
 t/test.rss
