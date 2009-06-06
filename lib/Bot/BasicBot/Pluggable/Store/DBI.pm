@@ -54,17 +54,23 @@ sub dbh {
 }
 
 sub create_table {
-  my $self = shift;
-  my $table = $self->{table} or die "Need DB table";
-  $self->dbh->do("CREATE TABLE $table (
-                    id INT PRIMARY KEY,
-                    namespace TEXT,
-                    store_key TEXT,
-                    store_value LONGBLOB )");
-  return unless $self->{create_index};
-  eval {
-      $self->dbh->do("CREATE INDEX lookup ON $table ( namespace(10), store_key(10) )");
-  };
+    my $self  = shift;
+    my $table = $self->{table} or die "Need DB table";
+    my $sth   = $self->dbh->table_info( '', '', $table, "TABLE" );
+    if ( !$sth->fetch ) {
+        $self->dbh->do(
+            "CREATE TABLE $table (
+			    id INT PRIMARY KEY,
+			    namespace TEXT,
+			    store_key TEXT,
+			    store_value LONGBLOB )"
+        );
+        if ( $self->{create_index} ) {
+            eval {
+                $self->dbh->do( "CREATE INDEX lookup ON $table ( namespace(10), store_key(10) )");
+            };
+        }
+    }
 }
 
 sub get {
