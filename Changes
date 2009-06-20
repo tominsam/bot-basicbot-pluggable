@@ -1,5 +1,14 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
+0.74 2009/06/20
+
+  - added additional slash to fix #46928 (t/05infobot.t)
+  - added t/03store_storable.t
+  - closes #3258: instead of just overwriting the storable file it creates a tempfile and the move it
+  - Moved FakeBot to Test::Bot::BasicBot::Pluggable so that it's accessable for other Modules
+  - renamed infobot.t and title.t
+  - only create a new table if it doesn't exists yet in Store::DBI
+
 0.72 2009/06/04
 
   - Fixed absolute path in t/infobot.t ... stupid!
