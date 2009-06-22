@@ -33,7 +33,7 @@ README
 t/00bootstrap.t
 t/01module_base.t
 t/02module_auth.t
-t/03store.t
+t/03store_memory.t
 t/03store_deep.t
 t/03store_dbi.t
 t/03store_storable.t
