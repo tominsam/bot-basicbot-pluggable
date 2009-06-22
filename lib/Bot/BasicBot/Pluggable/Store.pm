@@ -40,7 +40,7 @@ internal variables, then C<init>, which you can also override in your module.
 
 sub new {
   my $class = shift;
-  my $self = bless { @_ }, $class;
+  my $self = bless @_ ? { @_ } : {}, $class;
   $self->init();
   $self->load();
   return $self;
