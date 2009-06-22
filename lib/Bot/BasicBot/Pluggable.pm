@@ -150,7 +150,15 @@ sub store_from_hashref {
     # calculate the class we're going to use. If you pass a full
     # classname as the type, use that class, otherwise assume it's
     # a B::B::Store:: subclass.
-    my $store_class = delete $store->{type} || "DBI";
+
+    my $store_class;
+
+    if (ref($store)) {
+    	$store_class = delete $store->{type} || "DBI";
+    } else {
+	$store_class = $store;
+    }
+
     $store_class = "Bot::BasicBot::Pluggable::Store::$store_class"
       unless $store_class =~ /::/;
 
@@ -159,7 +167,13 @@ sub store_from_hashref {
     die "Couldn't load $store_class - $@" if $@;
 
     print STDERR "Loading $store_class\n" if $self->{verbose};
-    $self->store( $store_class->new(%{$store}) );
+
+    if (ref($store)) {
+    	$self->store( $store_class->new(%{$store}) );
+    } else {
+    	$self->store( $store_class->new() );
+    }
+    
     die "Couldn't init a $store_class store\n" unless $self->store;
 
     $self->store;
