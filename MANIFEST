@@ -8,6 +8,7 @@ examples/chump.tem
 examples/mind.pl
 examples/simple.pl
 lib/Test/Bot/BasicBot/Pluggable.pm
+lib/Test/Bot/BasicBot/Pluggable/Store.pm
 lib/Bot/BasicBot/Pluggable.pm
 lib/Bot/BasicBot/Pluggable/Module.pm
 lib/Bot/BasicBot/Pluggable/Module/Auth.pm
@@ -34,6 +35,7 @@ t/01module_base.t
 t/02module_auth.t
 t/03store.t
 t/03store_deep.t
+t/03store_dbi.t
 t/03store_storable.t
 t/04karma.t
 t/05infobot.t
