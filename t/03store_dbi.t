@@ -3,7 +3,9 @@ use warnings;
 use strict;
 use Test::Bot::BasicBot::Pluggable::Store;
 
-use File::Temp qw(tempfile);
-my ($fh,$tempfile) = tempfile( UNLINK => 1 );
+# Calling tempfile hangs the process under MacOSX... so we live with the race condition
+use File::Temp qw(tmpnam);
+my $tempfile = tmpnam();
 
 store_ok('DBI',{ dsn => "dbi:SQLite:$tempfile", table => "basicbot" });
+unlink($tempfile);
