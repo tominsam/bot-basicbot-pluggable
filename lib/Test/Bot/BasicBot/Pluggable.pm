@@ -8,8 +8,8 @@ our $VERSION = '0.1';
 sub new {
     my ( $class, %args ) = @_;
     my $bot = $class->SUPER::new(
-        store_object => Bot::BasicBot::Pluggable::Store->new,
-        nick         => 'test_bot',
+        store => 'Memory',
+        nick  => 'test_bot',
         %args
     );
     return bless $bot, $class;
