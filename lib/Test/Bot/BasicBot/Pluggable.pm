@@ -18,6 +18,7 @@ sub new {
 sub tell_private {
     return shift->tell( shift, 1, 1 );
 }    # tell the module something privately
+
 sub tell_direct { return shift->tell( shift, 0, 1 ) }
 
 sub tell_indirect {
@@ -34,7 +35,11 @@ sub tell {
         address    => $addressed,
         reply_hook => sub { push @reply, $_[1]; },    # $_[1] is the reply text
     };
-    $bot->said($message);
+    if ($body =~ /^help/ and $addressed ) {
+	push @reply, $bot->help($message);
+    } else {
+    	$bot->said($message);
+    }
     return join "\n", @reply;
 }
 
@@ -96,6 +101,18 @@ Sends the provided string to the bot like it was send to a public channel withou
 Sends the provided string to the bot like it was send in a private channel. The sending user 'test_user'.
 
   test_user@test_bot> foo
+
+=head2 tell
+
+This is the working horse of Test::Bot::BasicBot::Pluggable. It
+basically builds a message hash as argument to the bots said()
+function. You should never have to call it directly.
+
+=head2 DESTROY
+
+The special subrouting is explicitly overriden with an empty
+subroutine as otherwise AUTOLOAD in Bot::BasicBot will be called
+for it.
 
 =head1 BUGS AND LIMITATIONS
 
