@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 18;
+use Test::More tests => 22;
 use Test::Bot::BasicBot::Pluggable;
 
 my $bot = Test::Bot::BasicBot::Pluggable->new();
@@ -29,3 +29,10 @@ ok($bot->tell_private("!auth test_user test_user"), "logged in as test_user");
 ok($bot->tell_private("!passwd test_user dave"), "changed password");
 ok($bot->tell_private("!auth test_user dave"), "tried login");
 ok($auth->authed('test_user'), "authed");
+
+is($bot->tell_private("auth test_user dave"),"", "ignore commands without leading !");
+is($bot->tell_indirect("!auth test_user dave"),"", "ignore public commands");
+
+is($bot->tell_private("!users"),"Users: test_user.", "listing of users");
+
+is($bot->tell_direct("help Auth"),"Authenticator for admin-level commands. Usage: !auth <username> <password>, !adduser <username> <password>, !deluser <username>, !password <old password> <new password>, !users.",'checking help text');
