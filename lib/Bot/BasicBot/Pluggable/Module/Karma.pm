@@ -93,10 +93,12 @@ use strict;
 
 sub init {
     my $self = shift;
-    $self->set("user_ignore_selfkarma",  1) unless defined($self->get("user_ignore_selfkarma"));
-    $self->set("user_num_comments",      3) unless defined($self->get("user_num_comments"));
-    $self->set("user_show_givers",       1) unless defined($self->get("user_show_givers"));
-    $self->set("user_randomize_reasons", 1) unless defined($self->get("user_randomize_reasons"));
+    $self->config({
+    	user_ignore_selfkarma =>  1,
+    	user_num_comments =>      3,
+    	user_show_givers =>       1,
+    	user_randomize_reasons => 1,
+    });
 }
 
 sub help {

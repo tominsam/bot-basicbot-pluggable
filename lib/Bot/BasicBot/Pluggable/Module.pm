@@ -75,6 +75,22 @@ to the bot.
 
 sub init { undef }
 
+=item config($config)
+
+Set every key in the hash reference $config to its default value
+if it is not already defined in the module store. In that case the
+value from the store is used to initialise the variable. Typically
+called in the module's init functions.
+
+=cut
+
+sub config {
+	my ($self,$config) = @_;
+	for my $var (keys %{$config}) {
+		$self->set($var, $config->{$var}) unless defined($self->get($var));
+	}
+}
+
 =item start()
 
 Indicates that the module is added to the bot, and that the bot is

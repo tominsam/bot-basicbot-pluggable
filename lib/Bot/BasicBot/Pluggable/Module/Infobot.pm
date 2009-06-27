@@ -96,16 +96,18 @@ our $HAS_XML_FEED = $@ ? 0 : 1;
 
 sub init {
     my $self = shift;
-    $self->set("user_allow_searching", 0) unless defined($self->get("user_allow_searching"));
-    $self->set("user_min_length", 3) unless defined($self->get("user_min_length"));
-    $self->set("user_max_length", 25) unless defined($self->get("user_max_length"));
-    $self->set("user_num_results", 20) unless defined($self->get("user_num_results"));
-    $self->set("user_passive_answer", 0) unless defined($self->get("user_passive_answer"));
-    $self->set("user_passive_learn", 0) unless defined($self->get("user_passive_learn"));
-    $self->set("user_require_question", 1) unless defined($self->get("user_require_question"));
-    $self->set("user_stopwords", "here|how|it|something|that|this|what|when|where|which|who|why") unless defined($self->get("user_stopwords"));
-    $self->set("user_unknown_responses", "Dunno.|I give up.|I have no idea.|No clue. Sorry.|Search me, bub.|Sorry, I don't know.") unless defined($self->get("user_unknown_responses"));
-    $self->set("db_version" => "1") unless $self->get("db_version");
+    $self->config({
+        user_allow_searching  => 0,
+        user_min_length       => 3,
+        user_max_length       => 25,
+        user_num_results      => 20,
+        user_passive_answer   => 0,
+        user_passive_learn    => 0,
+        user_require_question => 1,
+        user_stopwords => "here|how|it|something|that|this|what|when|where|which|who|why",
+        user_unknown_responses => "Dunno.|I give up.|I have no idea.|No clue. Sorry.|Search me, bub.|Sorry, I don't know.",
+        db_version => "1",
+    });
 
     # record what we've asked other bots.
     $self->{remote_infobot} = {};
