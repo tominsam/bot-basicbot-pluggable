@@ -1,7 +1,7 @@
 #!perl
 use warnings;
 use strict;
-use Test::More tests => 84;
+use Test::More tests => 89;
 use Test::Bot::BasicBot::Pluggable;
 
 use FindBin qw( $Bin );
@@ -39,6 +39,8 @@ like( $bot->tell_direct("quux?"), $no_regex, "no info on quux" );
 is( $bot->tell_direct("quux are blue"), "Okay.", "active learning works" );
 is( $bot->tell_direct("quux?"), "quux are blue", "correct answer to active learn" );
 
+# you can tell someone about foo
+is( $bot->tell_direct("tell testbot about foo"),"Told testbot about foo.","tell someone about foo");
 
 ok( !$bot->tell_indirect("foo?"), "passive questioning off by default" );
 
@@ -57,6 +59,10 @@ $ib->set("user_allow_searching",0);
 is( $bot->tell_private("search for foo"), "searching disabled", "searched for 'foo' disabled");
 $ib->set("user_allow_searching",1);
 is( $bot->tell_private("search for foo"), "I know about: 'foo'.", "searched for 'foo'");
+is( $bot->tell_private("search for foobar"), "I don't know anything about foobar.", "searched for 'foobar' (which we know nothing about)");
+is( $bot->tell_private("search for foo bar"), "I know about: 'foo', 'bar'.", "searched for 'foo' and 'bar'");
+$ib->set('user_num_results' => 1);
+is( $bot->tell_private("search for foo bar"), "I know about: 'foo'.", "searched for 'foo' and 'bar' with user_num_results set to 1");
 
 # you can append strings to factoids
 is( $bot->tell_direct("foo is also blue"), "Okay.", "can append to faactoids" );
@@ -67,6 +73,7 @@ is( $bot->tell_direct("foo?"), "foo is red or blue or pink", "works" );
 # factoids can be forgotten
 is( $bot->tell_direct("forget foo"), "I forgot about foo.", "forgotten foo");
 like( $bot->tell_direct("foo?"), $no_regex, "no info on foo" );
+is( $bot->tell_direct("forget foo"), "I don't know anything about foo." , "can't forget something i don't know" );
 
 # factoids can be replaced
 my $but_reply = '... but bar is green ...'; # ok, why does this get interpreted as '1'

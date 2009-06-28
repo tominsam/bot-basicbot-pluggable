@@ -2,12 +2,18 @@
 use warnings;
 use strict;
 
-use Test::More tests => 22;
+use Test::More tests => 27;
 use Test::Bot::BasicBot::Pluggable;
 
 my $bot = Test::Bot::BasicBot::Pluggable->new();
 
 ok(my $auth = $bot->load('Auth'), "created auth module");
+
+is($bot->tell_private("!auth"), "Usage: !auth <username> <password>.","auth without arguments");
+is($bot->tell_private("!adduser"), "Usage: !adduser <username> <password>","adduser without arguments");
+is($bot->tell_private("!deluser"), "Usage: !deluser <username>","deluser without arguments");
+is($bot->tell_private("!adduser foo bar"), "You need to authenticate.","adding users without authentication");
+is($bot->tell_private("!deluser foo"), "You need to authenticate.","deleting users without authentication");
 
 ok(!$auth->authed('test_user'), "test_user not authed yet");
 ok($bot->tell_private("!auth admin muppet"), "sent bad login");
