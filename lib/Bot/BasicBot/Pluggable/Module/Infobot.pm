@@ -155,7 +155,7 @@ sub told {
         return "searching disabled" unless $self->get("user_allow_searching");
         my @results = $self->search_factoid(split(/\s+/, $1));
         unless (@results) { return "I don't know anything about $1."; }
-        $#results = $self->get("user_num_results") unless $#results < $self->get("user_num_results");
+        $#results = $self->get("user_num_results") - 1 unless $#results < $self->get("user_num_results");
         return "I know about: ".join(", ", map { "'$_'" } @results) .".";
     }
 }
@@ -382,8 +382,13 @@ sub add_factoid {
 
 sub delete_factoid {
   my ($self, $object) = @_;
-  $self->unset( "infobot_".lc($object) );
-  return 1;
+  my $key = "infobot_".lc($object);
+  if ($self->get($key)){
+	$self->unset( "infobot_".lc($object) );
+  	return 1;
+  } else {
+        return 0;
+  }
 }
 
 sub ask_factoid {
