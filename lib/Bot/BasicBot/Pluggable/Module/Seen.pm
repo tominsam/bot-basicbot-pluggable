@@ -46,7 +46,7 @@ use strict;
 
 sub init {
     my $self = shift;
-    $self->set("user_allow_hiding", 1) unless defined($self->get("user_allow_hiding"));
+    $self->config({user_allow_hiding => 1});
 }
 
 sub help {

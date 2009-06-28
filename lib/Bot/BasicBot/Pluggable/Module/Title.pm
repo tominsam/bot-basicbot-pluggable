@@ -50,9 +50,13 @@ sub help {
 
 sub init {
     my $self = shift;
-    $self->set("user_asciify",   1 ) unless defined($self->get("user_asciify"));
-    $self->set("user_ignore_re", '') unless defined($self->get("user_ignore_re"));
-    $self->set("user_be_rude",   0 ) unless defined($self->get("user_be_rude"));
+    $self->config(
+        {
+            user_asciify   => 1,
+            user_ignore_re => '',
+            user_be_rude   => 0,
+        }
+    );
 }
 
 sub admin {
