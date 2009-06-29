@@ -55,16 +55,35 @@ sub help {
 
 sub seen {
     my ($self, $mess) = @_;
-    my $body = $mess->{body};
-
-    my $nick = lc($mess->{who});
-    $self->set( "seen_$nick" => {
-        time    => time,
-        channel => $mess->{channel},
-        what    => $mess->{channel} ne 'msg' ? $mess->{body} : '<private message>',
-    } );
+    my $what = 'saying "' . $mess->{body} . '"'; 
+    $self->update_seen($mess->{who},$mess->{channel},$what);
     return;
 }
+
+sub chanpart {
+    my ($self, $mess) = @_;
+    my $what = 'leaving the channel';
+    $self->update_seen($mess->{who},$mess->{channel},$what);
+    return;
+}
+
+sub chanjoin {
+    my ($self, $mess) = @_;
+    my $what = 'joining the channel';
+    $self->update_seen($mess->{who},$mess->{channel},$what);
+    return;
+}
+
+sub update_seen {
+    my ($self, $who,$channel,$what) = @_;
+    my $nick = lc($who);
+    $self->set( "seen_$nick" => {
+        time    => time,
+        channel => $channel,
+        what    => $channel ne 'msg' ? $what : '<private message>',
+    } );
+}
+	
 
 sub told {
     my ($self, $mess) = @_;
@@ -84,7 +103,7 @@ sub told {
 
         my $diff = time - $seen->{time};
         my $time_string = secs_to_string($diff);
-        return "$1 was last seen in $seen->{channel} $time_string saying '$seen->{what}'.";
+        return "$1 was last seen in $seen->{channel} $time_string " . $seen->{what} . ".";
 
     } elsif ($command eq "hide" and $mess->{address}) {
         my $nick = lc($mess->{who});
