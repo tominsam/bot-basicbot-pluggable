@@ -26,6 +26,7 @@ lib/Bot/BasicBot/Pluggable/Store.pm
 lib/Bot/BasicBot/Pluggable/Store/DBI.pm
 lib/Bot/BasicBot/Pluggable/Store/Deep.pm
 lib/Bot/BasicBot/Pluggable/Store/Storable.pm
+lib/Bot/BasicBot/Pluggable/Store/Memory.pm
 Makefile.PL
 MANIFEST
 META.yml

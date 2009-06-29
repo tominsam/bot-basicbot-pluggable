@@ -1,5 +1,16 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
+0.80 2009/06/28
+  - the store paramter to B:BB:P->new() can now also be a string
+  - new config interface for modules
+  - search for keywords in Infobot.pm now returns the right number of factoids
+  - when deleting factoids return the right answer
+  - total rewrite of the join module (old database format will be converted on the fly)
+  - a lot of new tests
+  - new module Bot::BasicBot::Pluggable::Store::Memory (kind of)
+  - new module Test::Bot::BasicBot::Pluggable::Store
+  - testbot now intercepts the help call
+
 0.74 2009/06/20
 
   - added additional slash to fix #46928 (t/05infobot.t)

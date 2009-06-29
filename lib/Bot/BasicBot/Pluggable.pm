@@ -41,8 +41,8 @@ There are two useful ways to create a Pluggable bot. The simple way is:
 
   # Load some useful modules.
   my $infobot_module = $bot->load("Infobot");
-  my $google_module = $bot->load("Google");
-  my $seen_module = $bot->load("Seen");
+  my $google_module  = $bot->load("Google");
+  my $seen_module    = $bot->load("Seen");
 
   # Set the Google key (see http://www.google.com/apis/).
   $google_module->set("google_key", "some google key");
@@ -116,7 +116,7 @@ package Bot::BasicBot::Pluggable;
 use warnings;
 use strict;
 
-our $VERSION = '0.74';
+our $VERSION = '0.76';
 
 use POE;
 use Bot::BasicBot;
