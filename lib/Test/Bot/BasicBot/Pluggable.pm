@@ -43,6 +43,11 @@ sub tell {
     return join "\n", @reply;
 }
 
+sub connect {
+  my $self = shift;
+  $self->dispatch('connected');
+}
+
 # otherwise AUTOLOAD in Bot::BasicBot will be called
 sub DESTROY { }
 
@@ -107,6 +112,11 @@ Sends the provided string to the bot like it was send in a private channel. The 
 This is the working horse of Test::Bot::BasicBot::Pluggable. It
 basically builds a message hash as argument to the bots said()
 function. You should never have to call it directly.
+
+=head2 connect
+
+Dispatch the connected event to all loaded modules without actually
+connecting to anything.
 
 =head2 DESTROY
 
