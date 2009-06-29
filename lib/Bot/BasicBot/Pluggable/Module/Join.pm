@@ -57,7 +57,7 @@ sub connected {
 }
 
 sub help {
-    return "Join and leave channels. Usage: join <channel>, leave <channel>, channels. Requires direct addressing.";
+    return "Join and leave channels. Usage: join <channel>, leave/part <channel>, channels. Requires direct addressing.";
 }
 
 sub told {
