@@ -42,12 +42,18 @@ use strict;
 
 sub connected {
     my $self = shift;
-    my @channels = @{$self->get("channels") || []};
-    for (@channels) {
+    my $channels = $self->get("channels") || [];
+
+    ## If we are not a array reference, we are problably the old
+    ## string format ... trying to convert
+    if ( not ref($channels) eq 'ARRAY' ) {
+        $channels = [ split( /\s+/, $channels ) ];
+    }
+
+    for ( @{$channels} ) {
         print "Joining $_.\n";
         $self->bot->join($_);
     }
-    $self->set('channels', $self->bot->channels);
 }
 
 sub help {
