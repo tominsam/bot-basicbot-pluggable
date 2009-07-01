@@ -552,7 +552,15 @@ Defaults to 0.
 
 Searching on large factoid lists is ... problematic.
 
+=item http_timeout
 
+Time in seconds for an http request to timeout. When this value is
+set to a very high value, a slow site can disconnect a bot by
+blocking it. Defaults to 10.
+
+=item rss_items
+
+Maximal numbers of items returns when using RSS feeds. Defaults to 5.
 
 =back
 
