@@ -18,6 +18,7 @@ Module::Build->new(
         'Getopt::Long'      => 0,
         'DBM::Deep'         => 0,
         'Text::Unidecode'   => 0,
+	'LWP::UserAgent'    => 0,
     },
     recommends         => { 'XML::Feed' => 0, },
     script_files       => [ 'bin/bot-basicbot-pluggable', ],

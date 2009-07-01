@@ -105,6 +105,7 @@ sub init {
             user_passive_learn    => 0,
             user_require_question => 1,
             user_http_timeout     => 10,
+            user_rss_items        => 5,
             user_stopwords => "here|how|it|something|that|this|what|when|where|which|who|why",
             user_unknown_responses => "Dunno.|I give up.|I have no idea.|No clue. Sorry.|Search me, bub.|Sorry, I don't know.",
             db_version => "1",
@@ -446,12 +447,17 @@ sub parseFeed {
         my $response = $ua->get($url);
         if ( $response->is_success ) {
             $feed = XML::Feed->parse( \$response->content() )
-              or die XML::Feed->errstr. "\n";
+              or die XML::Feed->errstr . "\n";
         }
         else {
-            die $response->status_line(). "\n";
+            die $response->status_line() . "\n";
         }
-        @items = map { $_->title } $feed->entries;
+        my @entries   = $feed->entries();
+        my $max_items = $self->get('user_rss_items');
+        if ($max_items) {
+            splice( @entries, $max_items );
+        }
+        @items = map { $_->title } @entries;
     };
 
     if ($@) {
@@ -559,8 +565,6 @@ Searching on large factoid lists is ... problematic.
 The pipe syntax for random replies doesn't actually work. At all. Um.
 
 We should probably make a "choose_random_response" function.
-
-There needs to be a settable limit on how many RSS items to return.
 
 "<bot>?" fails, due to removal of <bot> name from $mess->body.
 
