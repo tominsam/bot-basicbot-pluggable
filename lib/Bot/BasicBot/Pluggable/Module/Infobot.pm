@@ -87,7 +87,7 @@ use warnings;
 use strict;
 
 use Data::Dumper;
-use LWP::Simple ();
+use LWP::UserAgent ();
 use URI;
 
 # this one is a complete bugger to build
@@ -97,17 +97,19 @@ our $HAS_XML_FEED = $@ ? 0 : 1;
 sub init {
     my $self = shift;
     $self->config({
-        user_allow_searching  => 0,
-        user_min_length       => 3,
-        user_max_length       => 25,
-        user_num_results      => 20,
-        user_passive_answer   => 0,
-        user_passive_learn    => 0,
-        user_require_question => 1,
-        user_stopwords => "here|how|it|something|that|this|what|when|where|which|who|why",
-        user_unknown_responses => "Dunno.|I give up.|I have no idea.|No clue. Sorry.|Search me, bub.|Sorry, I don't know.",
-        db_version => "1",
+            user_allow_searching  => 0,
+            user_min_length       => 3,
+            user_max_length       => 25,
+            user_num_results      => 20,
+            user_passive_answer   => 0,
+            user_passive_learn    => 0,
+            user_require_question => 1,
+            user_http_timeout     => 10,
+            user_stopwords => "here|how|it|something|that|this|what|when|where|which|who|why",
+            user_unknown_responses => "Dunno.|I give up.|I have no idea.|No clue. Sorry.|Search me, bub.|Sorry, I don't know.",
+            db_version => "1",
     });
+## Please see file perltidy.ERR
 
     # record what we've asked other bots.
     $self->{remote_infobot} = {};
@@ -437,15 +439,24 @@ sub parseFeed {
 
     my @items;
     eval {
-        my $feed = XML::Feed->parse( URI->new( $url ) );
-        die XML::Feed->errstr() . "\n" unless $feed;
+        my $ua = LWP::UserAgent->new();
+        $ua->timeout( $self->get('user_http_timeout') );
+        $ua->env_proxy;
+        my $feed;
+        my $response = $ua->get($url);
+        if ( $response->is_success ) {
+            $feed = XML::Feed->parse( \$response->content() )
+              or die XML::Feed->errstr. "\n";
+        }
+        else {
+            die $response->status_line(). "\n";
+        }
         @items = map { $_->title } $feed->entries;
     };
 
     if ($@) {
 	chomp $@;
     	return "<< Error parsing RSS from $url: $@ >>";
-        #return "Sorry. Unable to retrieve factoid." if $@;
     }
 
     my $ret;
@@ -540,8 +551,6 @@ Searching on large factoid lists is ... problematic.
 =back
 
 =head1 BUGS
-
-If we request an RSS feed that takes a long time, we'll timeout and drop off.
 
 "is also" doesn't work on <reply>s (ie. "<bot> cheetahs! or <reply>monkies.")
 
