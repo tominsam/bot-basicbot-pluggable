@@ -59,7 +59,7 @@ sub told {
     if ($command eq "!set") {
         my $module = $self->{Bot}->module($mod);
         return "No such module '$module'." unless $module;
-        $value = $value ? $value : ''; # wipe if no value.
+        $value = defined($value) ? $value : ''; # wipe if no value.
         $module->set("user_$var", $value);
         return "Set.";
 
