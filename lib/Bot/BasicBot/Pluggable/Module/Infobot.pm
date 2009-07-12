@@ -454,7 +454,7 @@ sub parseFeed {
         }
         my @entries   = $feed->entries();
         my $max_items = $self->get('user_rss_items');
-        if ($max_items) {
+        if ($max_items and $max_items < @entries) {
             splice( @entries, $max_items );
         }
         @items = map { $_->title } @entries;
