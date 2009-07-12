@@ -1,6 +1,20 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
-0.80 2009/06/28
+0.77 2009/07/12
+  - added a new event 'replied' to give any module the chance to act on that
+  - Join:
+    - corrected missing command in help
+  - Seen:
+    - now also reckognize joins and parts
+  - Infobot:
+    - there's an user defineable http_timeout variabe that defaults to ten 
+      seconds (fixes #3239) 
+    - settable limit on how many RSS items to return 
+    - just shorten entries when @entries is bigger than user_max_entries 
+  - Vars:
+    - checking the definedness of $value so you can set a variable to 0 for example
+
+0.76 2009/06/28
   - the store paramter to B:BB:P->new() can now also be a string
   - new config interface for modules
   - search for keywords in Infobot.pm now returns the right number of factoids
