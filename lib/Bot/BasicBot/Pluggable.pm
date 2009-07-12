@@ -439,6 +439,7 @@ sub said {
 
 sub reply {
   my ($self, $mess, @other) = @_;
+  $self->dispatch('replied',$mess, @other);
   if ($mess->{reply_hook}) {
     return $mess->{reply_hook}->($mess, @other);
   } else {
