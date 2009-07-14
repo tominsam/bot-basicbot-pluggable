@@ -1,5 +1,13 @@
 Revision history for Perl extension Bot::BasicBot::Pluggable.
 
+0.79 2009/07/12
+  - the need-more-sleep-release ... sorry, that's the last for today
+  - replied was never called ... now we put it back in front again
+    but shallow copy the message first
+
+0.78 2009/07/12
+  - replied is now called after reply so that modules really can't change the message
+
 0.77 2009/07/12
   - added a new event 'replied' to give any module the chance to act on that
   - Join:

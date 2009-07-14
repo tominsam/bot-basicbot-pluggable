@@ -116,7 +116,7 @@ package Bot::BasicBot::Pluggable;
 use warnings;
 use strict;
 
-our $VERSION = '0.77';
+our $VERSION = '0.79';
 
 use POE;
 use Bot::BasicBot;
@@ -439,7 +439,7 @@ sub said {
 
 sub reply {
   my ($self, $mess, @other) = @_;
-  $self->dispatch('replied',$mess, @other);
+  $self->dispatch('replied',{ %$mess }, @other);
   if ($mess->{reply_hook}) {
     return $mess->{reply_hook}->($mess, @other);
   } else {
