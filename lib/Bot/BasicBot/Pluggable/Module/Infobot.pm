@@ -596,7 +596,7 @@ L<XML::Feed>
 
 =head1 AUTHOR
 
-Tom Insam <tom@jerakeen.org>
+Mario Domgoergen <dom@math.uni-bonn.de>
 
 This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
